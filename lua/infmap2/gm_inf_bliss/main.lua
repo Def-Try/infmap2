@@ -36,7 +36,8 @@ if SERVER then
         e:INF_SetPos(Vector(0, 0, -10))
         e:SetModel("models/hunter/blocks/cube8x8x025.mdl")
         e:SetMaterial("models/gibs/metalgibs/metal_gibs")
-        e:SetName("SpawnPlatform")
+        e:SetName("INF_Bliss_SpawnPlatform")
+        e:SetNW2Bool("INF_Bliss_SpawnPlatform", true)
         e:Spawn()
         e:GetPhysicsObject():EnableMotion(false)
         constraint.Weld(e, game.GetWorld(), 0, 0, 0)
@@ -46,11 +47,15 @@ if SERVER then
     hook.Add("InitPostEntity", "InfMap2BlissCreateOrigin", create_origin_plat)
     hook.Add("PostCleanupMap", "InfMap2BlissCreateOrigin", create_origin_plat)
     hook.Add("EntityRemoved",  "InfMap2BlissCreateOrigin", function(ent)
-        if ent:GetName() ~= "SpawnPlatform" then return end
+        if ent:GetName() ~= "INF_Bliss_SpawnPlatform" then return end
         create_origin_plat()
     end)
     hook.Add("PhysgunPickup", "InfMap2BlissOriginPropPhysgunable", function(ply, ent)
-        if ent:GetName() == "SpawnPlatform" then return false end
+        if ent:GetName() == "INF_Bliss_SpawnPlatform" then return false end
+    end)
+else
+    hook.Add("PhysgunPickup", "InfMap2BlissOriginPropPhysgunable", function(ply, ent)
+        if ent:GetNW2Bool("INF_Bliss_SpawnPlatform") then return false end
     end)
 end
 
