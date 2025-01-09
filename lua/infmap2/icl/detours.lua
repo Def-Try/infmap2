@@ -8,7 +8,7 @@ ENTITY.INF_GetPos = ENTITY.INF_GetPos or ENTITY.GetPos
 function ENTITY:GetPos()
 	if invalid_chunk(self, LocalPlayer()) then return self:INF_GetPos() end
 	---@diagnostic disable-next-line: undefined-field
-	return InfMap2.UnlocalizePosition(self:INF_GetPos(), self.INF_MegaPos)
+	return InfMap2.UnlocalizePosition(self:INF_GetPos(), self.INF_MegaPos) -- - LocalPlayer().INF_MegaPos
 end
 
 ENTITY.INF_SetPos = ENTITY.INF_SetPos or ENTITY.SetPos

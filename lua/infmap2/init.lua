@@ -5,6 +5,7 @@ if InfMap2.Debug == nil then InfMap2.Debug = true end
 include("infmap2/ish/world.lua")
 include("infmap2/ish/collision.lua")
 include("infmap2/ish/functions.lua")
+include("infmap2/ish/detours.lua")
 
 if SERVER then
     include     ("infmap2/isv/world.lua")

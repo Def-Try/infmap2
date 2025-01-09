@@ -83,10 +83,10 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ents.Iterator
     if IsValid(ent:GetParent()) then continue end -- parent is valid, teleport is handled by it
     if ent:IsPlayer() and not ent:Alive() then continue end -- player is dead, don't teleport
 
-    if InfMap2.PositionInChunkSpace(ent:INF_GetPos()) then
+    if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize+2) then
         ent.INF_ConstraintMain = nil
         continue
-    end -- still in chunk, just clear constraint main
+    end -- still in chunk, just clear constraint main and 
     if IsValid(ent.INF_ConstraintMain) then continue end -- has a "master" constraint entity
     if ent:IsPlayerHolding() then continue end -- being held by player
     if not InfMap2.IsMainContraptionEntity(ent) then continue end -- not main contraption entity, teleporting *will* break stuff
@@ -99,10 +99,10 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ents.Iterator
     print("[INFMAP] Entity "..tostring(ent).." teleported to "..megapos.x.." "..megapos.y.." "..megapos.z)
 
     if InfMap2.UsesGenerator then
-        for i=1,#neighbors do
-            local pos = megapos + neighbors[i]
-            if InfMap2.GeneratedChunks[tostring(pos)] then continue end
-            InfMap2.GeneratedChunks[tostring(pos)] = InfMap2.CreateWorldChunk(pos)
-        end
+       for i=1,#neighbors do
+           local pos = megapos + neighbors[i]
+           if InfMap2.GeneratedChunks[tostring(pos)] then continue end
+           InfMap2.GeneratedChunks[tostring(pos)] = InfMap2.CreateWorldChunk(pos)
+       end
     end
 end end)

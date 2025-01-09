@@ -12,7 +12,7 @@ end
 
 function InfMap2.PositionInChunkSpace(pos, size)
     -- +1 to avoid reocurring teleport when entity is perfectly at chunk boundary
-    local halfsize = ((size or InfMap2.ChunkSize) / 2) + 1
+    local halfsize = ((size or InfMap2.ChunkSize) / 2)
     if pos.x <= -halfsize or pos.x >= halfsize then return false end
     if pos.y <= -halfsize or pos.y >= halfsize then return false end
     if pos.z <= -halfsize or pos.z >= halfsize then return false end
@@ -87,6 +87,11 @@ InfMap2.UselessEntities = InfMap2.UselessEntities or {
 	sizehandler = true,
 	crossbow_bolt = true,
 
+    inf_chunk = true,
+    inf_crosschunkclone = true
+}
+
+InfMap2.DisablePickup = InfMap2.DisablePickup or {
     inf_chunk = true,
     inf_crosschunkclone = true
 }

@@ -73,11 +73,11 @@ function ENT:Draw()
     color.r = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self.INF_MegaPos), 0, 1, 0)) * 255
     color.g = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self.INF_MegaPos), 0, 1, 1)) * 255
     color.b = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self.INF_MegaPos), 0, 1, 2)) * 255
-    local ignorez = true
+    local ignorez = false
 
     local off = self.INF_MegaPos * InfMap2.ChunkSize - LocalPlayer().INF_MegaPos * InfMap2.ChunkSize
     if off ~= Vector() then return end
-    if ignorez then render.SetColorMaterialIgnoreZ() end
+    if ignorez then render.SetColorMaterialIgnoreZ() else render.SetColorMaterial() end
     for i=1,#cmesh,3 do
         render.DrawLine(cmesh[i+0] + off, cmesh[i+1] + off, color, not ignorez)
         render.DrawLine(cmesh[i+1] + off, cmesh[i+2] + off, color, not ignorez)

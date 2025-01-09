@@ -125,3 +125,7 @@ function ENT:Think()
     local phys = self:GetPhysicsObject()
     if phys:IsValid() then phys:EnableMotion(false) end
 end
+
+hook.Add("PhysgunPickup", "InfMap2CrossChunkClonePhysgunable", function(ply, ent)
+    if ent:GetClass() == "inf_crosschunkclone" then return false end
+end)
