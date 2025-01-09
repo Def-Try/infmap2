@@ -2,6 +2,12 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
     ent.INF_MegaPos = megapos
     ent:SetCustomCollisionCheck(true)
 
+    -- remove crosschunkclones, we need to rebuild them
+    if SERVER and ent.INF_Clones then
+        for i=1,table.maxn(ent.INF_Clones) do SafeRemoveEntity(ent.INF_Clones[i]) end
+        ent.INF_Clones = nil
+    end
+
     if ent:IsEFlagSet(EFL_SERVER_ONLY) or ent:IsConstraint() then return end
     ent:SetNW2Vector("INF_MegaPos", megapos)
 end

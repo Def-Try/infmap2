@@ -102,27 +102,6 @@ end
 --==== CONSTRAINTS ====--
 -- functions related to constraints data
 
--- code edited from starfallex
-function InfMap2.GetAllConstrained(ent)
-	local entity_lookup = {}
-	local entity_table = {}
-
-	local function recursive_find(ent)
-		if entity_lookup[ent] then return end
-		entity_lookup[ent] = true
-		if not ent:IsValid() then return end
-        entity_table[#entity_table + 1] = ent
-        local constraints = constraint.GetTable(ent)
-        for k, v in pairs(constraints) do
-            if v.Ent1 then recursive_find(v.Ent1) end
-            if v.Ent2 then recursive_find(v.Ent2) end
-        end
-	end
-	recursive_find(ent)
-
-	return entity_table
-end
-
 local function constrained_invalid_filter(ent)
     local valid = true
     if valid and ent:IsPlayerHolding() then valid = false end
@@ -133,38 +112,19 @@ local function constrained_invalid_filter(ent)
     return not valid
 end
 
-function InfMap2.BuildConstraintsData(ent)
-    if ent.INF_ConstraintsMain ~= nil then
-        return ent.INF_ConstraintsMain
-    end
-
-    if constrained_invalid_filter(ent) then
-        ent.INF_ConstraintsMain = false
-        return false
-    end
-
-    ent.INF_ConstraintsData = ent.INF_ConstraintsData or InfMap2.GetAllConstrained(ent)
-    ent.INF_ConstraintsMain = true
-
+function InfMap2.IsMainContraptionEntity(ent)
+    if constrained_invalid_filter(ent) then return false end
     local idx = ent:EntIndex()
-    for _, const_ent in ipairs(ent.INF_ConstraintsData) do
+
+    for _, const_ent in pairs(constraint.GetAllConstrainedEntities(ent)) do
         if const_ent:IsPlayerHolding() then
-            ent.INF_ConstraintsMain = const_ent == ent
-            return ent.INF_ConstraintsMain
+            return const_ent == ent
         end
         
         if const_ent:EntIndex() < idx and not constrained_invalid_filter(const_ent) then
-            ent.INF_ConstraintsMain = false
             return false
         end
-
-        const_ent.INF_ConstraintsData = ent.INF_ConstraintsData
     end
 
     return true
-end
-
-function InfMap2.ResetConstraintsData(ent)
-    ent.INF_ConstraintsData = nil
-    ent.INF_ConstraintsMain = nil
 end

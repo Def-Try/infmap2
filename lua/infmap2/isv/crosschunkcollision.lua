@@ -11,6 +11,7 @@ local vector_one = Vector(1, 1, 1)
 
 -- vvvvvv     coroutine and error handling setup 
 local coro = coroutine.create(function() while true do local succ, err = pcall(function()
+    --do return end
     for _, ent in ents.Iterator() do
         if InfMap2.UselessEntitiesFilter(ent) then continue end
         if not ent:IsSolid() then continue end
