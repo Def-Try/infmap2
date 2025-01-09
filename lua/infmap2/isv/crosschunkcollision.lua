@@ -16,7 +16,7 @@ local coro = coroutine.create(function() while true do local succ, err = pcall(f
         if not ent:IsSolid() then continue end
         if not ent:GetModel() then continue end
 
-        -- investigate: why infmap1 does that? is it needed?
+        -- todo: is that even needed?
         if IsValid(ent:GetParent()) then continue end
 
         if ent:IsPlayer() and (ent:GetMoveType() == MOVETYPE_NOCLIP or not ent:Alive()) then continue end
