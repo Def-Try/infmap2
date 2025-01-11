@@ -7,35 +7,41 @@ local planes = {
 }
 
 InfMap2.TraceLine = InfMap2.TraceLine or util.TraceLine
-function util.TraceLine(tracedata)
-    local data = table.Copy(tracedata)
-
+function util.TraceLine(tracedata, a)
+    local direction = (tracedata.endpos - tracedata.start):GetNormalized()
+    local length = (tracedata.start - tracedata.endpos):Length()
     local real_start_pos, real_start_offset = InfMap2.LocalizePosition(tracedata.start)
     local real_end_pos, real_end_offset = InfMap2.LocalizePosition(tracedata.endpos)
-
-    --print(real_start_offset, real_end_offset)
-
-    data.start = real_start_pos
-    --data.endpos = real_end_pos
-    local filter = data.filter
-    data.filter = function(e)
+    local filter = tracedata.filter
+    tracedata.filter = function(e)
         local filtered = false
-        if e:GetClass() == "inf_chunk" then return false end
+        print(e.INF_MegaPos, real_start_offset)
+        --if e:GetClass() == "inf_chunk" then return false end
         if isfunction(filter) then filtered = not filter(e) end
         if istable(filter) then filtered = table.HasValue(filter, e) end
         if isentity(filter) then filtered = e == filter end
         return e.INF_MegaPos == real_start_offset and not filtered
     end
+    local data = table.Copy(tracedata)
+
+    --print(real_start_offset, real_end_offset)
+
+    data.start = real_start_pos
+    data.endpos = data.start + direction * length
 
 	local hit_data = InfMap2.TraceLine(data)
 
+    if (hit_data.Hit and not hit_data.HitWorld) then
+        hit_data.HitPos = InfMap2.UnlocalizePosition(hit_data.HitPos, real_start_offset)
+    end
+
+    --do return hit_data end
+
     if (not hit_data.Hit or hit_data.HitWorld) and real_start_offset ~= real_end_offset then
         -- cross chunk trace
-        local length = (tracedata.start - tracedata.endpos):Length()
-
-        local direction = (tracedata.endpos - tracedata.start):GetNormalized()
 
         local mindist = math.huge
+        local endplane = Vector()
         local endpos = Vector()
 
         for _,plane in ipairs(planes) do
@@ -44,7 +50,11 @@ function util.TraceLine(tracedata)
             if (hitpos - real_start_pos):Length() >= mindist then continue end
             endpos = hitpos
             mindist = (hitpos - real_start_pos):Length()
+            endplane = plane
         end
+
+        debugoverlay.Sphere(endpos, 10, 0.1)
+        debugoverlay.Line(real_start_pos, endpos, 0.1)
 
         --if mindist > length then
         --    return emptytrace
@@ -54,12 +64,18 @@ function util.TraceLine(tracedata)
         mindist = mindist + 1
         local newdata = table.Copy(tracedata)
         newdata.start = InfMap2.UnlocalizePosition(endpos, real_start_offset) + direction
+        newdata.endpos = newdata.start + direction * math.max(0, length - mindist)
         hit_data = util.TraceLine(newdata)
-    end
+        --PrintTable(hit_data)
+        -- hit_data.HitPos = InfMap2.UnlocalizePosition()
+        local hit_pos, hit_mega = InfMap2.LocalizePosition(hit_data.HitPos)
 
-    --debugoverlay.Cross(data.start, 10, 1, Color(255, 0, 0), false)
-    --debugoverlay.Sphere(data.endpos, 10, 1, Color(255, 0, 0), false)
-    --debugoverlay.Line(data.start, data.endpos, 1, Color(255, 0, 0), false)
+        debugoverlay.Line(newdata.start, newdata.endpos, 0.1, Color(255, 0, 0))
+
+        ---print(real_start_offset)
+
+        hit_data.HitPos = InfMap2.UnlocalizePosition(hit_pos, real_start_offset + hit_mega + endplane)
+    end
 
     if IsValid(hit_data.Entity) then
         local ent = hit_data.Entity

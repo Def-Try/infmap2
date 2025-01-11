@@ -19,3 +19,8 @@ function ENTITY:WorldSpaceAABB()
     local aa, bb = self:INF_WorldSpaceAABB()
     return InfMap2.UnlocalizePosition(aa, self.INF_MegaPos), InfMap2.UnlocalizePosition(bb, self.INF_MegaPos)
 end
+
+ENTITY.INF_EyePos = ENTITY.INF_EyePos or ENTITY.EyePos
+function ENTITY:EyePos()
+    return InfMap2.UnlocalizePosition(self:INF_EyePos(), self.INF_MegaPos)
+end

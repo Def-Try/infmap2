@@ -2,12 +2,17 @@ AddCSLuaFile()
 
 local floor = math.floor
 local clamp = math.Clamp
+local round = math.Round
 
 --==== POSITIONING ====--
 -- functions related to positioning of entities in world
 
 function InfMap2.ClampVector(pos, max)
 	return Vector(clamp(pos[1], -max, max), clamp(pos[2], -max, max), clamp(pos[3], -max, max))
+end
+
+function InfMap2.RoundVector(pos, decimals)
+    return Vector(round(pos[1], decimals), round(pos[2], decimals), round(pos[3], decimals))
 end
 
 function InfMap2.PositionInChunkSpace(pos, size)

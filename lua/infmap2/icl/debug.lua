@@ -6,7 +6,7 @@ end end end
 hook.Add("PostDrawOpaqueRenderables", "InfMap2DebugRender", function()
     if not InfMap2.Debug then return end
 
-    local megaoffset = -((LocalPlayer().INF_MegaPos or Vector()) * InfMap2.ChunkSize)
+    local megaoffset = ((LocalPlayer().INF_MegaPos or Vector()) * InfMap2.ChunkSize)
 
     --[[
     for _,neighbor in ipairs(neighbors) do
@@ -16,22 +16,34 @@ hook.Add("PostDrawOpaqueRenderables", "InfMap2DebugRender", function()
     end
     ]]
 
-    render.DrawWireframeSphere(Vector(), 10, 10, 10, Color(255, 0, 0), false)
-    render.DrawWireframeBox(Vector(0, 0, 0), Angle(0, 0, 0),
+    render.DrawWireframeSphere(megaoffset, 10, 10, 10, Color(255, 0, 0), false)
+    render.DrawWireframeBox(megaoffset, Angle(0, 0, 0),
                             -InfMap2.ChunkSize/2*Vector(1,1,1), InfMap2.ChunkSize/2*Vector(1,1,1),
                             Color(0, 0, 0), false)
 
-    render.DrawWireframeBox(Vector(0, 0, 0), Angle(0, 0, 0),
+    render.DrawWireframeBox(megaoffset, Angle(0, 0, 0),
                             -InfMap2.SourceBounds, InfMap2.SourceBounds,
                             Color(0, 0, 0), false)
 
     if megaoffset ~= Vector() then
-        render.DrawWireframeSphere(megaoffset, megaoffset:Length()/100, 10, 10, Color(0, 255, 0), false)
+        render.DrawWireframeSphere(Vector(0, 0, 0), megaoffset:Length()/100, 10, 10, Color(0, 255, 0), false)
     end
 
-    render.DrawWireframeBox(megaoffset, Angle(0, 0, 0),
+    render.DrawWireframeBox(Vector(0, 0, 0), Angle(0, 0, 0),
                             -InfMap2.ChunkSize/2*Vector(1,1,1), InfMap2.ChunkSize/2*Vector(1,1,1),
                             Color(0, 0, 255), false)
+
+    local tracedata = {
+        start = LocalPlayer():EyePos(),
+        endpos= LocalPlayer():EyePos()+LocalPlayer():EyeAngles():Forward() * InfMap2.ChunkSize * 2,
+        filter= LocalPlayer()
+    }
+    --local traceresult = util.TraceLine(tracedata)
+
+    --print(traceresult.Entity, tracedata.start)
+
+    --render.DrawLine(tracedata.start, traceresult.HitPos, Color(255, 255, 255))
+    --render.DrawWireframeSphere(traceresult.HitPos, 1000 * traceresult.Fraction, 10, 10, Color(255, 255, 255), false)
 end)
 
 hook.Add("HUDPaint", "InfMap2DebugRender", function() local function _(c, x, y)

@@ -16,3 +16,8 @@ function ENTITY:SetPos(pos)
 	local pos = InfMap2.ClampVector(pos, InfMap2.SourceBounds[1])
 	return self:INF_SetPos(pos)
 end
+
+ENTITY.INF_EyePos = ENTITY.INF_EyePos or ENTITY.EyePos
+function ENTITY:EyePos()
+    return InfMap2.UnlocalizePosition(self:INF_EyePos(), self.INF_MegaPos)
+end
