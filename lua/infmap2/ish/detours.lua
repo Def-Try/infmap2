@@ -7,44 +7,37 @@ local planes = {
 }
 
 InfMap2.TraceLine = InfMap2.TraceLine or util.TraceLine
-function util.TraceLine(tracedata, a)
+function util.TraceLine(tracedata)
+    --debugoverlay.Line(tracedata.start, tracedata.endpos, 0.1, Color(255, 0, 0), false)
     local direction = (tracedata.endpos - tracedata.start):GetNormalized()
     local length = (tracedata.start - tracedata.endpos):Length()
     local real_start_pos, real_start_offset = InfMap2.LocalizePosition(tracedata.start)
     local real_end_pos, real_end_offset = InfMap2.LocalizePosition(tracedata.endpos)
     local filter = tracedata.filter
-    tracedata.filter = function(e)
+    local data = table.Copy(tracedata)
+
+    data.filter = function(e)
+        if e.INF_MegaPos ~= real_start_offset then return false end
         local filtered = false
-        print(e.INF_MegaPos, real_start_offset)
-        --if e:GetClass() == "inf_chunk" then return false end
         if isfunction(filter) then filtered = not filter(e) end
         if istable(filter) then filtered = table.HasValue(filter, e) end
         if isentity(filter) then filtered = e == filter end
-        return e.INF_MegaPos == real_start_offset and not filtered
+        return not filtered
     end
-    local data = table.Copy(tracedata)
-
-    --print(real_start_offset, real_end_offset)
 
     data.start = real_start_pos
     data.endpos = data.start + direction * length
 
-	local hit_data = InfMap2.TraceLine(data)
+	local hit_data
 
-    if (hit_data.Hit and not hit_data.HitWorld) then
-        hit_data.HitPos = InfMap2.UnlocalizePosition(hit_data.HitPos, real_start_offset)
-    end
-
-    --do return hit_data end
-
-    if (not hit_data.Hit or hit_data.HitWorld) and real_start_offset ~= real_end_offset then
-        -- cross chunk trace
+    if real_start_offset ~= real_end_offset then
 
         local mindist = math.huge
         local endplane = Vector()
         local endpos = Vector()
 
         for _,plane in ipairs(planes) do
+            if plane:Dot(direction) < 0 then continue end
             local hitpos = util.IntersectRayWithPlane(real_start_pos, direction, plane*InfMap2.ChunkSize/2, plane)
             if not hitpos then continue end
             if (hitpos - real_start_pos):Length() >= mindist then continue end
@@ -53,34 +46,75 @@ function util.TraceLine(tracedata, a)
             endplane = plane
         end
 
-        debugoverlay.Sphere(endpos, 10, 0.1)
-        debugoverlay.Line(real_start_pos, endpos, 0.1)
-
-        --if mindist > length then
-        --    return emptytrace
-        --end
-
-        --debugoverlay.Cross(endpos, 10, 1, Color(255, 0, 0), true)
-        mindist = mindist + 1
         local newdata = table.Copy(tracedata)
-        newdata.start = InfMap2.UnlocalizePosition(endpos, real_start_offset) + direction
+        newdata.INF_DoNotHandleEntities = true
+        newdata.start = endpos + -endplane*InfMap2.ChunkSize + direction -- in another chunk
         newdata.endpos = newdata.start + direction * math.max(0, length - mindist)
+
+        newdata.start = InfMap2.UnlocalizePosition(newdata.start, real_start_offset + endplane)
+        newdata.endpos = InfMap2.UnlocalizePosition(newdata.endpos, real_start_offset + endplane)
+
+        --debugoverlay.Sphere(newdata.start, 100, 0.1, Color(255, 0, 0), false)
+
         hit_data = util.TraceLine(newdata)
-        --PrintTable(hit_data)
-        -- hit_data.HitPos = InfMap2.UnlocalizePosition()
-        local hit_pos, hit_mega = InfMap2.LocalizePosition(hit_data.HitPos)
 
-        debugoverlay.Line(newdata.start, newdata.endpos, 0.1, Color(255, 0, 0))
-
-        ---print(real_start_offset)
-
-        hit_data.HitPos = InfMap2.UnlocalizePosition(hit_pos, real_start_offset + hit_mega + endplane)
+        --hit_data.HitPos = InfMap2.UnlocalizePosition(hit_data.HitPos, real_start_offset)
     end
 
-    if IsValid(hit_data.Entity) then
+    local hit_data2 = InfMap2.TraceLine(data)
+    if hit_data2.Hit and (not hit_data or hit_data2.Fraction < hit_data.Fraction) then
+        hit_data = hit_data2
+        hit_data.HitPos = InfMap2.UnlocalizePosition(hit_data.HitPos, real_start_offset)
+    end
+
+    if hit_data and hit_data.Hit then
+        hit_data.Fraction = (tracedata.start - hit_data.HitPos):Length() / length
+    end
+
+    if hit_data and (IsValid(hit_data.Entity) or hit_data.Entity:IsWorld()) and not tracedata.INF_DoNotHandleEntities then
         local ent = hit_data.Entity
-        if ent then end
+        if ent:GetClass() == "inf_chunk" then -- hit the inf_chunk, the world terrain
+            hit_data.Entity = game.GetWorld()
+            hit_data.HitWorld = true
+            hit_data.HitNonWorld = false -- wtf garry
+            hit_data.HitPos = hit_data.HitPos + hit_data.HitNormal -- spawning props sometimes clip through
+        end
+        if ent:GetClass() == "inf_crosschunkclone" then -- hit crosschunk clone, lie about hitting some entity
+            hit_data.Entity = hit_data.Entity.INF_ReferenceData.Parent
+        end
+        if ent:IsWorld() then -- directly hit the world, meaning that something is really far away
+            hit_data.Entity = NULL
+            hit_data.Hit = false
+            hit_data.HitWorld = false
+            hit_data.HitNonWorld = false -- wtf garry
+            hit_data.HitPos = tracedata.endpos
+            hit_data.Fraction = 1
+        end
     end
 
-	return hit_data
+	return hit_data or {
+        Entity = NULL,
+        Fraction = 1,
+        FractionLeftSolid = 0,
+        Hit = false,
+        HitBox = 0,
+        HitGroup = 0,
+        HitNoDraw = false,
+        HitNonWorld = false,
+        HitNormal = Vector(0, 0, 0),
+        HitPos = tracedata.endpos,
+        HitSky = false,
+        HitTexture = "** empty **",
+        HitWorld = false,
+        MatType = 0,
+        Normal = direction,
+        PhysicsBone = 0,
+        StartPos = tracedata.start,
+        SurfaceProps = 0,
+        StartSolid = false,
+        AllSolid = false,
+        SurfaceFlags = 0,
+        DispFlags = 0,
+        Contents = CONTENTS_EMPTY
+    }
 end

@@ -75,7 +75,7 @@ return {
         final = final * scale
         return final / 2
     end,
-    chunksize = 5000, -- leaves 12768 units for contraptions and fast passing entities
+    chunksize = 10000, -- 20000, -- leaves 12768 units for contraptions and fast passing entities
     megachunksize = 20,
     samplesize = 5000,
 

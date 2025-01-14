@@ -33,17 +33,18 @@ hook.Add("PostDrawOpaqueRenderables", "InfMap2DebugRender", function()
                             -InfMap2.ChunkSize/2*Vector(1,1,1), InfMap2.ChunkSize/2*Vector(1,1,1),
                             Color(0, 0, 255), false)
 
+    --print("    ", traceresult.Entity, traceresult.HitPos)
+
     local tracedata = {
         start = LocalPlayer():EyePos(),
         endpos= LocalPlayer():EyePos()+LocalPlayer():EyeAngles():Forward() * InfMap2.ChunkSize * 2,
-        filter= LocalPlayer()
+        filter= LocalPlayer(),
+        --INF_DoNotHandleEntities=true
     }
-    --local traceresult = util.TraceLine(tracedata)
+    local traceresult = util.TraceLine(tracedata)
 
-    --print(traceresult.Entity, tracedata.start)
-
-    --render.DrawLine(tracedata.start, traceresult.HitPos, Color(255, 255, 255))
-    --render.DrawWireframeSphere(traceresult.HitPos, 1000 * traceresult.Fraction, 10, 10, Color(255, 255, 255), false)
+    render.DrawLine(tracedata.start, traceresult.HitPos, Color(255, 255, 255))
+    render.DrawWireframeSphere(traceresult.HitPos, 1000 * traceresult.Fraction, 10, 10, Color(255, 255, 255), false)
 end)
 
 hook.Add("HUDPaint", "InfMap2DebugRender", function() local function _(c, x, y)
@@ -52,4 +53,18 @@ hook.Add("HUDPaint", "InfMap2DebugRender", function() local function _(c, x, y)
     draw.DrawText("REALPOS: "..tostring(LocalPlayer():INF_GetPos()),  "TargetID", x+ScrW()-5, y+5+16*2, c, TEXT_ALIGN_RIGHT)
     draw.DrawText("MEGAPOS: "..tostring(LocalPlayer().INF_MegaPos),   "TargetID", x+ScrW()-5, y+5+16*3, c, TEXT_ALIGN_RIGHT)
     draw.DrawText("    VEL: "..tostring(LocalPlayer():GetVelocity()), "TargetID", x+ScrW()-5, y+5+16*4, c, TEXT_ALIGN_RIGHT)
+
+    local tracedata = {
+        start = LocalPlayer():EyePos(),
+        endpos= LocalPlayer():EyePos()+LocalPlayer():EyeAngles():Forward() * InfMap2.ChunkSize * 2,
+        filter= LocalPlayer(),
+        --INF_DoNotHandleEntities=true
+    }
+    local traceresult = util.TraceLine(tracedata)
+
+    draw.DrawText(traceresult.Entity, "DermaLarge", ScrW()/2, ScrH()/2 - 48, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+    draw.DrawText(math.Round((traceresult.Fraction) * InfMap2.ChunkSize * 2, 2) .. " units away", "DermaLarge", ScrW()/2, ScrH()/2 + 12, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+    draw.DrawText("at megapos "..tostring(traceresult.Entity.INF_MegaPos or "<UNK>"), "DermaLarge", ScrW()/2, ScrH()/2 + 36, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+
+
 end _(color_black, -1, -1) _(color_black, 1, 1) _(color_black, 1, -1) _(color_black, -1, 1) _(color_white, 0, 0) end)
