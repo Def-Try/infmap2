@@ -43,8 +43,8 @@ hook.Add("PostDrawOpaqueRenderables", "InfMap2DebugRender", function()
     }
     local traceresult = util.TraceLine(tracedata)
 
-    render.DrawLine(tracedata.start, traceresult.HitPos, Color(255, 255, 255))
-    render.DrawWireframeSphere(traceresult.HitPos, 1000 * traceresult.Fraction, 10, 10, Color(255, 255, 255), false)
+    --render.DrawLine(tracedata.start, traceresult.HitPos, Color(255, 255, 255))
+    --render.DrawWireframeSphere(traceresult.HitPos, 1000 * traceresult.Fraction, 10, 10, Color(255, 255, 255), false)
 end)
 
 hook.Add("HUDPaint", "InfMap2DebugRender", function() local function _(c, x, y)
@@ -62,9 +62,9 @@ hook.Add("HUDPaint", "InfMap2DebugRender", function() local function _(c, x, y)
     }
     local traceresult = util.TraceLine(tracedata)
 
-    draw.DrawText(traceresult.Entity, "DermaLarge", ScrW()/2, ScrH()/2 - 48, Color(255, 255, 255), TEXT_ALIGN_CENTER)
-    draw.DrawText(math.Round((traceresult.Fraction) * InfMap2.ChunkSize * 2, 2) .. " units away", "DermaLarge", ScrW()/2, ScrH()/2 + 12, Color(255, 255, 255), TEXT_ALIGN_CENTER)
-    draw.DrawText("at megapos "..tostring(traceresult.Entity.INF_MegaPos or "<UNK>"), "DermaLarge", ScrW()/2, ScrH()/2 + 36, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+    --draw.DrawText(traceresult.Entity, "DermaLarge", ScrW()/2, ScrH()/2 - 48, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+    --draw.DrawText(math.Round((traceresult.Fraction) * InfMap2.ChunkSize * 2, 2) .. " units away", "DermaLarge", ScrW()/2, ScrH()/2 + 12, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+    --draw.DrawText("at megapos "..tostring(traceresult.Entity.INF_MegaPos or "<UNK>"), "DermaLarge", ScrW()/2, ScrH()/2 + 36, Color(255, 255, 255), TEXT_ALIGN_CENTER)
 
 
 end _(color_black, -1, -1) _(color_black, 1, 1) _(color_black, 1, -1) _(color_black, -1, 1) _(color_white, 0, 0) end)

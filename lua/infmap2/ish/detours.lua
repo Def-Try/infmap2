@@ -31,7 +31,6 @@ function util.TraceLine(tracedata)
 	local hit_data
 
     if real_start_offset ~= real_end_offset then
-
         local mindist = math.huge
         local endplane = Vector()
         local endpos = Vector()
