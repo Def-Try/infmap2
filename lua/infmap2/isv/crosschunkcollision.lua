@@ -24,6 +24,8 @@ local coro = coroutine.create(function() while true do local succ, err = pcall(f
 
         -- yield here, we're about to do some expensive shit
         coroutine.yield()
+        -- entity may have became invalid
+        if not IsValid(ent) then continue end
 
         -- fast bounding radius check
         local bounding_radius = ent:BoundingRadius()

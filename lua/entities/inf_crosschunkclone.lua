@@ -3,7 +3,7 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "base_gmodentity"
 
-ENT.Category		= "InfMap2 2"
+ENT.Category		= "InfMap2"
 ENT.PrintName		= "Cross Chunk Entity Clone"
 ENT.Author			= "googer_"
 ENT.Purpose			= "Used for cross chunk entity collisions."

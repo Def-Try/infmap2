@@ -31,6 +31,7 @@ local simplex = include("simplex.lua")
 
 if SERVER then
     local function create_origin_plat()
+        ---@class Entity
         local e = ents.Create("prop_physics")
         if not IsValid(e) then return end
         e:INF_SetPos(Vector(0, 0, -10))
@@ -38,6 +39,9 @@ if SERVER then
         e:SetMaterial("models/gibs/metalgibs/metal_gibs")
         e:SetName("INF_Bliss_SpawnPlatform")
         e:SetNW2Bool("INF_Bliss_SpawnPlatform", true)
+        e:SetOwner(game.GetWorld())
+        function e:CreatedByMap() return true end
+        function e:CanProperty(ply, prop) return false end
         e:Spawn()
         e:GetPhysicsObject():EnableMotion(false)
         constraint.Weld(e, game.GetWorld(), 0, 0, 0)
@@ -48,7 +52,12 @@ if SERVER then
     hook.Add("PostCleanupMap", "InfMap2BlissCreateOrigin", create_origin_plat)
     hook.Add("EntityRemoved",  "InfMap2BlissCreateOrigin", function(ent)
         if ent:GetName() ~= "INF_Bliss_SpawnPlatform" then return end
-        create_origin_plat()
+        timer.Simple(0, function()
+            -- run in next tick because
+            -- 1. old ent won't be in the way and
+            -- 2. we won't overflow if server is shutting down
+            create_origin_plat()
+        end)
     end)
     hook.Add("PhysgunPickup", "InfMap2BlissOriginPropPhysgunable", function(ply, ent)
         if ent:GetName() == "INF_Bliss_SpawnPlatform" then return false end

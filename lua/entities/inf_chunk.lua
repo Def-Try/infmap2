@@ -3,7 +3,7 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "base_gmodentity"
 
-ENT.Category		= "InfMap2 2"
+ENT.Category		= "InfMap2"
 ENT.PrintName		= "Chunk Entity"
 ENT.Author			= "googer_"
 ENT.Purpose			= "Chunk entity, handling terrain colliders"
@@ -46,6 +46,7 @@ function ENT:Initialize()
     self:DrawShadow(false)
     self:AddSolidFlags(FSOLID_FORCE_WORLD_ALIGNED)
     self:AddFlags(FL_STATICPROP)
+    self:AddEFlags(EFL_KEEP_ON_RECREATE_ENTITIES)
     self:SetRenderMode(RENDERMODE_NORMAL)
     --self:SetCustomCollisionCheck(true) -- required for ShouldCollide hook
 
