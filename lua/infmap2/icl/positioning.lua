@@ -64,6 +64,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
 
     --ent.INF_RenderOverride = ent.RenderOverride
     function ent:RenderOverride()
+        --cam.PushModelMatrix(InfMap2.ViewMatrix, true)
         cam.Start3D(EyePos() - visual_offset)
         if not self.INF_RenderOverride then
             self:DrawModel()
@@ -71,8 +72,8 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
             self:INF_RenderOverride()
         end
         cam.End3D()
+        --cam.PopModelMatrix()
     end
-
 end
 
 hook.Add("EntityNetworkedVarChanged", "InfMap2EntityMegaposUpdate", function(ent, name, _, val)

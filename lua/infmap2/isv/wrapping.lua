@@ -15,12 +15,22 @@ do
 end
 
 local function ent_SetPos_proper(ent, pos)
+    -- parents are local... don't set pos
     if ent:GetParent():IsValid() then return end
 
     pos = InfMap2.ClampVector(pos, InfMap2.SourceBounds[1] - 64)
 
     if ent:IsRagdoll() then
-        ErrorNoHalt("implement ragdoll teleportation")
+        for i = 0, ent:GetPhysicsObjectCount() - 1 do
+			local phys = ent:GetPhysicsObjectNum(i)
+			local vel = phys:GetVelocity()
+			local ang_vel = phys:GetAngleVelocity()
+			local diff = phys:INF_GetPos() - ent:INF_GetPos()
+		
+			phys:INF_SetPos(pos + diff, true)
+			phys:SetVelocity(vel)
+			phys:SetAngleVelocity(ang_vel)
+		end
     end
 
     ent:INF_SetPos(pos)
@@ -40,10 +50,12 @@ end
 local function teleport_contraption(mainent, pos, megapos)
     local vel, ang = mainent:GetVelocity(), mainent:GetAngles()
 
-    -- constrained entities updated first
-    local entities = constraint.GetAllConstrainedEntities(mainent)
+    -- constrained and parented entities updated first
+    local entities = table.Add(constraint.GetAllConstrainedEntities(mainent), InfMap2.FindAllChildren(mainent))
+
     for _,ent in pairs(entities) do
         if ent == mainent then continue end
+        if InfMap2.UselessEntitiesFilter(ent) then continue end
         local vel, ang = ent:GetVelocity(), ent:GetAngles()
         InfMap2.EntityUpdateMegapos(ent, megapos)
         ent_SetPos_proper(ent, pos + (ent:INF_GetPos() - mainent:INF_GetPos()))
@@ -65,6 +77,10 @@ local function update_entity(ent, pos, megapos)
         local carry = InfMap2.Cache.carries[ent]
 
         teleport_contraption(carry, pos + (carry:INF_GetPos() - ent:INF_GetPos()), megapos)
+    end
+
+    if ent:IsPlayer() then
+
     end
 
     teleport_contraption(ent, pos, megapos)

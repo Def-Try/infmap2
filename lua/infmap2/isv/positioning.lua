@@ -10,6 +10,15 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
 
     if ent:IsEFlagSet(EFL_SERVER_ONLY) or ent:IsConstraint() then return end
     ent:SetNW2Vector("INF_MegaPos", megapos)
+
+    if ent:IsPlayer() or ent:IsNPC() then
+        for _, weapon in ipairs(ent:GetWeapons()) do
+            weapon.INF_MegaPos = megapos
+            weapon:SetCustomCollisionCheck(true)
+
+            weapon:SetNW2Vector("INF_MegaPos", megapos)
+        end
+    end
 end
 
 local neighbors = {}

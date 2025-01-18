@@ -184,3 +184,24 @@ ENTITY.INF_WorldToLocal = ENTITY.INF_WorldToLocal or ENTITY.WorldToLocal
 function ENTITY:WorldToLocal(pos)
 	return self:INF_WorldToLocal(-InfMap2.UnlocalizePosition(-pos, self.INF_MegaPos))
 end
+
+ENTITY.INF_NearestPoint = ENTITY.INF_NearestPoint or ENTITY.NearestPoint
+function ENTITY:NearestPoint(pos)
+	local chunk_pos, chunk_offset = InfMap2.LocalizePosition(pos)
+	return InfMap2.UnlocalizePosition(self:INF_NearestPoint(chunk_pos), chunk_offset)
+end
+
+ENTITY.INF_GetAttachment = ENTITY.INF_GetAttachment or ENTITY.GetAttachment
+function ENTITY:GetAttachment(num)
+	local data = self:INF_GetAttachment(num)
+	if !data or !data.Pos then return data end
+	data.Pos = InfMap2.UnlocalizePosition(data.Pos, self.INF_MegaPos)
+	return data
+end
+
+ENTITY.INF_GetBonePosition = ENTITY.INF_GetBonePosition or ENTITY.GetBonePosition
+function ENTITY:GetBonePosition(index)
+	local pos, ang = self:INF_GetBonePosition(index)
+	pos = InfMap2.UnlocalizePosition(pos, self.INF_MegaPos)
+	return pos, ang
+end

@@ -43,7 +43,7 @@ function InfMap2.LocalizePosition(pos, size)
 end
 
 function InfMap2.UnlocalizePosition(pos, megapos, size)
-    return megapos * (size or InfMap2.ChunkSize) + pos
+    return (megapos or Vector()) * (size or InfMap2.ChunkSize) + pos
 end
 
 function InfMap2.IntersectBox(min_a, max_a, min_b, max_b) 
@@ -57,9 +57,9 @@ end
 -- filters useless entities (that are not movable between chunks or ignored by player)
 
 InfMap2.UselessEntities = InfMap2.UselessEntities or {
-	physgun_beam = true,
+	-- physgun_beam = true,
 	worldspawn = true,
-	gmod_hands = true,
+	-- gmod_hands = true,
 	info_particle_system = true,
 	phys_spring = true,
 	predicted_viewmodel = true,
@@ -137,4 +137,16 @@ function InfMap2.IsMainContraptionEntity(ent)
     end
 
     return true
+end
+
+function InfMap2.FindAllChildren(mainent, children, seen)
+    children = children or {}
+    seen = seen or {}
+    seen[mainent] = true
+    children[#children+1] = mainent
+    for _, ent in ipairs(mainent:GetChildren()) do
+        if seen[ent] then continue end
+        InfMap2.FindAllChildren(ent, children, seen)
+    end
+    return children
 end

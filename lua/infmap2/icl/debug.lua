@@ -19,20 +19,20 @@ hook.Add("PostDrawOpaqueRenderables", "InfMap2DebugRender", function()
     end
     ]]
 
-    render.DrawWireframeSphere(megaoffset*2, 10, 10, 10, Color(255, 0, 0), false)
-    render.DrawWireframeBox(megaoffset, Angle(0, 0, 0),
+    render.DrawWireframeSphere(megaoffset, 10, 10, 10, Color(255, 0, 0), false)
+    render.DrawWireframeBox(Vector(), Angle(0, 0, 0),
                             -InfMap2.ChunkSize/2*Vector(1,1,1), InfMap2.ChunkSize/2*Vector(1,1,1),
                             Color(0, 0, 0), false)
 
-    render.DrawWireframeBox(megaoffset, Angle(0, 0, 0),
+    render.DrawWireframeBox(Vector(), Angle(0, 0, 0),
                             -InfMap2.SourceBounds, InfMap2.SourceBounds,
                             Color(0, 0, 0), false)
 
     if megaoffset ~= Vector() then
-        render.DrawWireframeSphere(megaoffset, megaoffset:Length()/100, 10, 10, Color(0, 255, 0), false)
+        render.DrawWireframeSphere(Vector(), megaoffset:Length()/100, 10, 10, Color(0, 255, 0), false)
     end
 
-    render.DrawWireframeBox(megaoffset*2, Angle(0, 0, 0),
+    render.DrawWireframeBox(megaoffset, Angle(0, 0, 0),
                             -InfMap2.ChunkSize/2*Vector(1,1,1), InfMap2.ChunkSize/2*Vector(1,1,1),
                             Color(0, 0, 255), false)
 end)

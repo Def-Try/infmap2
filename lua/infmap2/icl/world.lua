@@ -92,14 +92,6 @@ local csent = ClientsideModel("error.mdl")
 local lighting_table = {model = "models/shadertest/vertexlit.mdl", pos = Vector()}
 local cubemap_table  = {model = "models/shadertest/envballs.mdl",  pos = Vector()}
 
-hook.Add("PreRender", "InfMap2RenderWorld", function()
-    cam.PushModelMatrix(InfMap2.ViewMatrix, true)
-end)
-
-hook.Add("PostRender", "InfMap2RenderWorld", function()
-    cam.PopModelMatrix()
-end)
-
 hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
     if not InfMap2.UsesGenerator then return end
     if not InfMap2.Cache.material then InfMap2.Cache.material = Material(InfMap2.Material) end
@@ -115,11 +107,12 @@ hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
     render.OverrideDepthEnable(false, false)
     render.OverrideColorWriteEnable(false, false)
 
+    cam.PushModelMatrix(InfMap2.ViewMatrix, true)
     render.SetMaterial(InfMap2.Cache.material)
     for _,meshes in pairs(InfMap2.ChunkMeshes.Draw) do
         for i=1,#meshes do meshes[i]:Draw() end
     end
-    --cam.PopModelMatrix()
+    cam.PopModelMatrix()
 end)
 
 hook.Add("ShutDown", "InfMap2RenderWorld", function()
