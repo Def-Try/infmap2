@@ -4,12 +4,19 @@ InfMap2.Cache.ChunkMeshes = InfMap2.Cache.ChunkMeshes or {}
 InfMap2.Cache.HeightMap = InfMap2.Cache.HeightMap or {}
 
 local coroutines = {}
-timer.Create("InfMap2ChunkGeneratorThink", 0, 0, function()
+hook.Add(CLIENT and "PostDrawHUD" or "Think", "InfMap2GeneratorThink", function()
     for i=0,50 do
         local coro = table.Random(coroutines)
-        if not coro then return end
+        if not coro then continue end
         coroutine.resume(coro)
         if coroutine.status(coro) ~= "suspended" then coroutines[table.KeyFromValue(coroutines, coro)] = nil end
+    end
+    if CLIENT and #coroutines > 0 then
+        draw.DrawText("Please wait\n"..
+                      "Megachunk generation in progress"..string.rep(".", (CurTime()*2)%4).."\n"..
+                      #coroutines.." megachunks left",
+                      "DermaLarge",
+                      ScrW()/2, ScrH()/2-36, Color(255, 255, 255), TEXT_ALIGN_CENTER)
     end
 end)
 
