@@ -1,5 +1,48 @@
 local last_megachunk
 
+local function frustrum(ent)
+    if ent:EntIndex() == -1 then return true end
+    local mins, maxs = ent:GetRenderBounds()
+    local hash = tostring(mins)..tostring(maxs)
+    if hash ~= ent.INF_RenderBoundsHash then
+        ent.INF_Diagonal = (mins - maxs):Length()
+        ent.INF_RenderBoundsHash = hash
+    end
+
+    local pos = ent:GetPos() + ent:OBBCenter() - LocalPlayer().INF_MegaPos * InfMap2.ChunkSize
+    local show = false
+    if pos:Distance(EyePos()) < 10 then
+        show = true
+    elseif pos:Distance(EyePos()) > InfMap2.ChunkSize * InfMap2.MegachunkSize / 2 then
+        show = false
+    else
+        show = util.PixelVisible(pos, ent.INF_Diagonal, ent.INF_PixVisHandle) > 0
+    end
+
+    -- we don't do this above because we need to use util.PixelVisible
+    -- to update PixVisHandle data or something, otherwise in first frame
+    -- after changing chunks every entity will be "invisible" from last point of view
+    if ent.INF_ForceFrustrum then
+        ent.INF_ForceFrustrum = nil
+        show = true
+    end
+
+    return show
+end
+
+local function renderoverride_nest(self)
+    if not frustrum(self) then return end
+    cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
+        self:INF_RenderOverride()
+    cam.End3D()
+end
+local function renderoverride_raw(self)
+    if not frustrum(self) then return end
+    cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
+        self:DrawModel()
+    cam.End3D()
+end
+
 function InfMap2.EntityUpdateMegapos(ent, megapos)
     ent.INF_MegaPos = megapos
 
@@ -59,6 +102,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
             ent:INF_SetRenderBounds(unpack(ent.INF_OriginalRenderBounds))
             ent.INF_OriginalRenderBounds = nil
         end
+        ent.INF_ValidRenderOverride = nil
         return
     end
 
@@ -76,18 +120,15 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
     end
     ent.INF_InSkyboxFlag = ent:IsEFlagSet(EFL_IN_SKYBOX)
     ent:AddEFlags(EFL_IN_SKYBOX)
+
+    ent.INF_VisualOffset = visual_offset
+    ent.INF_PixVisHandle = ent.INF_PixVisHandle or util.GetPixelVisibleHandle()
+    ent.INF_ForceFrustrum = true
+
     if ent.INF_ValidRenderOverride then
-        function ent:RenderOverride()
-            cam.Start3D(INF_EyePos() - visual_offset)
-                self:INF_RenderOverride()
-            cam.End3D()
-        end
+        ent.RenderOverride = renderoverride_nest
     else
-        function ent:RenderOverride()
-            cam.Start3D(INF_EyePos() - visual_offset)
-                self:DrawModel()
-            cam.End3D()
-        end
+        ent.RenderOverride = renderoverride_raw
     end
 end
 
