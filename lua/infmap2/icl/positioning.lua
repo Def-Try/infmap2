@@ -70,19 +70,24 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
     end
     local visual_offset = Vector(1, 1, 1) * (megaoffset * InfMap2.ChunkSize)
 
-    --ent.INF_RenderOverride = ent.RenderOverride
+    if ent.INF_ValidRenderOverride == nil then
+        ent.INF_RenderOverride = ent.RenderOverride
+        ent.INF_ValidRenderOverride = ent.RenderOverride and true or false
+    end
     ent.INF_InSkyboxFlag = ent:IsEFlagSet(EFL_IN_SKYBOX)
     ent:AddEFlags(EFL_IN_SKYBOX)
-    function ent:RenderOverride()
-        --cam.PushModelMatrix(InfMap2.ViewMatrix, true)
-        cam.Start3D(EyePos() - visual_offset)
-        if not self.INF_RenderOverride then
-            self:DrawModel()
-        else
-            self:INF_RenderOverride()
+    if ent.INF_ValidRenderOverride then
+        function ent:RenderOverride()
+            cam.Start3D(EyePos() - visual_offset)
+                self:INF_RenderOverride()
+            cam.End3D()
         end
-        cam.End3D()
-        --cam.PopModelMatrix()
+    else
+        function ent:RenderOverride()
+            cam.Start3D(EyePos() - visual_offset)
+                self:DrawModel()
+            cam.End3D()
+        end
     end
 end
 
