@@ -59,6 +59,7 @@ local function teleport_contraption(mainent, pos, megapos)
         if ent == mainent then continue end
         if InfMap2.UselessEntitiesFilter(ent) then continue end
         InfMap2.EntityUpdateMegapos(ent, megapos)
+        if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." teleported to "..megapos.x.." "..megapos.y.." "..megapos.z) end
         local vel, ang = ent:GetVelocity(), ent:GetAngles()
         ent_SetPos_proper(ent, pos + (ent:INF_GetPos() - mainent:INF_GetPos()))
         ent_SetVelAng_proper(ent, vel, ang)
@@ -90,7 +91,6 @@ for x=-1,1 do for y=-1,1 do for z=-1,1 do
 end end end
 
 hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ents.Iterator() do
-    -- if not IsValid(ent) then continue end -- ent is invalid, something is wrong
     if InfMap2.UselessEntitiesFilter(ent) then continue end -- useless entity
     if not ent.INF_MegaPos then continue end -- no megapos, something is wrong
     if ent:GetVelocity() == Vector() then continue end -- no velocity, no possible reason to teleport
@@ -110,7 +110,7 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ents.Iterator
 
     update_entity(ent, pos, megapos)
 
-    print("[INFMAP] Entity "..tostring(ent).." teleported to "..megapos.x.." "..megapos.y.." "..megapos.z)
+    if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." teleported to "..megapos.x.." "..megapos.y.." "..megapos.z) end
 
     if InfMap2.UsesGenerator then
        for i=1,#neighbors do

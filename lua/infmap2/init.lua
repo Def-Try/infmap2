@@ -3,6 +3,8 @@ AddCSLuaFile()
 --if InfMap2.Debug == nil then InfMap2.Debug = true end
 if InfMap2.Debug == nil then InfMap2.Debug = false end
 
+InfMap2.Version = "0.1b"
+
 include("infmap2/ish/world.lua")
 include("infmap2/ish/collision.lua")
 include("infmap2/ish/functions.lua")

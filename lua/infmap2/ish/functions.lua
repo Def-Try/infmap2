@@ -156,7 +156,7 @@ function InfMap2.FindAllConnected(mainent, children, seen)
         if v.Ent2 then InfMap2.FindAllConnected(v.Ent2, children, seen) end
     end
 
-    -- find parented... this is horrid
+    -- find parented...
     for _,ent in ents.Iterator() do
         if ent:GetParent() ~= mainent then continue end
         if seen[ent] then continue end
@@ -164,6 +164,12 @@ function InfMap2.FindAllConnected(mainent, children, seen)
         if not ent:IsValid() then continue end
         children[#children+1] = ent
         InfMap2.FindAllConnected(ent, children, seen)
+    end
+
+    -- add driver
+    if mainent:IsVehicle() and mainent.GetDriver and not seen[mainent:GetDriver()] then
+        seen[mainent:GetDriver()] = true
+        children[#children+1] = mainent:GetDriver()
     end
 
     return children
