@@ -47,3 +47,21 @@ function render.RenderView(view)
 	return render.INF_RenderView(view)
 end
 
+local ENTITY = FindMetaTable("Entity")
+ENTITY.INF_SetRenderBoundsWS = ENTITY.INF_SetRenderBoundsWS or ENTITY.SetRenderBoundsWS
+function ENTITY:SetRenderBoundsWS(mins, maxs)
+	self.INF_RenderBounds = {self:WorldToLocal(mins), self:WorldToLocal(maxs)}
+end
+
+ENTITY.INF_SetRenderBounds = ENTITY.INF_SetRenderBounds or ENTITY.SetRenderBounds
+function ENTITY:SetRenderBounds(mins, maxs)
+	self.INF_RenderBounds = {mins, maxs}
+end
+
+ENTITY.INF_GetRenderBounds = ENTITY.INF_GetRenderBounds or ENTITY.GetRenderBounds
+function ENTITY:GetRenderBounds()
+	if self.INF_RenderBounds then
+		return unpack(self.INF_RenderBounds)
+	end
+	return self:INF_GetRenderBounds()
+end

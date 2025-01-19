@@ -126,7 +126,7 @@ function InfMap2.IsMainContraptionEntity(ent)
     if constrained_invalid_filter(ent) then return false end
     local idx = ent:EntIndex()
 
-    for _, const_ent in pairs(constraint.GetAllConstrainedEntities(ent)) do
+    for _, const_ent in pairs(InfMap2.FindAllConnected(ent)) do
         if const_ent:IsPlayerHolding() then
             return const_ent == ent
         end
@@ -139,14 +139,32 @@ function InfMap2.IsMainContraptionEntity(ent)
     return true
 end
 
-function InfMap2.FindAllChildren(mainent, children, seen)
+function InfMap2.FindAllConnected(mainent, children, seen)
     children = children or {}
     seen = seen or {}
+
+    -- have we already checked that ent?
+    if seen[mainent] then return children end
     seen[mainent] = true
+    if not mainent:IsValid() then return children end
+
+    -- find constrained
     children[#children+1] = mainent
-    for _, ent in ipairs(mainent:GetChildren()) do
-        if seen[ent] then continue end
-        InfMap2.FindAllChildren(ent, children, seen)
+    local constraints = constraint.GetTable(mainent)
+    for _, v in pairs(constraints) do
+        if v.Ent1 then InfMap2.FindAllConnected(v.Ent1, children, seen) end
+        if v.Ent2 then InfMap2.FindAllConnected(v.Ent2, children, seen) end
     end
+
+    -- find parented... this is horrid
+    for _,ent in ents.Iterator() do
+        if ent:GetParent() ~= mainent then continue end
+        if seen[ent] then continue end
+        seen[ent] = true
+        if not ent:IsValid() then continue end
+        children[#children+1] = ent
+        InfMap2.FindAllConnected(ent, children, seen)
+    end
+
     return children
 end

@@ -53,6 +53,11 @@ function ENT:Initialize()
     --self:SetCollisionBoundsWS(Vector(-InfMap2.ChunkSize, -InfMap2.ChunkSize, -InfMap2.ChunkSize),
     --                          Vector( InfMap2.ChunkSize,  InfMap2.ChunkSize,  InfMap2.ChunkSize))
 
+    if CLIENT then
+        self:INF_SetRenderBoundsWS(Vector(-InfMap2.ChunkSize, -InfMap2.ChunkSize, -InfMap2.ChunkSize),
+                                   Vector( InfMap2.ChunkSize,  InfMap2.ChunkSize,  InfMap2.ChunkSize))
+    end
+
     self.INF_ChunkMesh = chunk_mesh
 end
 

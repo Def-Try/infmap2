@@ -1,5 +1,14 @@
 AddCSLuaFile()
 
+local ENTITY = FindMetaTable("Entity")
+local VEHICLE = FindMetaTable("Vehicle")
+local PHYSOBJ = FindMetaTable("PhysObj")
+
+InfMap2.TraceLine = InfMap2.TraceLine or util.TraceLine
+InfMap2.TraceHull = InfMap2.TraceHull or util.TraceHull
+InfMap2.TraceEntity = InfMap2.TraceEntity or util.TraceEntity
+InfMap2.TraceEntityHull = InfMap2.TraceEntityHull or util.TraceEntityHull
+
 local planes = {
     Vector(0, 0, -1), Vector(0, 0, 1),
     Vector(-1, 0, 0), Vector(1, 0, 0),
@@ -46,10 +55,6 @@ local function find_chunk_hit_plane(direction, startpos)
     return mindist, endpos, endplane
 end
 
-InfMap2.TraceLine = InfMap2.TraceLine or util.TraceLine
-InfMap2.TraceHull = InfMap2.TraceHull or util.TraceHull
-InfMap2.TraceEntity = InfMap2.TraceEntity or util.TraceEntity
-InfMap2.TraceEntityHull = InfMap2.TraceEntityHull or util.TraceEntityHull
 local function tracefunc(fake, real, tracedata)
     local direction = (tracedata.endpos - tracedata.start):GetNormalized()
     local length = (tracedata.start - tracedata.endpos):Length()
@@ -143,12 +148,14 @@ local function generate_trace_function(real)
     return func
 end
 
+----- Trace detours -----
+
 util.TraceLine = generate_trace_function(InfMap2.TraceLine)
 util.TraceHull = generate_trace_function(InfMap2.TraceHull)
 util.TraceEntity = generate_trace_function(InfMap2.TraceEntity)
 util.TraceEntityHull = generate_trace_function(InfMap2.TraceEntityHull)
 
-local ENTITY = FindMetaTable("Entity")
+----- Entity detours -----
 
 ENTITY.INF_GetPos = ENTITY.INF_GetPos or ENTITY.GetPos
 function ENTITY:GetPos()
@@ -205,3 +212,17 @@ function ENTITY:GetBonePosition(index)
 	pos = InfMap2.UnlocalizePosition(pos, self.INF_MegaPos)
 	return pos, ang
 end
+
+----- Vehicle detours -----
+
+-- GetPos, LocalToWorld, WorldToLocal are derived from ENTITY
+VEHICLE.INF_SetPos = VEHICLE.INF_SetPos or VEHICLE.SetPos
+function VEHICLE:SetPos(pos)
+	local pos, megapos = InfMap2.LocalizePosition(pos)
+    if megapos ~= self.INF_MegaPos then
+        InfMap2.EntityUpdateMegapos(self, megapos)
+    end
+	return self:INF_SetPos(pos)
+end
+
+----- PhysObj detours -----

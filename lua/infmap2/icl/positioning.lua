@@ -44,9 +44,6 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
         last_megachunk = megachunk
     end
 
-    ent:SetRenderBoundsWS(Vector(-InfMap2.ChunkSize, -InfMap2.ChunkSize, -InfMap2.ChunkSize),
-                          Vector( InfMap2.ChunkSize,  InfMap2.ChunkSize,  InfMap2.ChunkSize))
-
 	for _, child in ipairs(ent:GetChildren()) do
 		if child:EntIndex() ~= -1 then continue end
 		InfMap2.EntityUpdateMegapos(child, megapos)
@@ -57,12 +54,25 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
 
     if megaoffset == Vector() then
         ent.RenderOverride = ent.INF_RenderOverride
+        if not ent.INF_InSkyboxFlag then ent:RemoveEFlags(EFL_IN_SKYBOX) end
+        if ent:GetClass() ~= "inf_chunk" and ent.INF_OriginalRenderBounds then
+            ent:INF_SetRenderBounds(unpack(ent.INF_OriginalRenderBounds))
+            ent.INF_OriginalRenderBounds = nil
+        end
         return
     end
 
+    if ent:GetClass() ~= "inf_chunk" and not ent.INF_OriginalRenderBounds then
+        ent.INF_OriginalRenderBounds = {ent:INF_GetRenderBounds()}
+        ent.INF_RenderBounds = ent.INF_RenderBounds or ent.INF_OriginalRenderBounds
+        ent:INF_SetRenderBoundsWS(Vector(-InfMap2.ChunkSize, -InfMap2.ChunkSize, -InfMap2.ChunkSize),
+                                Vector( InfMap2.ChunkSize,  InfMap2.ChunkSize,  InfMap2.ChunkSize))
+    end
     local visual_offset = Vector(1, 1, 1) * (megaoffset * InfMap2.ChunkSize)
 
     --ent.INF_RenderOverride = ent.RenderOverride
+    ent.INF_InSkyboxFlag = ent:IsEFlagSet(EFL_IN_SKYBOX)
+    ent:AddEFlags(EFL_IN_SKYBOX)
     function ent:RenderOverride()
         --cam.PushModelMatrix(InfMap2.ViewMatrix, true)
         cam.Start3D(EyePos() - visual_offset)

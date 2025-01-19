@@ -51,13 +51,13 @@ local function teleport_contraption(mainent, pos, megapos)
     local vel, ang = mainent:GetVelocity(), mainent:GetAngles()
 
     -- constrained and parented entities updated first
-    local entities = table.Add(constraint.GetAllConstrainedEntities(mainent), InfMap2.FindAllChildren(mainent))
+    local entities = InfMap2.FindAllConnected(mainent)
 
     for _,ent in pairs(entities) do
         if ent == mainent then continue end
         if InfMap2.UselessEntitiesFilter(ent) then continue end
-        local vel, ang = ent:GetVelocity(), ent:GetAngles()
         InfMap2.EntityUpdateMegapos(ent, megapos)
+        local vel, ang = ent:GetVelocity(), ent:GetAngles()
         ent_SetPos_proper(ent, pos + (ent:INF_GetPos() - mainent:INF_GetPos()))
         ent_SetVelAng_proper(ent, vel, ang)
         ent.INF_ConstraintMain = mainent
@@ -77,10 +77,6 @@ local function update_entity(ent, pos, megapos)
         local carry = InfMap2.Cache.carries[ent]
 
         teleport_contraption(carry, pos + (carry:INF_GetPos() - ent:INF_GetPos()), megapos)
-    end
-
-    if ent:IsPlayer() then
-
     end
 
     teleport_contraption(ent, pos, megapos)

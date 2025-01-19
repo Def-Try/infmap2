@@ -1,6 +1,7 @@
 AddCSLuaFile()
 
-if InfMap2.Debug == nil then InfMap2.Debug = true end
+--if InfMap2.Debug == nil then InfMap2.Debug = true end
+if InfMap2.Debug == nil then InfMap2.Debug = false end
 
 include("infmap2/ish/world.lua")
 include("infmap2/ish/collision.lua")
