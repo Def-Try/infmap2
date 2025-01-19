@@ -19,6 +19,9 @@ if SERVER then
     include("infmap2/isv/wrapping.lua")
     include("infmap2/isv/crosschunkcollision.lua")
     include("infmap2/isv/concommands.lua")
+
+    resource.AddSingleFile("materials/infmap2/grasslit.vmt")
+    resource.AddSingleFile("materials/infmap2/grassunlit.vmt")
 end
 
 if CLIENT then
