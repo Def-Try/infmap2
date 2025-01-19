@@ -78,13 +78,13 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
     ent:AddEFlags(EFL_IN_SKYBOX)
     if ent.INF_ValidRenderOverride then
         function ent:RenderOverride()
-            cam.Start3D(EyePos() - visual_offset)
+            cam.Start3D(INF_EyePos() - visual_offset)
                 self:INF_RenderOverride()
             cam.End3D()
         end
     else
         function ent:RenderOverride()
-            cam.Start3D(EyePos() - visual_offset)
+            cam.Start3D(INF_EyePos() - visual_offset)
                 self:DrawModel()
             cam.End3D()
         end

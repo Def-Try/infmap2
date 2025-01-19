@@ -53,6 +53,8 @@ local function teleport_contraption(mainent, pos, megapos)
     -- constrained and parented entities updated first
     local entities = InfMap2.FindAllConnected(mainent)
 
+    if mainent:IsPlayer() then entities[#entities+1] = mainent:GetHands() end
+
     for _,ent in pairs(entities) do
         if ent == mainent then continue end
         if InfMap2.UselessEntitiesFilter(ent) then continue end

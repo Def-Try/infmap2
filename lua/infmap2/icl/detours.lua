@@ -28,9 +28,6 @@ function render.DrawWireframeBox(pos, ang, mins, maxs, color, writez) return ren
 render.INF_DrawWireframeSphere = render.INF_DrawWireframeSphere or render.DrawWireframeSphere
 function render.DrawWireframeSphere(pos, radius, long, lat, color, writez) return render.INF_DrawWireframeSphere(localize(pos), radius, long, lat, color, writez) end
 
-cam.INF_Start3D2D = cam.INF_Start3D2D or cam.Start3D2D
-function cam.Start3D2D(pos, ang, scale) return cam.INF_Start3D2D(localize(pos), ang, scale) end
-
 render.INF_DrawBeam = render.INF_DrawBeam or render.DrawBeam
 function render.DrawBeam(start, endpos, width, texstart, texend, color) return render.INF_DrawBeam(localize(start), localize(endpos), width, texstart, texend, color) end
 render.INF_AddBeam = render.INF_AddBeam or render.AddBeam
@@ -64,4 +61,9 @@ function ENTITY:GetRenderBounds()
 		return unpack(self.INF_RenderBounds)
 	end
 	return self:INF_GetRenderBounds()
+end
+
+INF_EyePos = INF_EyePos or EyePos
+function EyePos()
+	return LocalPlayer():EyePos()
 end
