@@ -213,12 +213,12 @@ function ENTITY:SetMegaPos(vec)
     --if CLIENT then debug.Trace() return print(self)  end
     if not IsValid(self) then return end
     if SERVER then self:SetNW2Vector("INF_MegaPos", vec) end
-    self.INF_MegaPos = vec
+    self.INF_MegaPos = Vector(vec)
 end
 
 function ENTITY:GetMegaPos()
     if not IsValid(self) then return Vector() end
-    return self.INF_MegaPos or self:GetNW2Vector("INF_MegaPos", Vector())
+    return Vector(self.INF_MegaPos) or self:GetNW2Vector("INF_MegaPos", Vector())
 end
 
 if CLIENT then

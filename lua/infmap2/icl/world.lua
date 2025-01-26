@@ -293,10 +293,11 @@ local cubemap_table  = {model = "models/shadertest/envballs.mdl",  pos = Vector(
 -- F*** DLib hook.
 -- Really.
 hook.Add("Think", "InfMap2FixF***ingCalcView", function()
-    do return end
+    --do return end
     local override = false
     local calcviewing = false
     local calcvmviewing = false
+    local relativeorigin = Vector()
     hook.Remove("Think", "InfMap2FixF***ingCalcView")
     override = true
     for k,v in pairs(hook.GetTable()["CalcView"] or {}) do
@@ -310,14 +311,18 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
         hook.Add("INF_CalcViewModelView", k, v)
     end
     override = false
+    hook.Add("Tick", "InfMap2UpdateCalcViewRelativeOrigin", function()
+        --do return end
+        relativeorigin = LocalPlayer():EyePos()
+    end)
     hook.Add("CalcView", "InfMap2CalcView", function(ply, pos, angles, fov, znear, zfar)
-        do return end
+        --do return end
         calcviewing = true
         local view = hook.Run("INF_CalcView", ply, pos + ply:GetMegaPos()* InfMap2.ChunkSize, angles, fov, znear, zfar)
         calcviewing = false
 
         local view_fallback = {
-            ["origin"] = pos + ply:GetMegaPos()* InfMap2.ChunkSize,
+            ["origin"] = pos + ply:GetMegaPos() * InfMap2.ChunkSize,
             ["angles"] = angles,
             ["fov"] = fov,
             ["znear"] = znear,
@@ -332,9 +337,12 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
             view = view_fallback
         end
 
+        local offset = (view.origin - relativeorigin)
         -- TODO: needs to account for megapos too?
-        local pos, megapos = InfMap2.LocalizePosition(view.origin)
-        view.origin = pos -- InfMap2.UnlocalizePosition(pos, megapos - LocalPlayer():GetMegaPos())
+        local pos, megapos = InfMap2.LocalizePosition(view.origin - offset) -- view.origin - offset)
+        view.origin = pos + offset -- InfMap2.UnlocalizePosition(pos, megapos - LocalPlayer():GetMegaPos())
+
+        InfMap2.ViewMatrix:SetTranslation(-megapos * InfMap2.ChunkSize)
         return view
     end)
     hook.Add("CalcViewModelView", "InfMap2CalcViewModelView", function(wep, vm, oldpos, oldang, pos, ang)
@@ -350,12 +358,13 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
                                                                   pos + wep:GetOwner():GetMegaPos()* InfMap2.ChunkSize, ang)
         end
         if not newpos then
-            newpos = pos  + wep:GetOwner():GetMegaPos()* InfMap2.ChunkSize
+            newpos = pos + wep:GetOwner():GetMegaPos() * InfMap2.ChunkSize
         end
     
+        local offset = (newpos - relativeorigin)
         -- TODO: needs to account for megapos too?
-        local pos, megapos = InfMap2.LocalizePosition(newpos)
-        newpos = pos -- InfMap2.UnlocalizePosition(pos, megapos - LocalPlayer():GetMegaPos())
+        local pos, megapos = InfMap2.LocalizePosition(newpos - offset)
+        newpos = pos + offset -- InfMap2.UnlocalizePosition(pos, megapos - LocalPlayer():GetMegaPos())
         return newpos, newang
     end)
 
@@ -417,9 +426,7 @@ hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
     render.OverrideDepthEnable(false, false)
     render.OverrideColorWriteEnable(false, false)
 
-    InfMap2.ViewMatrix:SetTranslation(-LocalPlayer():GetMegaPos()* InfMap2.ChunkSize)
-
-    cam.PushModelMatrix(InfMap2.ViewMatrix, true)
+    cam.PushModelMatrix(InfMap2.ViewMatrix, false)
     render.SetMaterial(InfMap2.Cache.material)
     for _,meshes in pairs(InfMap2.ChunkMeshes.Draw) do
         for i=1,#meshes do meshes[i]:Draw() end
