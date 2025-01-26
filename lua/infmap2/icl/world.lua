@@ -293,6 +293,7 @@ local cubemap_table  = {model = "models/shadertest/envballs.mdl",  pos = Vector(
 -- F*** DLib hook.
 -- Really.
 hook.Add("Think", "InfMap2FixF***ingCalcView", function()
+    do return end
     local override = false
     local calcviewing = false
     local calcvmviewing = false
@@ -310,6 +311,7 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
     end
     override = false
     hook.Add("CalcView", "InfMap2CalcView", function(ply, pos, angles, fov, znear, zfar)
+        do return end
         calcviewing = true
         local view = hook.Run("INF_CalcView", ply, pos + ply:GetMegaPos()* InfMap2.ChunkSize, angles, fov, znear, zfar)
         calcviewing = false
@@ -405,8 +407,8 @@ hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
 
     -- unfuck_lighting, thanks gwater 2 !
     if not IsValid(csent) then csent = ClientsideModel("error.mdl") end
-    --render.OverrideColorWriteEnable(true, false)
-    --render.OverrideDepthEnable(true, false)
+    render.OverrideColorWriteEnable(true, false)
+    render.OverrideDepthEnable(true, false)
     csent:SetPos(Vector())
     cubemap_table.angle = EyeAngles()
     render.Model(cubemap_table, csent)

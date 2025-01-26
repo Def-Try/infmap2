@@ -85,8 +85,8 @@ return {
         return final / 2
     end,
     chunksize = 20000, -- leaves 12768 units for contraptions and fast passing entities
-    megachunksize = 20,
-    samplesize = 20000 / 4,
+    megachunksize = 30,
+    samplesize = 20000 / 3,
     genpertick = 200,
 
     material = "infmap2/grasslit",

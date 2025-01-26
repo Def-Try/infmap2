@@ -31,7 +31,6 @@ if CLIENT then
     include("infmap2/icl/world.lua")
     include("infmap2/icl/positioning.lua")
     include("infmap2/icl/detours.lua")
-    include("infmap2/icl/wrapping.lua")
 end
 
 InfMap2.MaxVelocity = 13503.95 * 20 -- mach 20 in hammer units

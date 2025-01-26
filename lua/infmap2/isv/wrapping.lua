@@ -16,9 +16,7 @@ end
 
 local function ent_SetPos_proper(ent, pos)
     -- parents are local... don't set pos
-    --if ent:GetParent():IsValid() then return end
-
-    print(ent)
+    if ent:GetParent():IsValid() then return end
 
     -- clamp to source bounds in case contraption is VERY massive
     -- helps with stuff like simfphys cars to not die
@@ -114,7 +112,7 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ents.Iterator
     -- second: update entities positions
     local mainpos = ent:INF_GetPos()
     for _, cent in pairs(entities) do
-        --if InfMap2.UselessEntitiesFilter(cent) then continue end
+        if InfMap2.UselessEntitiesFilter(cent) then continue end
         cent:ForcePlayerDrop()
         update_entity(cent, pos + (cent:INF_GetPos() - mainpos), megapos)
     end

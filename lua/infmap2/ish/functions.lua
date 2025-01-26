@@ -209,15 +209,10 @@ end
 -- MEGAPOS STUFF
 
 function ENTITY:SetMegaPos(vec)
-    if CLIENT then return end
-    print(self, vec)
+    if self:GetClass() == "class C_BaseFlex" then return end
+    --if CLIENT then debug.Trace() return print(self)  end
     if not IsValid(self) then return end
-    net.Start("InfMap2")
-        net.WriteString("MPU") -- MegaPosUpdate
-        net.WriteEntity(self)
-        net.WriteVector(vec)
-    net.Broadcast()
-    self:SetNW2Vector("INF_MegaPos", vec)
+    if SERVER then self:SetNW2Vector("INF_MegaPos", vec) end
     self.INF_MegaPos = vec
 end
 
@@ -227,13 +222,9 @@ function ENTITY:GetMegaPos()
 end
 
 if CLIENT then
-    net.Receive("InfMap2", function()
-        local request = net.ReadString()
-        if request == "MPU" then
-            ---@class Entity
-            local ent = net.ReadEntity()
-            local megapos = net.ReadVector()
-            ent.INF_MegaPos = megapos
-        end
+    hook.Add("EntityNetworkedVarChanged", "InfMap2EntityMegaposUpdate", function(ent, name, _, val)
+        if name ~= "INF_MegaPos" then return end
+        if InfMap2.Debug and ent:GetClass() ~= "inf_chunk" then print("[INFMAP] "..tostring(ent).." -> "..tostring(val)) end
+        InfMap2.EntityUpdateMegapos(ent, val)
     end)
 end

@@ -1,7 +1,5 @@
-local debug_traceline = true
+local debug_traceline = false
 local debug_tracehull = false
-
-InfMap2.Debug = true
 
 local neighbors = {}
 for x=-1,1 do for y=-1,1 do for z=-1,1 do
