@@ -61,6 +61,7 @@ hook.Add("PostDrawTranslucentRenderables", "InfMap2DebugRender", function(depth,
                             Color(0, 0, 255), false)
 
     local mindist, endpos, endplane = find_closest_plane(INF_EyePos())
+    ---@diagnostic disable-next-line: cast-local-type
     endplane = endplane:Angle()
     local s = 512
 

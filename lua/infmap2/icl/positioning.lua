@@ -9,7 +9,7 @@ local function frustrum(ent)
         ent.INF_RenderBoundsHash = hash
     end
 
-    local pos = ent:GetPos() + ent:OBBCenter() - LocalPlayer().INF_MegaPos * InfMap2.ChunkSize
+    local pos = ent:GetPos() + ent:OBBCenter() - LocalPlayer():GetMegaPos() * InfMap2.ChunkSize
     local show = false
     if pos:Distance(EyePos()) < 10 then
         show = true
@@ -44,7 +44,7 @@ local function renderoverride_raw(self)
 end
 
 function InfMap2.EntityUpdateMegapos(ent, megapos)
-    ent.INF_MegaPos = megapos
+    ent:SetMegaPos(megapos)
 
     if ent:IsWorld() then return end
 
@@ -53,8 +53,8 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
     if ent == lp then
         for _, ent2 in ipairs(ents.GetAll()) do
             if ent2 == ent then continue end
-            if not ent2.INF_MegaPos then continue end
-            InfMap2.EntityUpdateMegapos(ent2, ent2.INF_MegaPos)
+            if not ent2:GetMegaPos() then continue end
+            InfMap2.EntityUpdateMegapos(ent2, ent2:GetMegaPos())
         end
         --InfMap2.ViewMatrix:SetTranslation(-megapos * InfMap2.ChunkSize--[[@as Vector]])
 
@@ -62,7 +62,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
 
         if InfMap2.UsesGenerator and (not last_megachunk or (megachunk - (last_megachunk or megachunk)):LengthSqr() > 0) then
             if InfMap2.Debug then print("[INFMAP] Update Megachunks") end
-            local megamegapos = ent.INF_MegaPos / InfMap2.MegachunkSize
+            local megamegapos = ent:GetMegaPos() / InfMap2.MegachunkSize
             megamegapos.z = 0
             megamegapos.x = math.Round(megamegapos.x)
             megamegapos.y = math.Round(megamegapos.y)
@@ -93,7 +93,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
 	end
 
     ---@diagnostic disable-next-line: undefined-field
-    local megaoffset = megapos - (lp.INF_MegaPos or Vector())
+    local megaoffset = megapos - (lp:GetMegaPos() or Vector())
 
     if megaoffset == Vector() then
         ent.RenderOverride = ent.INF_RenderOverride
