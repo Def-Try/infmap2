@@ -1,4 +1,4 @@
-local function localize(pos) return pos - (LocalPlayer().INF_MegaPos or Vector()) * InfMap2.ChunkSize end
+local function localize(pos) return pos - (LocalPlayer():GetMegaPos() or Vector()) * InfMap2.ChunkSize end
 
 render.INF_ComputeDynamicLighting = render.INF_ComputeDynamicLighting or render.ComputeDynamicLighting
 function render.ComputeDynamicLighting(pos, normal) return render.INF_ComputeDynamicLighting(localize(pos), normal) end
@@ -67,3 +67,4 @@ INF_EyePos = INF_EyePos or EyePos
 function EyePos()
 	return LocalPlayer():EyePos()
 end
+EyePos = INF_EyePos

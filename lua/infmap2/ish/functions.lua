@@ -139,21 +139,23 @@ function InfMap2.IsMainContraptionEntity(ent)
     return true
 end
 
-function InfMap2.FindAllConnected(mainent, children, seen)
-    children = children or {}
-    seen = seen or {}
-
+function InfMap2.FindAllConnected_Recurse(mainent, children, seen)
     -- have we already checked that ent?
     if seen[mainent] then return children end
     seen[mainent] = true
     if not mainent:IsValid() then return children end
+    children[#children+1] = mainent
 
     -- find constrained
-    children[#children+1] = mainent
-    local constraints = constraint.GetTable(mainent)
-    for _, v in pairs(constraints) do
-        if v.Ent1 then InfMap2.FindAllConnected(v.Ent1, children, seen) end
-        if v.Ent2 then InfMap2.FindAllConnected(v.Ent2, children, seen) end
+    if SERVER then
+        local constraints = constraint.GetTable(mainent)
+        for _, v in pairs(constraints) do
+            if seen[v.Constraint] then continue end
+            if v.Ent1 then InfMap2.FindAllConnected_Recurse(v.Ent1, children, seen) end
+            if v.Ent2 then InfMap2.FindAllConnected_Recurse(v.Ent2, children, seen) end
+            seen[v.Constraint] = true
+            children[#children+1] = v.Constraint
+        end
     end
 
     -- find parented...
@@ -163,14 +165,75 @@ function InfMap2.FindAllConnected(mainent, children, seen)
         seen[ent] = true
         if not ent:IsValid() then continue end
         children[#children+1] = ent
-        InfMap2.FindAllConnected(ent, children, seen)
+        InfMap2.FindAllConnected_Recurse(ent, children, seen)
     end
 
-    -- add driver
+    -- if vehicle add driver
     if mainent:IsVehicle() and mainent.GetDriver and not seen[mainent:GetDriver()] then
         seen[mainent:GetDriver()] = true
-        children[#children+1] = mainent:GetDriver()
+        if IsValid(mainent:GetDriver()) then
+            children[#children+1] = mainent:GetDriver()
+        end
+    end
+
+    -- if player add hands
+    if mainent:IsPlayer() and mainent.GetHands and not seen[mainent:GetHands()] then
+        seen[mainent:GetHands()] = true
+        if IsValid(mainent:GetHands()) then
+            children[#children+1] = mainent:GetHands()
+        end
     end
 
     return children
+end
+
+function InfMap2.FindAllConnected(ent)
+    local children, seen = {}, {}
+    local children = InfMap2.FindAllConnected_Recurse(ent, children, seen)
+    for _,child in ipairs(children) do
+        if not child:IsVehicle() or not child.GetDriver
+           or not IsValid(child:GetDriver()) or seen[child:GetDriver()] then continue end
+        children[#children+1] = child:GetDriver()
+        seen[child:GetDriver()] = true
+    end
+    return children
+end
+
+--==== NETWORK STUFF ====--
+
+local ENTITY = FindMetaTable("Entity")
+if SERVER then
+    util.AddNetworkString("InfMap2")
+end
+
+-- MEGAPOS STUFF
+
+function ENTITY:SetMegaPos(vec)
+    if CLIENT then return end
+    print(self, vec)
+    if not IsValid(self) then return end
+    net.Start("InfMap2")
+        net.WriteString("MPU") -- MegaPosUpdate
+        net.WriteEntity(self)
+        net.WriteVector(vec)
+    net.Broadcast()
+    self:SetNW2Vector("INF_MegaPos", vec)
+    self.INF_MegaPos = vec
+end
+
+function ENTITY:GetMegaPos()
+    if not IsValid(self) then return Vector() end
+    return self.INF_MegaPos or self:GetNW2Vector("INF_MegaPos", Vector())
+end
+
+if CLIENT then
+    net.Receive("InfMap2", function()
+        local request = net.ReadString()
+        if request == "MPU" then
+            ---@class Entity
+            local ent = net.ReadEntity()
+            local megapos = net.ReadVector()
+            ent.INF_MegaPos = megapos
+        end
+    end)
 end

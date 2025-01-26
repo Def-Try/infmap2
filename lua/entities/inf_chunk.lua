@@ -14,12 +14,12 @@ ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 if not InfMap2 then return end
 
 function ENT:Initialize()
-    if CLIENT and not self.INF_MegaPos then return end
+    if CLIENT and not self:GetMegaPos() then return end
     self:INF_SetPos(Vector(0, 0, 0))
     
-    --self:SetNW2Vector("INF_MegaPos", self.INF_MegaPos)
+    --self:SetMegaPos(self:GetMegaPos())
 
-    local chunk_mesh = InfMap2.GenerateChunkVertexMesh(self.INF_MegaPos)
+    local chunk_mesh = InfMap2.GenerateChunkVertexMesh(self:GetMegaPos())
     self:PhysicsDestroy()
     if #chunk_mesh == 0 then -- no vertices, no colliders
         self:PhysicsInitBox(Vector(), Vector())
@@ -62,36 +62,34 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
-    if CLIENT then
-        self.INF_MegaPos = self:GetNW2Vector("INF_MegaPos")
-    end
-    if not IsValid(self:GetPhysicsObject()) and self.INF_MegaPos then
-        if InfMap2.Debug then print("[INFMAP] Rebuilding Collisions for chunk ", self.INF_MegaPos) end
+    if not IsValid(self:GetPhysicsObject()) and self:GetMegaPos() then
+        if InfMap2.Debug then print("[INFMAP] Rebuilding Collisions for chunk ", self:GetMegaPos()) end
         self:Initialize()
     end
 end
 
 function ENT:Draw()
-    local megamegapos = self.INF_MegaPos / InfMap2.MegachunkSize
+    do return end
+    local megamegapos = self:GetMegaPos() / InfMap2.MegachunkSize
     megamegapos.z = 0
     megamegapos.x = math.Round(megamegapos.x)
     megamegapos.y = math.Round(megamegapos.y)
-    if InfMap2.Cache.ChunkMeshes["m"..tostring(self.INF_MegaPos)] and InfMap2.ChunkMeshes.Index[tostring(megamegapos)] and not InfMap2.Debug then return end
+    if InfMap2.Cache.ChunkMeshes["m"..tostring(self:GetMegaPos())] and InfMap2.ChunkMeshes.Index[tostring(megamegapos)] and not InfMap2.Debug then return end
     if not self.INF_ChunkMesh then return end
     local cmesh = self.INF_ChunkMesh
     local color = Color(255, 0, 0)
-    if InfMap2.Cache.ChunkMeshes["m"..tostring(self.INF_MegaPos)] and not InfMap2.ChunkMeshes.Index[tostring(megamegapos)] then
+    if InfMap2.Cache.ChunkMeshes["m"..tostring(self:GetMegaPos())] and not InfMap2.ChunkMeshes.Index[tostring(megamegapos)] then
         color.r = 0
         color.g = 127
         color.b = 255
     end
-    --color.r = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self.INF_MegaPos), 0, 1, 0)) * 255
-    --color.g = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self.INF_MegaPos), 0, 1, 1)) * 255
-    --color.b = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self.INF_MegaPos), 0, 1, 2)) * 255
+    --color.r = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self:GetMegaPos()), 0, 1, 0)) * 255
+    --color.g = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self:GetMegaPos()), 0, 1, 1)) * 255
+    --color.b = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self:GetMegaPos()), 0, 1, 2)) * 255
     local ignorez = false
 
-    local off = self.INF_MegaPos * InfMap2.ChunkSize
-    --if off - LocalPlayer().INF_MegaPos * InfMap2.ChunkSize ~= Vector() then return end
+    local off = self:GetMegaPos() * InfMap2.ChunkSize
+    --if off - LocalPlayer():GetMegaPos() * InfMap2.ChunkSize ~= Vector() then return end
     if ignorez then render.SetColorMaterialIgnoreZ() else render.SetColorMaterial() end
     for i=1,#cmesh,3 do
         render.DrawLine(cmesh[i+0] + off, cmesh[i+1] + off, color, not ignorez)

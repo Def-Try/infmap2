@@ -31,6 +31,7 @@ if CLIENT then
     include("infmap2/icl/world.lua")
     include("infmap2/icl/positioning.lua")
     include("infmap2/icl/detours.lua")
+    include("infmap2/icl/wrapping.lua")
 end
 
 InfMap2.MaxVelocity = 13503.95 * 20 -- mach 20 in hammer units
@@ -46,6 +47,7 @@ if main.use_generator then
     InfMap2.SampleSize = main.samplesize
     InfMap2.PerFaceNormals = main.perfacenormals
     InfMap2.DoLighting = main.dolighting
+    InfMap2.GenPerTick = main.genpertick
 
     InfMap2.Material = main.material
     InfMap2.UVScale = main.uvscale

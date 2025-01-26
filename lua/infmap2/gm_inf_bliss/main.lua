@@ -38,7 +38,7 @@ if SERVER then
         e:SetModel("models/hunter/blocks/cube8x8x025.mdl")
         e:SetMaterial("models/gibs/metalgibs/metal_gibs")
         e:SetName("INF_Bliss_SpawnPlatform")
-        e:SetNW2Bool("INF_Bliss_SpawnPlatform", true)
+        e:SetNWBool("INF_Bliss_SpawnPlatform", true)
         e:SetOwner(game.GetWorld())
         function e:CreatedByMap() return true end
         function e:CanProperty(ply, prop) return false end
@@ -64,7 +64,7 @@ if SERVER then
     end)
 else
     hook.Add("PhysgunPickup", "InfMap2BlissOriginPropPhysgunable", function(ply, ent)
-        if ent:GetNW2Bool("INF_Bliss_SpawnPlatform") then return false end
+        if ent:GetNWBool("INF_Bliss_SpawnPlatform") then return false end
     end)
 end
 
@@ -86,7 +86,8 @@ return {
     end,
     chunksize = 20000, -- leaves 12768 units for contraptions and fast passing entities
     megachunksize = 20,
-    samplesize = 5000,
+    samplesize = 20000 / 4,
+    genpertick = 200,
 
     material = "infmap2/grasslit",
     uvscale = 100,

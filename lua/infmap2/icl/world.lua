@@ -3,8 +3,17 @@ InfMap2.ViewMatrix = InfMap2.ViewMatrix or Matrix()
 InfMap2.GeneratedChunks = InfMap2.GeneratedChunks or {}
 
 local coroutines = {}
+
+local samples_need = 1
+local samples_done = 1
+
 hook.Add("PostDrawHUD", "InfMap2GeneratorThink", function()
-    for i=0,50 do
+    if false and #coroutines == 0 then
+        samples_need = 1
+        samples_done = 1
+        return
+    end
+    for i=0,InfMap2.GenPerTick do
         local coro = table.Random(coroutines)
         if not coro then continue end
         coroutine.resume(coro)
@@ -12,21 +21,27 @@ hook.Add("PostDrawHUD", "InfMap2GeneratorThink", function()
     end
     if CLIENT and #coroutines > 0 then
         surface.SetDrawColor(0, 0, 0, 190)
+
         surface.DrawRect(ScrW()/4, ScrH()/2-48, ScrW()/2, 100)
+        surface.DrawRect(ScrW()/4, ScrH()/2+56, ScrW()/2, 24)
+
         surface.SetDrawColor(255, 255, 255, 255)
 	    surface.DrawOutlinedRect(ScrW()/4, ScrH()/2-48, ScrW()/2, 100, 2)
+	    surface.DrawOutlinedRect(ScrW()/4, ScrH()/2+56, ScrW()/2, 24, 2)
+        surface.DrawRect(ScrW()/4+4, ScrH()/2+60, (ScrW()/2-8)*(samples_done/samples_need), 16)
 
         draw.DrawText("InfMap2 "..InfMap2.Version, "DermaDefault",
                       ScrW()/4, ScrH()/2-62, Color(255, 255, 255), TEXT_ALIGN_LEFT)
 
         draw.DrawText("Please wait\n"..
-                      #coroutines.." megachunk"..(#coroutines > 1 and "s" or "").." generating",
+                      #coroutines.." megachunk"..(#coroutines > 1 and "s" or "").." generating\n"..
+                      math.Round((samples_done/samples_need)*100).."% ("..samples_done.."/"..samples_need..") samples done",
                       "DermaLarge",
-                      ScrW()/2, ScrH()/2-20, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+                      ScrW()/2, ScrH()/2-48, Color(255, 255, 255), TEXT_ALIGN_CENTER)
 
-        for i=0,1 do surface.DrawCircle(ScrW()/2-20, ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5+math.pi/2)+1)/2) end
-        for i=0,1 do surface.DrawCircle(ScrW()/2,    ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5)+1)/2) end
-        for i=0,1 do surface.DrawCircle(ScrW()/2+20, ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5-math.pi/2)+1)/2) end
+        --for i=0,1 do surface.DrawCircle(ScrW()/2-20, ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5+math.pi/2)+1)/2) end
+        --for i=0,1 do surface.DrawCircle(ScrW()/2,    ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5)+1)/2) end
+        --for i=0,1 do surface.DrawCircle(ScrW()/2+20, ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5-math.pi/2)+1)/2) end
     end
 end)
 
@@ -61,6 +76,8 @@ local genvismeshone = function(megapos)
             end
             height[y] = InfMap2.Cache.HeightMap[rx.."x"..ry]
         end
+        samples_done = samples_done + samples+2
+        coroutine.yield()
     end
 
     local chunk_mesh = {}
@@ -99,9 +116,12 @@ local genvismeshone = function(megapos)
                 norms3[#norms3 + 1] = n2
             end
         end
+        samples_done = samples_done + samples
+        coroutine.yield()
     end
 
     if not InfMap2.PerFaceNormals then
+        samples_need = samples_need + #chunk_mesh
         local donenormals = {}
         for _,vert in ipairs(chunk_mesh) do
             if not donenormals[vert[1]] then
@@ -112,6 +132,8 @@ local genvismeshone = function(megapos)
                 donenormals[tostring(vert[1])] = donenormals[tostring(vert[1])] / #normals[tostring(vert[1])]
             end
             vert[4] = donenormals[tostring(vert[1])]
+            samples_done = samples_done + 1
+            if _ % 100 == 0 then coroutine.yield() end
         end
     end
 
@@ -120,6 +142,14 @@ end
 
 local genvismeshcoro = function()
     local megapos, megasize, callback, docontinue = coroutine.yield()
+
+    local samples = InfMap2.ChunkSize / InfMap2.SampleSize
+    for x = -(megasize.x / 2), (megasize.x / 2) do
+        for y = -(megasize.y / 2), (megasize.y / 2) do
+            samples_need = samples_need + ((samples+2) * (samples+2))
+            samples_need = samples_need + (samples * samples)
+        end
+    end
 
     local megamegaoffset = megapos * InfMap2.ChunkSize
 
@@ -252,20 +282,140 @@ local csent = ClientsideModel("error.mdl")
 local lighting_table = {model = "models/shadertest/vertexlit.mdl", pos = Vector()}
 local cubemap_table  = {model = "models/shadertest/envballs.mdl",  pos = Vector()}
 
+-- This is bad, but I haven't found any other *RELIABLE* way of localizing calcview.
+-- (Honestly, like, hooks are so bad.)
+-- This works by moving every CalcView hook added by any other addon to INF_CalcView hook
+--  that we have control over. When trying to CalcView, we'll call INF_CalcView hooks and
+--  localize data from there, just so that thirdperson / vehicle / etc mods don't explode.
+-- Also, we detour hook.Add *just* in case if any addon for some ungodly reason wants to
+--  add CalcView hooks after the game has started.
+-- No, this does not support DLib hook library.
+-- F*** DLib hook.
+-- Really.
+hook.Add("Think", "InfMap2FixF***ingCalcView", function()
+    local override = false
+    local calcviewing = false
+    local calcvmviewing = false
+    hook.Remove("Think", "InfMap2FixF***ingCalcView")
+    override = true
+    for k,v in pairs(hook.GetTable()["CalcView"] or {}) do
+        if k == "InfMap2CalcView" then continue end
+        hook.Remove("CalcView", k)
+        hook.Add("INF_CalcView", k, v)
+    end
+    for k,v in pairs(hook.GetTable()["CalcViewModelView"] or {}) do
+        if k == "InfMap2CalcViewModelView" then continue end
+        hook.Remove("CalcViewModelView", k)
+        hook.Add("INF_CalcViewModelView", k, v)
+    end
+    override = false
+    hook.Add("CalcView", "InfMap2CalcView", function(ply, pos, angles, fov, znear, zfar)
+        calcviewing = true
+        local view = hook.Run("INF_CalcView", ply, pos + ply:GetMegaPos()* InfMap2.ChunkSize, angles, fov, znear, zfar)
+        calcviewing = false
+
+        local view_fallback = {
+            ["origin"] = pos + ply:GetMegaPos()* InfMap2.ChunkSize,
+            ["angles"] = angles,
+            ["fov"] = fov,
+            ["znear"] = znear,
+            ["zfar"] = zfar,
+            ["drawviewer"] = false,
+        }
+
+        if not view then
+            view = gmod.GetGamemode():CalcView(ply, pos + ply:GetMegaPos()* InfMap2.ChunkSize, angles, fov, znear, zfar)
+        end
+        if not view then
+            view = view_fallback
+        end
+
+        -- TODO: needs to account for megapos too?
+        local pos, megapos = InfMap2.LocalizePosition(view.origin)
+        view.origin = pos -- InfMap2.UnlocalizePosition(pos, megapos - LocalPlayer():GetMegaPos())
+        return view
+    end)
+    hook.Add("CalcViewModelView", "InfMap2CalcViewModelView", function(wep, vm, oldpos, oldang, pos, ang)
+        calcvmviewing = true
+        local newpos, newang = hook.Run("INF_CalcViewModelView", wep, vm,
+                                        oldpos + wep:GetOwner():GetMegaPos()* InfMap2.ChunkSize, oldang,
+                                        pos + wep:GetOwner():GetMegaPos()* InfMap2.ChunkSize, ang)
+        calcvmviewing = false
+
+        if not newpos then
+            newpos, newang = gmod.GetGamemode():CalcViewModelView(wep, vm,
+                                                                  oldpos + wep:GetOwner():GetMegaPos()* InfMap2.ChunkSize, oldang,
+                                                                  pos + wep:GetOwner():GetMegaPos()* InfMap2.ChunkSize, ang)
+        end
+        if not newpos then
+            newpos = pos  + wep:GetOwner():GetMegaPos()* InfMap2.ChunkSize
+        end
+    
+        -- TODO: needs to account for megapos too?
+        local pos, megapos = InfMap2.LocalizePosition(newpos)
+        newpos = pos -- InfMap2.UnlocalizePosition(pos, megapos - LocalPlayer():GetMegaPos())
+        return newpos, newang
+    end)
+
+    -- Detour hook.Add for stupid addons with stupid things
+    hook.INF_Add = hook.INF_Add or hook.Add
+    function hook.Add(ename, name, func, a, b, c)
+        -- STUPID CALCVIEW AND IT'S NOT OURS HOLY SHIT
+        if not override and ename == "CalcView" and name ~= "InfMap2CalcView" then
+            ename = "INF_CalcView"
+        end
+        if not override and ename == "CalcViewModelView" and name ~= "InfMap2CalcViewModelView" then
+            ename = "INF_CalcViewModelView"
+        end
+
+        return hook.INF_Add(ename, name, func, a, b, c)
+    end
+
+    -- Detour hook.Remove for stupid addons with stupid things
+    hook.INF_Remove = hook.INF_Remove or hook.Remove
+    function hook.Remove(ename, name, func, a, b, c)
+        -- guh??
+        if not override and ename == "CalcView" and name ~= "InfMap2CalcView" then
+            ename = "INF_CalcView"
+        end
+        if not override and ename == "CalcViewModelView" and name ~= "InfMap2CalcViewModelView" then
+            ename = "INF_CalcViewModelView"
+        end
+        return hook.INF_Remove(ename, name, func, a, b, c)
+    end
+
+    -- Detour hook.Call for addons that want calcview output
+    hook.INF_Call = hook.INF_Call or hook.Call
+    function hook.Call(ename, gm, a, b, c, d, e, f)
+        -- we're calcviewing and something tries to get result of CalcView
+        -- honestly i respect that, something is trying to fix that stupid shit
+        if not override and calcviewing and ename == "CalcView" then
+            ename = "INF_CalcView"
+        end
+        if not override and calcvmviewing and ename == "CalcViewModelView" then
+            ename = "INF_CalcViewModelView"
+        end
+        return hook.INF_Call(ename, gm, a, b, c, d, e, f)
+    end
+end)
+
 hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
     if not InfMap2.UsesGenerator then return end
     if not InfMap2.Cache.material then InfMap2.Cache.material = Material(InfMap2.Material) end
 
     -- unfuck_lighting, thanks gwater 2 !
     if not IsValid(csent) then csent = ClientsideModel("error.mdl") end
-    render.OverrideColorWriteEnable(true, false)
-    render.OverrideDepthEnable(true, false)
+    --render.OverrideColorWriteEnable(true, false)
+    --render.OverrideDepthEnable(true, false)
+    csent:SetPos(Vector())
     cubemap_table.angle = EyeAngles()
     render.Model(cubemap_table, csent)
     lighting_table.angle = EyeAngles()
     render.Model(lighting_table, csent)
     render.OverrideDepthEnable(false, false)
     render.OverrideColorWriteEnable(false, false)
+
+    InfMap2.ViewMatrix:SetTranslation(-LocalPlayer():GetMegaPos()* InfMap2.ChunkSize)
 
     cam.PushModelMatrix(InfMap2.ViewMatrix, true)
     render.SetMaterial(InfMap2.Cache.material)
@@ -308,7 +458,7 @@ hook.Add("PostDraw2DSkyBox", "infmap_terrain_skybox", function() -- draw skybox
 	render.ResetModelLighting(2, 2, 2)
 	render.SetLocalModelLights()
 
-	local offset = Vector(LocalPlayer().INF_MegaPos)
+	local offset = LocalPlayer():GetMegaPos()
 	offset[1] = offset[1] % 1000
 	offset[2] = offset[2] % 1000
 

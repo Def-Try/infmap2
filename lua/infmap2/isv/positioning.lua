@@ -1,22 +1,23 @@
+InfMap2.GeneratedChunks = InfMap2.GeneratedChunks or {}
+
 function InfMap2.EntityUpdateMegapos(ent, megapos)
-    ent.INF_MegaPos = megapos
+    ent:SetMegaPos(megapos)
     ent:SetCustomCollisionCheck(true)
 
     -- remove crosschunkclones, we need to rebuild them
-    if SERVER and ent.INF_Clones then
+    if ent:GetClass() ~= "inf_crosschunkclone" and ent.INF_Clones then
         for i=1,table.maxn(ent.INF_Clones) do SafeRemoveEntity(ent.INF_Clones[i]) end
         ent.INF_Clones = nil
     end
 
     if ent:IsEFlagSet(EFL_SERVER_ONLY) or ent:IsConstraint() then return end
-    ent:SetNW2Vector("INF_MegaPos", megapos)
+    ent:SetMegaPos(megapos)
 
     if ent:IsPlayer() or ent:IsNPC() then
         for _, weapon in ipairs(ent:GetWeapons()) do
-            weapon.INF_MegaPos = megapos
             weapon:SetCustomCollisionCheck(true)
 
-            weapon:SetNW2Vector("INF_MegaPos", megapos)
+            weapon:SetMegaPos(megapos)
         end
     end
 end
@@ -28,22 +29,22 @@ end end end
 
 hook.Add("OnEntityCreated", "InfMap2EntityCreated", function(ent) timer.Simple(0, function()
     if not IsValid(ent) then return end
-    if ent.INF_MegaPos then return end
+    if ent:GetClass() == "inf_chunk" then return end
 
     local megapos = Vector()
     local owner = ent:GetOwner()
     if not IsValid(owner) then owner = ent:GetParent() end
-    if IsValid(owner) and owner.INF_MegaPos then
-        megapos = owner.INF_MegaPos
+    if IsValid(owner) and owner:GetMegaPos()then
+        megapos = owner:GetMegaPos()
     end
     InfMap2.EntityUpdateMegapos(ent, megapos)
+    if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." created at megapos "..tostring(megapos)) end
 
-    print("[INFMAP] Entity "..tostring(ent).." created at megapos "..tostring(megapos))
-
-    if InfMap2.UsesGenerator then
+    if InfMap2.UsesGenerator and ent:GetClass() ~= "inf_crosschunkclone" then
         for i=1,#neighbors do
             local pos = megapos + neighbors[i]
             if InfMap2.GeneratedChunks[tostring(pos)] then continue end
+            -- InfMap2.GeneratedChunks[tostring(pos)] = true
             InfMap2.GeneratedChunks[tostring(pos)] = InfMap2.CreateWorldChunk(pos)
         end
     end

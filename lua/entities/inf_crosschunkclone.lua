@@ -24,7 +24,7 @@ function ENT:SetReferenceEntity(ent)
     self:SetReferenceParent(ent)
     self.INF_ReferenceData.Parent = ent
     ---@diagnostic disable-next-line: undefined-field
-    self.INF_ReferenceData.Megapos = ent.INF_MegaPos
+    self.INF_ReferenceData.Megapos = ent:GetMegaPos()
 end
 function ENT:SetReferenceChunk(chunk)
     self.INF_ReferenceData.Chunk = chunk
@@ -101,7 +101,7 @@ function ENT:Think()
             phys:SetPos(self:GetPos())
             phys:SetAngles(self:GetAngles())
         else
-            print("[INFMAP] Regenerating physics for CrossChunkClone", self)
+            if InfMap2.Debug then print("[INFMAP] Regenerating physics for CrossChunkClone", self) end
             self:Initialize()
         end
         return 
@@ -114,7 +114,7 @@ function ENT:Think()
     end
     
     local parent = data.Parent
-    if not IsValid(parent) or data.Megapos ~= parent.INF_MegaPos + data.Chunk then
+    if not IsValid(parent) or data.Megapos ~= parent:GetMegaPos() + data.Chunk then
         SafeRemoveEntity(self)
         return
     end

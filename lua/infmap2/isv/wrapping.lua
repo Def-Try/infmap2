@@ -16,12 +16,16 @@ end
 
 local function ent_SetPos_proper(ent, pos)
     -- parents are local... don't set pos
-    if ent:GetParent():IsValid() then return end
+    --if ent:GetParent():IsValid() then return end
 
+    print(ent)
+
+    -- clamp to source bounds in case contraption is VERY massive
+    -- helps with stuff like simfphys cars to not die
     pos = InfMap2.ClampVector(pos, InfMap2.SourceBounds[1] - 64)
 
     if ent:IsRagdoll() then
-        for i = 0, ent:GetPhysicsObjectCount() - 1 do
+		for i = 0, ent:GetPhysicsObjectCount() - 1 do
 			local phys = ent:GetPhysicsObjectNum(i)
 			local vel = phys:GetVelocity()
 			local ang_vel = phys:GetAngleVelocity()
@@ -31,46 +35,22 @@ local function ent_SetPos_proper(ent, pos)
 			phys:SetVelocity(vel)
 			phys:SetAngleVelocity(ang_vel)
 		end
-    end
+	end
 
+    -- teleport entity
     ent:INF_SetPos(pos)
 end
 
 local function ent_SetVelAng_proper(ent, vel, ang)
     local phys = ent:GetPhysicsObject()
-    if IsValid(phys) then
-        phys:SetVelocity(vel)
-        phys:SetAngles(ang)
-    else
-        ent:SetVelocity(vel)
-        ent:SetAngles(ang)
-    end
-end
-
-local function teleport_contraption(mainent, pos, megapos)
-    local vel, ang = mainent:GetVelocity(), mainent:GetAngles()
-
-    -- constrained and parented entities updated first
-    local entities = InfMap2.FindAllConnected(mainent)
-
-    if mainent:IsPlayer() then entities[#entities+1] = mainent:GetHands() end
-
-    for _,ent in pairs(entities) do
-        if ent == mainent then continue end
-        if InfMap2.UselessEntitiesFilter(ent) then continue end
-        InfMap2.EntityUpdateMegapos(ent, megapos)
-        if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." teleported to "..megapos.x.." "..megapos.y.." "..megapos.z) end
-        local vel, ang = ent:GetVelocity(), ent:GetAngles()
-        ent_SetPos_proper(ent, pos + (ent:INF_GetPos() - mainent:INF_GetPos()))
-        ent_SetVelAng_proper(ent, vel, ang)
-        ent.INF_ConstraintMain = mainent
-    end
-
-    --- main entity updated last
-    InfMap2.EntityUpdateMegapos(mainent, megapos)
-    ent_SetPos_proper(mainent, pos)
-    ent_SetVelAng_proper(mainent, vel, ang)
-    mainent.INF_ConstraintMain = mainent
+	
+	if phys:IsValid() then 
+		phys:SetAngles(ang)
+		phys:SetVelocity(vel)
+	else
+		ent:SetAngles(ang)
+		ent:SetVelocity(vel)
+	end
 end
 
 local function update_entity(ent, pos, megapos)
@@ -78,11 +58,23 @@ local function update_entity(ent, pos, megapos)
 
     if ent:IsPlayer() and IsValid(InfMap2.Cache.carries[ent]) then
         local carry = InfMap2.Cache.carries[ent]
-
-        teleport_contraption(carry, pos + (carry:INF_GetPos() - ent:INF_GetPos()), megapos)
+        local entities = InfMap2.FindAllConnected(carry)
+        if carry:IsPlayer() then entities[#entities+1] = carry:GetHands() end
+        local ent_pos = ent:INF_GetPos()
+        for _,cent in pairs(entities) do
+            if InfMap2.UselessEntitiesFilter(cent) then continue end
+            cent:ForcePlayerDrop()
+            local vel, ang = cent:GetVelocity(), cent:GetAngles()
+            InfMap2.EntityUpdateMegapos(cent, megapos)
+            ent_SetPos_proper(cent, pos + (cent:INF_GetPos() - ent_pos))
+            ent_SetVelAng_proper(cent, vel, ang)
+            cent.INF_ConstraintMain = ent
+        end
     end
 
-    teleport_contraption(ent, pos, megapos)
+    InfMap2.EntityUpdateMegapos(ent, megapos)
+    ent_SetPos_proper(ent, pos)
+    ent.INF_ConstraintMain = ent
 end
 
 local neighbors = {}
@@ -92,12 +84,12 @@ end end end
 
 hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ents.Iterator() do
     if InfMap2.UselessEntitiesFilter(ent) then continue end -- useless entity
-    if not ent.INF_MegaPos then continue end -- no megapos, something is wrong
+    if not ent:GetMegaPos()then continue end -- no megapos, something is wrong
     if ent:GetVelocity() == Vector() then continue end -- no velocity, no possible reason to teleport
     if IsValid(ent:GetParent()) then continue end -- parent is valid, teleport is handled by it
     if ent:IsPlayer() and not ent:Alive() then continue end -- player is dead, don't teleport
 
-    if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize+2) then
+    if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize) then
         ent.INF_ConstraintMain = nil
         continue
     end -- still in chunk, just clear constraint main and 
@@ -106,16 +98,39 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ents.Iterator
     if not InfMap2.IsMainContraptionEntity(ent) then continue end -- not main contraption entity, teleporting *will* break stuff
 
     local pos, megapos_offset = InfMap2.LocalizePosition(ent:INF_GetPos())
-    local megapos = ent.INF_MegaPos + megapos_offset
+    local megapos = ent:GetMegaPos() + megapos_offset
 
+    if InfMap2.Debug then print("[INFMAP] Updating entity "..tostring(ent)) end
+    local entities = InfMap2.FindAllConnected(ent)
+
+    -- first: collect entities velocities and angles
+    local mainvel, mainang = ent:GetVelocity(), ent:GetAngles()
+    local velocities, angles = {}, {}
+    for _, cent in pairs(entities) do
+        velocities[cent] = cent:GetVelocity()
+        angles[cent] = cent:GetAngles()
+    end
+
+    -- second: update entities positions
+    local mainpos = ent:INF_GetPos()
+    for _, cent in pairs(entities) do
+        --if InfMap2.UselessEntitiesFilter(cent) then continue end
+        cent:ForcePlayerDrop()
+        update_entity(cent, pos + (cent:INF_GetPos() - mainpos), megapos)
+    end
     update_entity(ent, pos, megapos)
 
-    if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." teleported to "..megapos.x.." "..megapos.y.." "..megapos.z) end
+    -- third: restore velocities and angles
+    for _, cent in pairs(entities) do
+        ent_SetVelAng_proper(cent, velocities[cent], angles[cent])
+    end
+    ent_SetVelAng_proper(ent, mainvel, mainang)
 
     if InfMap2.UsesGenerator then
        for i=1,#neighbors do
            local pos = megapos + neighbors[i]
            if InfMap2.GeneratedChunks[tostring(pos)] then continue end
+           -- InfMap2.GeneratedChunks[tostring(pos)] = true
            InfMap2.GeneratedChunks[tostring(pos)] = InfMap2.CreateWorldChunk(pos)
        end
     end

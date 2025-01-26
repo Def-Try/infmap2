@@ -4,38 +4,38 @@ function InfMap2.CreateWorldChunk(megapos)
     if InfMap2.Debug then print("[INFMAP] Creating world chunk "..tostring(megapos)) end
     assert(InfMap2.UsesGenerator, "InfMap2 does not use a generator")
     local chunk = ents.Create("inf_chunk")
-    chunk.INF_MegaPos = megapos
+    chunk:SetMegaPos(megapos)
     chunk:Spawn()
-    InfMap2.EntityUpdateMegapos(chunk, chunk.INF_MegaPos)
+    InfMap2.EntityUpdateMegapos(chunk, megapos)
     return chunk
 end
 
 hook.Add("PlayerSpawnedEffect", "InfMap2SpawnEffectCorrect", function(ply, model, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply.INF_MegaPos)
+    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
 end)
 
 hook.Add("PlayerSpawnedNPC", "InfMap2SpawnNPCCorrect", function(ply, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply.INF_MegaPos)
+    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
 end)
 
 hook.Add("PlayerSpawnedProp", "InfMap2SpawnPropCorrect", function(ply, model, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply.INF_MegaPos)
+    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
 end)
 
 hook.Add("PlayerSpawnedRagdoll", "InfMap2SpawnRagdollCorrect", function(ply, model, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply.INF_MegaPos)
+    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
 end)
 
 hook.Add("PlayerSpawnedSENT", "InfMap2SpawnSENTCorrect", function(ply, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply.INF_MegaPos)
+    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
 end)
 
 hook.Add("PlayerSpawnedSWEP", "InfMap2SpawnSWEPCorrect", function(ply, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply.INF_MegaPos)
+    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
 end)
 
 hook.Add("PlayerSpawnedVehicle", "InfMap2SpawnVehicleCorrect", function(ply, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply.INF_MegaPos)
+    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
 end)
 
 timer.Create("InfMap2RemoveUnusedChunks", 0.5, 0, function()
@@ -45,8 +45,8 @@ timer.Create("InfMap2RemoveUnusedChunks", 0.5, 0, function()
         local valid = false
         for _, ent in ents.Iterator() do
             if ent:GetClass() == "inf_chunk" then continue end
-            if not ent.INF_MegaPos then continue end
-            local chebyshev = (ent.INF_MegaPos - megapos)
+            if not ent:GetMegaPos() then continue end
+            local chebyshev = (ent:GetMegaPos() - megapos)
             chebyshev = math.abs(chebyshev.x) + math.abs(chebyshev.y) + math.abs(chebyshev.z)
             if chebyshev <= 1 then
                 valid = true

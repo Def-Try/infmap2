@@ -10,7 +10,7 @@ end
 
 local function unfuck_keyvalue(self, value)
     if not self:GetKeyValues()[value] then return end
-    self:SetKeyValue(value, tostring(InfMap2.UnlocalizePosition(Vector(self:GetKeyValues()[value]), -self.INF_MegaPos)))
+    self:SetKeyValue(value, tostring(InfMap2.UnlocalizePosition(Vector(self:GetKeyValues()[value]), -self:GetMegaPos())))
 end
 ENTITY.INF_Spawn = ENTITY.INF_Spawn or ENTITY.Spawn
 function ENTITY:Spawn()
