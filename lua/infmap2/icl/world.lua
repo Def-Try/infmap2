@@ -19,7 +19,7 @@ hook.Add("PostDrawHUD", "InfMap2GeneratorThink", function()
         coroutine.resume(coro)
         if coroutine.status(coro) ~= "suspended" then coroutines[table.KeyFromValue(coroutines, coro)] = nil end
     end
-    if CLIENT and #coroutines > 0 then
+    if #coroutines > 0 then
         surface.SetDrawColor(0, 0, 0, 190)
 
         surface.DrawRect(ScrW()/4, ScrH()/2-48, ScrW()/2, 100)
@@ -42,6 +42,28 @@ hook.Add("PostDrawHUD", "InfMap2GeneratorThink", function()
         --for i=0,1 do surface.DrawCircle(ScrW()/2-20, ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5+math.pi/2)+1)/2) end
         --for i=0,1 do surface.DrawCircle(ScrW()/2,    ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5)+1)/2) end
         --for i=0,1 do surface.DrawCircle(ScrW()/2+20, ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5-math.pi/2)+1)/2) end
+
+        local delta = (RealTime() % 5) / 2.5
+        if delta > 1 then
+            delta = 0.5-(delta-1)
+            for x=0,2,1 do
+                for y=-1,1,1 do
+                    local d = (2-x) * 3 + y
+                    local delta = math.ease.OutCirc(math.min(1, delta * 10 - 0.3 * d))
+                    surface.SetDrawColor(255, 255, 255, 255*delta)
+                    surface.DrawRect(ScrW()/4+15+22*x, ScrH()/2-10-22*y-math.min(15, 15*(1-delta)), 20, 20)
+                end
+            end
+            return
+        end
+        for x=0,2,1 do
+            for y=-1,1,1 do
+                local d = (2-x) * 3 + (1-y)
+                local delta = math.ease.OutCirc(math.min(1, delta * 10 - 0.3 * d))
+                surface.SetDrawColor(255, 255, 255, 255*delta)
+                surface.DrawRect(ScrW()/4+math.min(15, 15*delta)+22*x, ScrH()/2-10-22*y, 20, 20)
+            end
+        end
     end
 end)
 
