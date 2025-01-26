@@ -46,9 +46,7 @@ timer.Create("InfMap2RemoveUnusedChunks", 0.5, 0, function()
         for _, ent in ents.Iterator() do
             if ent:GetClass() == "inf_chunk" then continue end
             if not ent:GetMegaPos() then continue end
-            local chebyshev = (ent:GetMegaPos() - megapos)
-            chebyshev = math.abs(chebyshev.x) + math.abs(chebyshev.y) + math.abs(chebyshev.z)
-            if chebyshev <= 1 then
+            if InfMap2.ChebyshevDistance(ent:GetMegaPos(), megapos) <= 1 then
                 valid = true
                 break
             end

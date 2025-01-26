@@ -18,10 +18,12 @@ if SERVER then
     AddCSLuaFile("infmap2/icl/positioning.lua")
     AddCSLuaFile("infmap2/icl/detours.lua")
     AddCSLuaFile("infmap2/icl/debug.lua")
+    AddCSLuaFile("infmap2/icl/sound.lua")
 
     include("infmap2/isv/wrapping.lua")
     include("infmap2/isv/crosschunkcollision.lua")
     include("infmap2/isv/concommands.lua")
+    include("infmap2/isv/sound.lua")
 
     resource.AddSingleFile("materials/infmap2/grasslit.vmt")
     resource.AddSingleFile("materials/infmap2/grassunlit.vmt")
@@ -31,6 +33,7 @@ if CLIENT then
     include("infmap2/icl/world.lua")
     include("infmap2/icl/positioning.lua")
     include("infmap2/icl/detours.lua")
+    include("infmap2/icl/sound.lua")
 end
 
 InfMap2.MaxVelocity = 13503.95 * 20 -- mach 20 in hammer units

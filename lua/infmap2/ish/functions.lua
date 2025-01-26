@@ -15,6 +15,12 @@ function InfMap2.RoundVector(pos, decimals)
     return Vector(round(pos[1], decimals), round(pos[2], decimals), round(pos[3], decimals))
 end
 
+function InfMap2.ChebyshevDistance(pos1, pos2)
+    local chebyshev = (pos1 - pos2)
+    chebyshev = math.abs(chebyshev.x) + math.abs(chebyshev.y) + math.abs(chebyshev.z)
+    return chebyshev
+end
+
 function InfMap2.PositionInChunkSpace(pos, size)
     -- +1 to avoid reocurring teleport when entity is perfectly at chunk boundary
     local halfsize = ((size or InfMap2.ChunkSize) / 2)
@@ -201,16 +207,9 @@ end
 
 --==== NETWORK STUFF ====--
 
-local ENTITY = FindMetaTable("Entity")
-if SERVER then
-    util.AddNetworkString("InfMap2")
-end
-
 -- MEGAPOS STUFF
 
 function ENTITY:SetMegaPos(vec)
-    if self:GetClass() == "class C_BaseFlex" then return end
-    --if CLIENT then debug.Trace() return print(self)  end
     if not IsValid(self) then return end
     if SERVER then self:SetNW2Vector("INF_MegaPos", vec) end
     self.INF_MegaPos = Vector(vec)
