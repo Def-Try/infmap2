@@ -68,7 +68,7 @@ InfMap2.UselessEntities = InfMap2.UselessEntities or {
 	-- gmod_hands = true,
 	info_particle_system = true,
 	phys_spring = true,
-	predicted_viewmodel = true,
+	-- predicted_viewmodel = true,
 	env_projectedtexture = true,
 	keyframe_rope = true,
 	hl2mp_ragdoll = true,
@@ -190,6 +190,8 @@ function InfMap2.FindAllConnected_Recurse(mainent, children, seen)
         end
     end
 
+    -- if 
+
     return children
 end
 
@@ -207,12 +209,21 @@ end
 
 --==== NETWORK STUFF ====--
 
+local ENTITY = FindMetaTable("Entity")
+if SERVER then
+    util.AddNetworkString("InfMap2_ChangeMegaPos")
+end
 -- MEGAPOS STUFF
 
 function ENTITY:SetMegaPos(vec)
     if not IsValid(self) then return end
-    if SERVER then self:SetNW2Vector("INF_MegaPos", vec) end
     self.INF_MegaPos = Vector(vec)
+    if not SERVER then return end
+    self:SetNW2Vector("INF_MegaPos", vec)
+    net.Start("InfMap2_ChangeMegaPos")
+        net.WriteEntity(self)
+        net.WriteVector(vec)
+    net.Broadcast()
 end
 
 function ENTITY:GetMegaPos()
@@ -225,5 +236,10 @@ if CLIENT then
         if name ~= "INF_MegaPos" then return end
         if InfMap2.Debug and ent:GetClass() ~= "inf_chunk" then print("[INFMAP] "..tostring(ent).." -> "..tostring(val)) end
         InfMap2.EntityUpdateMegapos(ent, val)
+    end)
+    net.Receive("InfMap2_ChangeMegaPos", function()
+        ---@class Entity
+        local ent = net.ReadEntity()
+        ent.INF_MegaPos = net.ReadVector()
     end)
 end

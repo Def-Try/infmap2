@@ -69,7 +69,7 @@ function ENT:Think()
 end
 
 function ENT:Draw()
-    do return end
+    -- do return end
     local megamegapos = self:GetMegaPos() / InfMap2.MegachunkSize
     megamegapos.z = 0
     megamegapos.x = math.Round(megamegapos.x)

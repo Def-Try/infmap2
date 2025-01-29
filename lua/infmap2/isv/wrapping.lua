@@ -60,7 +60,7 @@ local function update_entity(ent, pos, megapos)
         if carry:IsPlayer() then entities[#entities+1] = carry:GetHands() end
         local ent_pos = ent:INF_GetPos()
         for _,cent in pairs(entities) do
-            if InfMap2.UselessEntitiesFilter(cent) then continue end
+            --if InfMap2.UselessEntitiesFilter(cent) then continue end
             cent:ForcePlayerDrop()
             local vel, ang = cent:GetVelocity(), cent:GetAngles()
             InfMap2.EntityUpdateMegapos(cent, megapos)
@@ -112,7 +112,7 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ents.Iterator
     -- second: update entities positions
     local mainpos = ent:INF_GetPos()
     for _, cent in pairs(entities) do
-        if InfMap2.UselessEntitiesFilter(cent) then continue end
+        --if InfMap2.UselessEntitiesFilter(cent) then continue end
         cent:ForcePlayerDrop()
         update_entity(cent, pos + (cent:INF_GetPos() - mainpos), megapos)
     end

@@ -191,8 +191,13 @@ end
 ENTITY.INF_SetPos = ENTITY.INF_SetPos or ENTITY.SetPos
 function ENTITY:SetPos(pos)
 	local pos, megapos = InfMap2.LocalizePosition(pos)
-    if megapos ~= self:GetMegaPos()then
+    if megapos ~= self:GetMegaPos() then
         InfMap2.EntityUpdateMegapos(self, megapos)
+        -- teleport parented entities. genuiely hate this
+        for _, ent in ents.Iterator() do
+            if ent:GetParent() ~= self then continue end
+            InfMap2.EntityUpdateMegapos(ent, megapos)
+        end
     end
 	return self:INF_SetPos(pos)
 end
