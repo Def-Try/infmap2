@@ -4,7 +4,7 @@ local ENTITY = FindMetaTable("Entity")
 local VEHICLE = FindMetaTable("Vehicle")
 local PHYSOBJ = FindMetaTable("PhysObj")
 local PLAYER = FindMetaTable("Player")
-local NEXTBOT = FindMetaTable("NEXTBOT")
+local NEXTBOT = FindMetaTable("NextBot")
 local CLUALOCOMOTION = FindMetaTable("CLuaLocomotion")
 local CTAKEDAMAGEINFO = FindMetaTable("CTakeDamageInfo")
 
