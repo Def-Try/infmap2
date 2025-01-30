@@ -180,8 +180,9 @@ util.TraceEntityHull = generate_trace_function(InfMap2.TraceEntityHull)
 
 ----- Entity detours -----
 
+-- moved to positioning
 --function ENTITY:SetMegaPos(vec) return IsValid(self) and self:SetDTVector(31, vec) end
---function ENTITY:GetMegaPos() return IsValid(self) and self:GetDTVector(31) or Vector() end\
+--function ENTITY:GetMegaPos() return IsValid(self) and self:GetDTVector(31) or Vector() end
 
 ENTITY.INF_GetPos = ENTITY.INF_GetPos or ENTITY.GetPos
 function ENTITY:GetPos()
@@ -250,7 +251,7 @@ end
 VEHICLE.INF_SetPos = VEHICLE.INF_SetPos or VEHICLE.SetPos
 function VEHICLE:SetPos(pos)
 	local pos, megapos = InfMap2.LocalizePosition(pos)
-    if megapos ~= self:GetMegaPos()then
+    if megapos ~= self:GetMegaPos() then
         InfMap2.EntityUpdateMegapos(self, megapos)
     end
 	return self:INF_SetPos(pos)
@@ -258,5 +259,53 @@ end
 
 ----- PhysObj detours -----
 
-PHYSOBJ.INF_SetPos = PHYSOBJ.INF_SetPos or PHYSOBJ.SetPos
 PHYSOBJ.INF_GetPos = PHYSOBJ.INF_GetPos or PHYSOBJ.GetPos
+function PHYSOBJ:GetPos()
+	return InfMap2.UnlocalizePosition(self:INF_GetPos(), self:GetEntity():GetMegaPos() or Vector())
+end
+
+PHYSOBJ.INF_SetPos = PHYSOBJ.INF_SetPos or PHYSOBJ.SetPos
+function PHYSOBJ:SetPos(pos, teleport)
+	local pos, megapos = InfMap2.LocalizePosition(pos)
+    if megapos ~= self:GetEntity():GetMegaPos() then
+        InfMap2.EntityUpdateMegapos(self:GetEntity(), megapos)
+    end
+	return self:INF_SetPos(pos, teleport)
+end
+
+PHYSOBJ.INF_ApplyForceOffset = PHYSOBJ.INF_ApplyForceOffset or PHYSOBJ.ApplyForceOffset
+function PHYSOBJ:ApplyForceOffset(impulse, position)
+    return self:INF_ApplyForceOffset(impulse, InfMap2.UnlocalizePosition(position, self:GetEntity():GetMegaPos()))
+end
+
+PHYSOBJ.INF_LocalToWorld = PHYSOBJ.INF_LocalToWorld or PHYSOBJ.LocalToWorld
+function PHYSOBJ:LocalToWorld(position)
+    return InfMap2.UnlocalizePosition(self:INF_LocalToWorld(position), self:GetEntity():GetMegaPos())
+end
+
+PHYSOBJ.INF_CalculateVelocityOffset = PHYSOBJ.INF_CalculateVelocityOffset or PHYSOBJ.CalculateVelocityOffset
+function PHYSOBJ:CalculateVelocityOffset(impulse, position)
+    return self:INF_CalculateVelocityOffset(impulse, InfMap2.UnlocalizePosition(position, self:GetEntity():GetMegaPos()))
+end
+
+PHYSOBJ.INF_WorldToLocal = PHYSOBJ.INF_WorldToLocal or PHYSOBJ.WorldToLocal
+function PHYSOBJ:WorldToLocal(position)
+    return self:INF_WorldToLocal(position - InfMap2.UnlocalizePosition(Vector(), self:GetEntity():GetMegaPos()))
+end
+
+PHYSOBJ.INF_GetVelocityAtPoint = PHYSOBJ.INF_GetVelocityAtPoint or PHYSOBJ.GetVelocityAtPoint
+function PHYSOBJ:GetVelocityAtPoint(position)
+    return self:INF_GetVelocityAtPoint(InfMap2.UnlocalizePosition(pos, self:GetEntity():GetMegaPos()))
+end
+
+PHYSOBJ.INF_CalculateForceOffset = PHYSOBJ.INF_CalculateForceOffset or PHYSOBJ.CalculateForceOffset
+function PHYSOBJ:CalculateForceOffset(impulse, position)
+    return self:INF_CalculateForceOffset(impulse, InfMap2.LocalizePosition(position))
+end
+
+PHYSOBJ.INF_SetMaterial = PHYSOBJ.INF_SetMaterial or PHYSOBJ.SetMaterial
+function PHYSOBJ:SetMaterial(mat) -- if mat is set it will seperate qphysics and vphysics on chunk entities, disable it
+	if not IsValid(self:GetEntity()) then return end
+    if InfMap2.DisablePickup[self:GetEntity():GetClass()] then return end
+	return self:INF_SetMaterial(mat)
+end
