@@ -74,15 +74,10 @@ function ENT:Draw()
     megamegapos.z = 0
     megamegapos.x = math.Round(megamegapos.x)
     megamegapos.y = math.Round(megamegapos.y)
-    if InfMap2.Cache.ChunkMeshes["m"..tostring(self:GetMegaPos())] and InfMap2.ChunkMeshes.Index[tostring(megamegapos)] and not InfMap2.Debug then return end
+    if not InfMap2.Debug then return end
     if not self.INF_ChunkMesh then return end
     local cmesh = self.INF_ChunkMesh
     local color = Color(255, 0, 0)
-    if InfMap2.Cache.ChunkMeshes["m"..tostring(self:GetMegaPos())] and not InfMap2.ChunkMeshes.Index[tostring(megamegapos)] then
-        color.r = 0
-        color.g = 127
-        color.b = 255
-    end
     --color.r = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self:GetMegaPos()), 0, 1, 0)) * 255
     --color.g = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self:GetMegaPos()), 0, 1, 1)) * 255
     --color.b = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self:GetMegaPos()), 0, 1, 2)) * 255
