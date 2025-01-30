@@ -124,7 +124,7 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ents.Iterator
     end
     ent_SetVelAng_proper(ent, mainvel, mainang)
 
-    if InfMap2.UsesGenerator then
+    if InfMap2.World.HasTerrain then
        for i=1,#neighbors do
            local pos = megapos + neighbors[i]
            if InfMap2.GeneratedChunks[tostring(pos)] then continue end

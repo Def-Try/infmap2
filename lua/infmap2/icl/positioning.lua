@@ -13,7 +13,7 @@ local function frustrum(ent)
     local show = false
     if pos:Distance(EyePos()) < 10 then
         show = true
-    elseif pos:Distance(EyePos()) > InfMap2.ChunkSize * InfMap2.MegachunkSize / 2 then
+    elseif pos:Distance(EyePos()) > InfMap2.ChunkSize * InfMap2.Visual.MegachunkSize / 2 then
         show = false
     else
         show = util.PixelVisible(pos, ent.INF_Diagonal, ent.INF_PixVisHandle) > 0
@@ -58,15 +58,15 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
         end
         --InfMap2.ViewMatrix:SetTranslation(-megapos * InfMap2.ChunkSize--[[@as Vector]])
 
-        local _, megachunk = InfMap2.LocalizePosition(megapos, InfMap2.MegachunkSize)
+        local _, megachunk = InfMap2.LocalizePosition(megapos, InfMap2.Visual.MegachunkSize)
 
-        if InfMap2.UsesGenerator and (not last_megachunk or (megachunk - (last_megachunk or megachunk)):LengthSqr() > 0) then
+        if InfMap2.World.HasTerrain and (not last_megachunk or (megachunk - (last_megachunk or megachunk)):LengthSqr() > 0) then
             if InfMap2.Debug then print("[INFMAP] Update Megachunks") end
-            local megamegapos = ent:GetMegaPos() / InfMap2.MegachunkSize
+            local megamegapos = ent:GetMegaPos() / InfMap2.Visual.MegachunkSize
             megamegapos.z = 0
             megamegapos.x = math.Round(megamegapos.x)
             megamegapos.y = math.Round(megamegapos.y)
-            local dist = InfMap2.RenderDistance
+            local dist = InfMap2.Visual.RenderDistance
     
             local used = {}
 

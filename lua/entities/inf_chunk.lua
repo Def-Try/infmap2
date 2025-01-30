@@ -70,7 +70,7 @@ end
 
 function ENT:Draw()
     -- do return end
-    local megamegapos = self:GetMegaPos() / InfMap2.MegachunkSize
+    local megamegapos = self:GetMegaPos() / InfMap2.Visual.MegachunkSize
     megamegapos.z = 0
     megamegapos.x = math.Round(megamegapos.x)
     megamegapos.y = math.Round(megamegapos.y)

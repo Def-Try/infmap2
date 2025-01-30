@@ -41,27 +41,47 @@ end
 InfMap2.MaxVelocity = 13503.95 * 20 -- mach 20 in hammer units
 InfMap2.SourceBounds = Vector(2^14, 2^14, 2^14)
 
+InfMap2.World = {}
+InfMap2.World.Terrain = {}
+InfMap2.Visual = {}
+InfMap2.Visual.Terrain = {}
+InfMap2.Visual.Clouds = {}
+
 local main = include("infmap2/"..game.GetMap().."/main.lua")
 if not main then
     ErrorNoHalt("InfMap2 main file did not return infmap data. Falling back to gm_inf_bliss")
     main = include("infmap2/gm_inf_bliss/main.lua")
 end
 main.world = main.world or {}
+main.world.terrain = main.world.terrain or {}
 main.visual = main.visual or {}
 main.visual.terrain = main.visual.terrain or {}
-InfMap2.UsesGenerator = main.world.use_generator
-if InfMap2.UsesGenerator then
-    InfMap2.HeightFunction = main.world.generator
-    InfMap2.SampleSize = main.world.samplesize
-    InfMap2.GenPerTick = main.world.genpertick
+main.visual.clouds = main.visual.clouds or {}
 
-    InfMap2.RenderDistance = main.visual.renderdistance
-    InfMap2.MegachunkSize = main.visual.megachunksize
-    
-    InfMap2.PerFaceNormals = main.visual.terrain.perfacenormals
-    InfMap2.DoLighting = main.visual.terrain.dolighting
-    InfMap2.Material = main.visual.terrain.material
-    InfMap2.UVScale = main.visual.terrain.uvscale
+InfMap2.World.HasTerrain = main.world.terrain.has_terrain or false
+InfMap2.Visual.HasTerrain = InfMap2.World.HasTerrain -- alias
+if InfMap2.World.HasTerrain then
+    InfMap2.World.Terrain.HeightFunction = main.world.terrain.height_function
+    InfMap2.World.Terrain.SampleSize = main.world.terrain.samplesize
+    InfMap2.World.GenPerTick = main.world.genpertick
+
+    InfMap2.Visual.RenderDistance = main.visual.renderdistance
+    InfMap2.Visual.MegachunkSize = main.visual.megachunksize
+
+    InfMap2.Visual.Terrain.PerFaceNormals = main.visual.terrain.perfacenormals
+    InfMap2.Visual.Terrain.DoLighting = main.visual.terrain.dolighting
+    InfMap2.Visual.Terrain.Material = main.visual.terrain.material
+    InfMap2.Visual.Terrain.UVScale = main.visual.terrain.uvscale
+end
+
+InfMap2.Visual.HasClouds = main.visual.clouds.has_clouds or false
+if InfMap2.Visual.HasClouds then
+    InfMap2.Visual.Clouds.Height = main.visual.clouds.height
+    InfMap2.Visual.Clouds.Color = main.visual.clouds.color
+    InfMap2.Visual.Clouds.Layers = main.visual.clouds.layers
+    InfMap2.Visual.Clouds.Size = main.visual.clouds.size
+    InfMap2.Visual.Clouds.Scale = main.visual.clouds.scale
+    InfMap2.Visual.Clouds.DensityFunction = main.visual.clouds.density_function
 end
 
 InfMap2.ChunkSize = main.chunksize

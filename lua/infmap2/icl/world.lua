@@ -13,7 +13,7 @@ hook.Add("PostDrawHUD", "InfMap2GeneratorThink", function()
         samples_done = 1
         return
     end
-    for i=0,InfMap2.GenPerTick do
+    for i=0,InfMap2.World.GenPerTick do
         local coro = table.Random(coroutines)
         if not coro then continue end
         coroutine.resume(coro)
@@ -77,15 +77,15 @@ local genvismeshone = function(megapos)
     local heightmap = {}
     local normals = {}
     local chunk_size = InfMap2.ChunkSize
-    local sample_size = InfMap2.SampleSize
-    local uvs = InfMap2.UVScale
+    local sample_size = InfMap2.World.Terrain.SampleSize
+    local uvs = InfMap2.Visual.Terrain.UVScale
 
     local x_offset = megapos.x * InfMap2.ChunkSize
     local y_offset = megapos.y * InfMap2.ChunkSize
 
     local samples = chunk_size / sample_size
 
-    local height_function = InfMap2.HeightFunction
+    local height_function = InfMap2.World.Terrain.HeightFunction
 
     local height, rx, ry
     for x = -1, samples do
@@ -122,7 +122,7 @@ local genvismeshone = function(megapos)
             chunk_mesh[#chunk_mesh + 1] = {v3, uvs,   0, n2}
             chunk_mesh[#chunk_mesh + 1] = {v1, uvs, uvs, n2}
 
-            if not InfMap2.PerFaceNormals then
+            if not InfMap2.Visual.Terrain.PerFaceNormals then
                 local norms0 = normals[tostring(v0)] or {}
                 local norms1 = normals[tostring(v1)] or {}
                 local norms2 = normals[tostring(v2)] or {}
@@ -142,7 +142,7 @@ local genvismeshone = function(megapos)
         coroutine.yield()
     end
 
-    if not InfMap2.PerFaceNormals then
+    if not InfMap2.Visual.Terrain.PerFaceNormals then
         samples_need = samples_need + #chunk_mesh
         local donenormals = {}
         for _,vert in ipairs(chunk_mesh) do
@@ -165,7 +165,7 @@ end
 local genvismeshcoro = function()
     local megapos, megasize, callback, docontinue = coroutine.yield()
 
-    local samples = InfMap2.ChunkSize / InfMap2.SampleSize
+    local samples = InfMap2.ChunkSize / InfMap2.World.Terrain.SampleSize
     for x = -(megasize.x / 2), (megasize.x / 2) do
         for y = -(megasize.y / 2), (megasize.y / 2) do
             samples_need = samples_need + ((samples+2) * (samples+2))
@@ -202,10 +202,10 @@ end
 ---@param callback function Callback when mesh has been generated. The argument is megachunk mesh data (table<pos, u, v, norm>).
 ---@param docontinue? function Function to check if mesh should continue generating
 function InfMap2.GenerateChunkVisualMesh(megapos, megasize, callback, docontinue)
-    assert(InfMap2.UsesGenerator, "InfMap2 does not use a generator")
-    assert(InfMap2.HeightFunction ~= nil, "InfMap2.HeightFunction is not set up")
+    assert(InfMap2.World.HasTerrain, "InfMap2 does not use a generator")
+    assert(InfMap2.World.Terrain.HeightFunction ~= nil, "InfMap2.World.Terrain.HeightFunction is not set up")
     assert(InfMap2.ChunkSize ~= nil, "InfMap2.ChunkSize is not set up")
-    assert(InfMap2.SampleSize ~= nil, "InfMap2.SampleSize is not set up")
+    assert(InfMap2.World.Terrain.SampleSize ~= nil, "InfMap2.World.Terrain.SampleSize is not set up")
 
     local coro = coroutine.create(genvismeshcoro)
     coroutine.resume(coro) -- start
@@ -244,7 +244,7 @@ function InfMap2.BuildMeshObjects(mesh_)
         
         mesh.Normal(-vtx[4] --[[@as Vector]])
         mesh.UserData(1, 1, 1, 1)
-        if InfMap2.DoLighting then
+        if InfMap2.Visual.Terrain.DoLighting then
             local sunlight = math.max(0, vtx[4]:Dot(-light.sun.direction)) * (1-light.sun.obstruction)
             mesh.Color(
                 math.min(1, light.ambient[1] + light.sun.color[1] * sunlight) * 255,
@@ -277,7 +277,7 @@ InfMap2.Cache.ChunkQueue = InfMap2.Cache.ChunkQueue or {
 ---@param megapos Vector megachunk megapos (megamegapos)
 function InfMap2.CreateWorldMegaChunk(megapos)
     if InfMap2.Debug then print("[INFMAP] World megachunk creation requested at "..tostring(megapos)) end
-    InfMap2.GenerateChunkVisualMesh(megapos * InfMap2.MegachunkSize, Vector(InfMap2.MegachunkSize, InfMap2.MegachunkSize), function(vismesh)
+    InfMap2.GenerateChunkVisualMesh(megapos * InfMap2.Visual.MegachunkSize, Vector(InfMap2.Visual.MegachunkSize, InfMap2.Visual.MegachunkSize), function(vismesh)
         local meshes = InfMap2.BuildMeshObjects(vismesh)
         local idx = table.insert(InfMap2.ChunkMeshes.Draw, meshes)
         InfMap2.ChunkMeshes.Index[tostring(megapos)] = idx
@@ -433,8 +433,8 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
 end)
 
 hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
-    if not InfMap2.UsesGenerator then return end
-    if not InfMap2.Cache.material then InfMap2.Cache.material = Material(InfMap2.Material) end
+    if not InfMap2.World.HasTerrain then return end
+    if not InfMap2.Cache.material then InfMap2.Cache.material = Material(InfMap2.Visual.Terrain.Material) end
 
     -- unfuck_lighting, thanks gwater 2 !
     if not IsValid(csent) then csent = ClientsideModel("error.mdl") end
@@ -479,8 +479,8 @@ big_plane:BuildFromTriangles({
 local plane_matrix = Matrix()
 
 hook.Add("PostDraw2DSkyBox", "infmap_terrain_skybox", function() -- draw skybox
-    if not InfMap2.UsesGenerator then return end
-    if not InfMap2.Cache.material then InfMap2.Cache.material = Material(InfMap2.Material) end
+    if not InfMap2.World.HasTerrain then return end
+    if not InfMap2.Cache.material then InfMap2.Cache.material = Material(InfMap2.Visual.Terrain.Material) end
 
     -- dont draw to z buffer, this is skybox
 	render.OverrideDepthEnable(true, false)

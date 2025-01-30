@@ -8,10 +8,10 @@ InfMap2.Cache.HeightMap = InfMap2.Cache.HeightMap or {}
 ---@param megapos Vector Chunk megapos
 ---@return table<Vector> mesh Chunk vertex mesh
 function InfMap2.GenerateChunkVertexMesh(megapos)
-    assert(InfMap2.UsesGenerator, "InfMap2 does not use a generator")
-    assert(InfMap2.HeightFunction ~= nil, "InfMap2.HeightFunction is not set up")
+    assert(InfMap2.World.HasTerrain, "InfMap2 does not use a generator")
+    assert(InfMap2.World.Terrain.HeightFunction ~= nil, "InfMap2.World.Terrain.HeightFunction is not set up")
     assert(InfMap2.ChunkSize ~= nil, "InfMap2.ChunkSize is not set up")
-    assert(InfMap2.SampleSize ~= nil, "InfMap2.SampleSize is not set up")
+    assert(InfMap2.World.Terrain.SampleSize ~= nil, "InfMap2.World.Terrain.SampleSize is not set up")
 
     --if InfMap2.Cache.ChunkMeshes["v"..tostring(megapos)] then
     --    return table.Copy(InfMap2.Cache.ChunkMeshes["v"..tostring(megapos)])
@@ -20,7 +20,7 @@ function InfMap2.GenerateChunkVertexMesh(megapos)
     local heightmap = {}
     local chunk_size = InfMap2.ChunkSize
     local half_chunk_size = chunk_size / 2
-    local sample_size = InfMap2.SampleSize
+    local sample_size = InfMap2.World.Terrain.SampleSize
 
     local x_offset = megapos.x * chunk_size
     local y_offset = megapos.y * chunk_size
@@ -28,7 +28,7 @@ function InfMap2.GenerateChunkVertexMesh(megapos)
 
     local samples = chunk_size / sample_size
 
-    local height_function = InfMap2.HeightFunction
+    local height_function = InfMap2.World.Terrain.HeightFunction
 
     local height, rx, ry
     for x = -2, samples+1 do

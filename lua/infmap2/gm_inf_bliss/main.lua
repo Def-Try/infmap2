@@ -9,9 +9,11 @@
 --
 --     ---- WORLD DATA ----
 --     world = {
---         use_generator = true,                                    -- bool, does map use default generator
---         generator = function(x: number, y: number) -> z: number, -- function, height function for generator
---         samplesize = 5000,                                       -- number, sample size (how far apart we sample height)
+--         terrain = {
+--             has_terrain = true,                                            -- bool, does map use default terrain generator
+--             height_function = function(x: number, y: number) -> z: number, -- function, height function for terrain generator
+--             samplesize = 5000,                                             -- number, sample size (how far apart we sample height)
+--         },
 --         genpertick = 400,                                        -- number, how many generation steps we perform per tick
 --     }
 --
@@ -81,21 +83,23 @@ local scale = 1
 return {
     chunksize = 20000, -- leaves 12768 units for contraptions and fast passing entities
     world = {
-        use_generator = true,
-        generator = function(x, y)
-            x = x / InfMap2.ChunkSize / 2
-            y = y / InfMap2.ChunkSize / 2
+        terrain = {
+            has_terrain = true,
+            height_function = function(x, y)
+                x = x / InfMap2.ChunkSize / 2
+                y = y / InfMap2.ChunkSize / 2
 
-            x, y = x / scale, y / scale
-            if (x > -0.5 and x < 0.5) or (y > -0.5 and y < 0.5) then return -15 end
-            x = x - 3
-            local final = simplex.Noise2D(x / 25, y / 25 + 100000) * 75000
-            final = final / math.max((simplex.Noise2D(x / 100, y / 100) * 15) ^ 3, 1)
-            final = final * scale
-            return final / 2
-        end,
+                x, y = x / scale, y / scale
+                if (x > -0.5 and x < 0.5) or (y > -0.5 and y < 0.5) then return -15 end
+                x = x - 3
+                local final = simplex.Noise2D(x / 25, y / 25 + 100000) * 75000
+                final = final / math.max((simplex.Noise2D(x / 100, y / 100) * 15) ^ 3, 1)
+                final = final * scale
+                return final / 2
+            end,
+            samplesize = 20000 / 3,
+        },
         genpertick = 400,
-        samplesize = 20000 / 3,
     },
     visual = {
         renderdistance = 2,
@@ -106,6 +110,18 @@ return {
             perfacenormals = true,
             dolighting = false,
         },
+        clouds = {
+            has_clouds = true,
+            height = 200000,
+            layers = 10,
+            size = 512,
+            scale = 2,
+            color = Color(255, 255, 255),
+            density_function = function(x, y, layer)
+                return ((simplex.Noise3D(x / 30, y / 30, layer / 50) - layer * 0.015) * 1024
+                         + (simplex.Noise2D(x / 7, y / 7) + 1) * 128) / 256
+            end,
+        }
     },
 
     spawner = function(ply)

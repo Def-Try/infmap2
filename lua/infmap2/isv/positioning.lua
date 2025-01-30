@@ -40,7 +40,7 @@ hook.Add("OnEntityCreated", "InfMap2EntityCreated", function(ent) timer.Simple(0
     InfMap2.EntityUpdateMegapos(ent, megapos)
     if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." created at megapos "..tostring(megapos)) end
 
-    if InfMap2.UsesGenerator and ent:GetClass() ~= "inf_crosschunkclone" then
+    if InfMap2.World.HasTerrain and ent:GetClass() ~= "inf_crosschunkclone" then
         for i=1,#neighbors do
             local pos = megapos + neighbors[i]
             if InfMap2.GeneratedChunks[tostring(pos)] then continue end

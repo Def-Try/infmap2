@@ -2,7 +2,7 @@ InfMap2.Cache.ChunkMeshes = InfMap2.Cache.ChunkMeshes or {}
 
 function InfMap2.CreateWorldChunk(megapos)
     if InfMap2.Debug then print("[INFMAP] Creating world chunk "..tostring(megapos)) end
-    assert(InfMap2.UsesGenerator, "InfMap2 does not use a generator")
+    assert(InfMap2.World.HasTerrain, "InfMap2 does not use a generator")
     local chunk = ents.Create("inf_chunk")
     chunk:SetMegaPos(megapos)
     chunk:Spawn()
