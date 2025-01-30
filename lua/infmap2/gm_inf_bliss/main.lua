@@ -115,8 +115,9 @@ return {
             height = 200000,
             layers = 10,
             size = 512,
-            scale = 2,
+            scale = 1,
             color = Color(255, 255, 255),
+            accentcolor = Color(127, 127, 127),
             density_function = function(x, y, layer)
                 return ((simplex.Noise3D(x / 30, y / 30, layer / 50) - layer * 0.015) * 1024
                          + (simplex.Noise2D(x / 7, y / 7) + 1) * 128) / 256

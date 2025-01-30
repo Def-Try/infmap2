@@ -9,6 +9,7 @@ local cloud_coro = coroutine.create(function()
     local half_size = size / 2
 
     local col = InfMap2.Visual.Clouds.Color
+    local acol = InfMap2.Visual.Clouds.AccentColor
 
 	for i = 1, InfMap2.Visual.Clouds.Layers do
 		InfMap2.Cache.cloud_rts[i] = GetRenderTarget("infmap_clouds" .. i .. "_" .. size, size, size)
@@ -18,7 +19,7 @@ local cloud_coro = coroutine.create(function()
 			["$nocull"] = "1",
 			["$translucent"] = "1",
 		})
-		render.ClearRenderTarget(InfMap2.Cache.cloud_rts[i], Color(col.r, col.g, col.b, 0)) -- make gray so clouds have nice gray sides
+		render.ClearRenderTarget(InfMap2.Cache.cloud_rts[i], Color(acol.r, acol.g, acol.b, 0)) -- make gray so clouds have nice gray sides
 	end
 
     local density_function = InfMap2.Visual.Clouds.DensityFunction

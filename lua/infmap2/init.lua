@@ -78,6 +78,7 @@ InfMap2.Visual.HasClouds = main.visual.clouds.has_clouds or false
 if InfMap2.Visual.HasClouds then
     InfMap2.Visual.Clouds.Height = main.visual.clouds.height
     InfMap2.Visual.Clouds.Color = main.visual.clouds.color
+    InfMap2.Visual.Clouds.AccentColor = main.visual.clouds.accentcolor
     InfMap2.Visual.Clouds.Layers = main.visual.clouds.layers
     InfMap2.Visual.Clouds.Size = main.visual.clouds.size
     InfMap2.Visual.Clouds.Scale = main.visual.clouds.scale
