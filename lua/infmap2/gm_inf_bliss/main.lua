@@ -122,6 +122,13 @@ return {
                 return ((simplex.Noise3D(x / 30, y / 30, layer / 50) - layer * 0.015) * 1024
                          + (simplex.Noise2D(x / 7, y / 7) + 1) * 128) / 256
             end,
+        },
+        fog = {
+            has_fog = true,
+            color = Color(180, 190, 200),
+            fogstart = 500000,
+            fogend = 1000000,
+            maxdensity = 0.5
         }
     },
 

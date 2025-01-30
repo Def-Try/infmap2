@@ -16,6 +16,7 @@ if SERVER then
     include     ("infmap2/isv/detours.lua")
     AddCSLuaFile("infmap2/icl/world.lua")
     AddCSLuaFile("infmap2/icl/clouds.lua")
+    AddCSLuaFile("infmap2/icl/fog.lua")
     AddCSLuaFile("infmap2/icl/positioning.lua")
     AddCSLuaFile("infmap2/icl/detours.lua")
     AddCSLuaFile("infmap2/icl/debug.lua")
@@ -33,6 +34,7 @@ end
 if CLIENT then
     include("infmap2/icl/world.lua")
     include("infmap2/icl/clouds.lua")
+    include("infmap2/icl/fog.lua")
     include("infmap2/icl/positioning.lua")
     include("infmap2/icl/detours.lua")
     include("infmap2/icl/sound.lua")
@@ -46,6 +48,7 @@ InfMap2.World.Terrain = {}
 InfMap2.Visual = {}
 InfMap2.Visual.Terrain = {}
 InfMap2.Visual.Clouds = {}
+InfMap2.Visual.Fog = {}
 
 local main = include("infmap2/"..game.GetMap().."/main.lua")
 if not main then
@@ -57,6 +60,7 @@ main.world.terrain = main.world.terrain or {}
 main.visual = main.visual or {}
 main.visual.terrain = main.visual.terrain or {}
 main.visual.clouds = main.visual.clouds or {}
+main.visual.fog = main.visual.fog or {}
 
 InfMap2.World.HasTerrain = main.world.terrain.has_terrain or false
 InfMap2.Visual.HasTerrain = InfMap2.World.HasTerrain -- alias
@@ -83,6 +87,14 @@ if InfMap2.Visual.HasClouds then
     InfMap2.Visual.Clouds.Size = main.visual.clouds.size
     InfMap2.Visual.Clouds.Scale = main.visual.clouds.scale
     InfMap2.Visual.Clouds.DensityFunction = main.visual.clouds.density_function
+end
+
+InfMap2.Visual.HasFog = main.visual.clouds.has_fog or false
+if InfMap2.Visual.HasFog then
+    InfMap2.Visual.Fog.Color = main.visual.fog.color
+    InfMap2.Visual.Fog.Start = main.visual.fog.fogstart
+    InfMap2.Visual.Fog.End = main.visual.fog.fogend
+    InfMap2.Visual.Fog.MaxDensity = main.visual.fog.maxdensity
 end
 
 InfMap2.ChunkSize = main.chunksize
