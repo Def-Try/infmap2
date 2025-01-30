@@ -58,8 +58,8 @@ hook.Add("PreDrawTranslucentRenderables", "infmap_clouds", function(_, sky)
 	end
 
     local speed = InfMap2.Visual.Clouds.Speed
-    local direction = InfMap2.Visual.Clouds.Direction
-    local move = (((CurTime()) % speed) - speed / 2) * 10000
+    local direction = InfMap2.Visual.Clouds.Direction * 10000
+    local move = (((CurTime()) % speed) - speed / 2)
 
 	-- render cloud planes
 	for i = 1, InfMap2.Visual.Clouds.Layers do -- overlay planes to give amazing 3d look
