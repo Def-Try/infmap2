@@ -15,6 +15,7 @@ if SERVER then
     include     ("infmap2/isv/positioning.lua")
     include     ("infmap2/isv/detours.lua")
     AddCSLuaFile("infmap2/icl/world.lua")
+    AddCSLuaFile("infmap2/icl/clouds.lua")
     AddCSLuaFile("infmap2/icl/positioning.lua")
     AddCSLuaFile("infmap2/icl/detours.lua")
     AddCSLuaFile("infmap2/icl/debug.lua")
@@ -31,35 +32,37 @@ end
 
 if CLIENT then
     include("infmap2/icl/world.lua")
+    include("infmap2/icl/clouds.lua")
     include("infmap2/icl/positioning.lua")
     include("infmap2/icl/detours.lua")
     include("infmap2/icl/sound.lua")
 end
 
 InfMap2.MaxVelocity = 13503.95 * 20 -- mach 20 in hammer units
+InfMap2.SourceBounds = Vector(2^14, 2^14, 2^14)
 
 local main = include("infmap2/"..game.GetMap().."/main.lua")
 if not main then
     ErrorNoHalt("InfMap2 main file did not return infmap data. Falling back to gm_inf_bliss")
     main = include("infmap2/gm_inf_bliss/main.lua")
 end
-InfMap2.UsesGenerator = main.use_generator
-if main.use_generator then
-    InfMap2.HeightFunction = main.generator
-    InfMap2.SampleSize = main.samplesize
-    InfMap2.PerFaceNormals = main.perfacenormals
-    InfMap2.DoLighting = main.dolighting
-    InfMap2.GenPerTick = main.genpertick
+main.world = main.world or {}
+main.world.visual = main.world.visual or {}
+InfMap2.UsesGenerator = main.world.use_generator
+if InfMap2.UsesGenerator then
+    InfMap2.HeightFunction = main.world.generator
+    InfMap2.SampleSize = main.world.samplesize
+    InfMap2.GenPerTick = main.world.genpertick
 
-    InfMap2.Material = main.material
-    InfMap2.UVScale = main.uvscale
-    InfMap2.RenderDistance = main.renderdistance
+    InfMap2.PerFaceNormals = main.visual.perfacenormals
+    InfMap2.DoLighting = main.visual.dolighting
+    InfMap2.Material = main.visual.material
+    InfMap2.UVScale = main.visual.uvscale
+    InfMap2.RenderDistance = main.visual.renderdistance
+    InfMap2.MegachunkSize = main.visual.megachunksize
 end
 
 InfMap2.ChunkSize = main.chunksize
-InfMap2.MegachunkSize = main.megachunksize
-
-InfMap2.SourceBounds = Vector(2^14, 2^14, 2^14)
 
 hook.Add("InitPostEntity", "InfMap2Init", function() timer.Simple(0, function()
     RunConsoleCommand("sv_maxvelocity", InfMap2.MaxVelocity)

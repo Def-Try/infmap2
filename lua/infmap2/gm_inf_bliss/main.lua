@@ -5,19 +5,25 @@
 -- needs to return infmap info:
 --   { -- table
 --
---     ---- WORLD DATA ----
---     use_generator = true,                                    -- bool, does map use default generator
---     generator = function(x: number, y: number) -> z: number, -- function, height function for generator
 --     chunksize = 20000,                                       -- number, chunk size in hammer units (max is 2^15)
---     megachunksize = 20,                                      -- number, megachunk size (how much megachunk extends in each direction, in chunks)
---     samplesize = 5000,                                       -- number, sample size (how far apart we sample height)
+--
+--     ---- WORLD DATA ----
+--     world = {
+--         use_generator = true,                                    -- bool, does map use default generator
+--         generator = function(x: number, y: number) -> z: number, -- function, height function for generator
+--         samplesize = 5000,                                       -- number, sample size (how far apart we sample height)
+--         genpertick = 400,                                        -- number, how many generation steps we perform per tick
+--     }
 --
 --     ---- RENDER DATA ----
---     material = "infmap2/grasslit" -- string, material that terrain should use
---     uvscale = 100                 -- number, infmap uv scale
---     perfacenormals = true,        -- bool, whether normals are calculater per-face or per-vertex
---     dolighting = false,           -- bool, whether we should calculate custom lighting
---     renderdistance = 2,           -- number, how much megachunks around player we show
+--     visual = {
+--         material = "infmap2/grasslit" -- string, material that terrain should use
+--         uvscale = 100                 -- number, infmap uv scale
+--         perfacenormals = true,        -- bool, whether normals are calculater per-face or per-vertex
+--         dolighting = false,           -- bool, whether we should calculate custom lighting
+--         renderdistance = 2,           -- number, how much megachunks around player we show
+--         megachunksize = 20,           -- number, megachunk size (how much megachunk extends in each direction, in chunks)
+--     }
 --
 --     ---- ENTITY DATA ----
 --     spawner = function(ply: Player), -- function, player spawner function (call SetPos/SetAng/etc here)
@@ -71,29 +77,32 @@ end
 local scale = 1
 
 return {
-    use_generator = true,
-    generator = function(x, y)
-        x = x / InfMap2.ChunkSize / 2
-        y = y / InfMap2.ChunkSize / 2
-
-        x, y = x / scale, y / scale
-        if (x > -0.5 and x < 0.5) or (y > -0.5 and y < 0.5) then return -15 end
-        x = x - 3
-        local final = simplex.Noise2D(x / 25, y / 25 + 100000) * 75000
-        final = final / math.max((simplex.Noise2D(x / 100, y / 100) * 15) ^ 3, 1)
-        final = final * scale
-        return final / 2
-    end,
     chunksize = 20000, -- leaves 12768 units for contraptions and fast passing entities
-    megachunksize = 30,
-    samplesize = 20000 / 3,
-    genpertick = 200,
+    world = {
+        use_generator = true,
+        generator = function(x, y)
+            x = x / InfMap2.ChunkSize / 2
+            y = y / InfMap2.ChunkSize / 2
 
-    material = "infmap2/grasslit",
-    uvscale = 100,
-    perfacenormals = true,
-    dolighting = false,
-    renderdistance = 2,
+            x, y = x / scale, y / scale
+            if (x > -0.5 and x < 0.5) or (y > -0.5 and y < 0.5) then return -15 end
+            x = x - 3
+            local final = simplex.Noise2D(x / 25, y / 25 + 100000) * 75000
+            final = final / math.max((simplex.Noise2D(x / 100, y / 100) * 15) ^ 3, 1)
+            final = final * scale
+            return final / 2
+        end,
+        genpertick = 400,
+        samplesize = 20000 / 3,
+    },
+    visual = {
+        material = "infmap2/grasslit",
+        uvscale = 100,
+        perfacenormals = true,
+        dolighting = false,
+        renderdistance = 2,
+        megachunksize = 30,
+    },
 
     spawner = function(ply)
         ply:SetPos(Vector(0, 0, 10))
