@@ -3,6 +3,10 @@ AddCSLuaFile()
 local ENTITY = FindMetaTable("Entity")
 local VEHICLE = FindMetaTable("Vehicle")
 local PHYSOBJ = FindMetaTable("PhysObj")
+local PLAYER = FindMetaTable("Player")
+local NEXTBOT = FindMetaTable("NEXTBOT")
+local CLUALOCOMOTION = FindMetaTable("CLuaLocomotion")
+local CTAKEDAMAGEINFO = FindMetaTable("CTakeDamageInfo")
 
 InfMap2.TraceLine = InfMap2.TraceLine or util.TraceLine
 InfMap2.TraceHull = InfMap2.TraceHull or util.TraceHull
@@ -295,7 +299,7 @@ end
 
 PHYSOBJ.INF_GetVelocityAtPoint = PHYSOBJ.INF_GetVelocityAtPoint or PHYSOBJ.GetVelocityAtPoint
 function PHYSOBJ:GetVelocityAtPoint(position)
-    return self:INF_GetVelocityAtPoint(InfMap2.UnlocalizePosition(pos, self:GetEntity():GetMegaPos()))
+    return self:INF_GetVelocityAtPoint(InfMap2.UnlocalizePosition(position, self:GetEntity():GetMegaPos()))
 end
 
 PHYSOBJ.INF_CalculateForceOffset = PHYSOBJ.INF_CalculateForceOffset or PHYSOBJ.CalculateForceOffset
@@ -308,4 +312,53 @@ function PHYSOBJ:SetMaterial(mat) -- if mat is set it will seperate qphysics and
 	if not IsValid(self:GetEntity()) then return end
     if InfMap2.DisablePickup[self:GetEntity():GetClass()] then return end
 	return self:INF_SetMaterial(mat)
+end
+
+----- Player detours -----
+
+PLAYER.INF_GetShootPos = PLAYER.INF_GetShootPos or PLAYER.GetShootPos
+function PLAYER:GetShootPos()
+	return InfMap2.UnlocalizePosition(self:INF_GetShootPos(), self:GetMegaPos())
+end
+
+----- Nextbot detours -----
+
+NEXTBOT.INF_GetRangeSquaredTo = NEXTBOT.INF_GetRangeSquaredTo or NEXTBOT.GetRangeSquaredTo
+function NEXTBOT:GetRangeSquaredTo(to)
+	if isentity(to) then to = to:GetPos() end
+	return self:GetPos():DistToSqr(to)
+end
+
+NEXTBOT.INF_GetRangeTo = NEXTBOT.INF_GetRangeTo or NEXTBOT.GetRangeTo
+function NEXTBOT:GetRangeTo(to)
+	return math.sqrt(self:GetRangeSquaredTo(to))
+end
+
+----- CTakeDamageInfo detours -----
+
+CTAKEDAMAGEINFO.INF_GetDamagePosition = CTAKEDAMAGEINFO.INF_GetDamagePosition or CTAKEDAMAGEINFO.GetDamagePosition
+function CTAKEDAMAGEINFO:GetDamagePosition()
+	local inflictor = self:GetInflictor()
+	if not IsValid(inflictor) then 
+		inflictor = game.GetWorld()
+	end
+	return InfMap2.UnlocalizePosition(self:INF_GetDamagePosition(), inflictor:GetMegaPos())
+end
+
+----- CLuaLocomotion detours -----
+
+CLUALOCOMOTION.INF_Approach = CLUALOCOMOTION.INF_Approach or CLUALOCOMOTION.Approach
+function CLUALOCOMOTION:Approach(goal, goalweight)
+	local nb = self:GetNextBot()
+	local dir = (goal - nb:GetPos()):GetNormalized()
+	local pos = InfMap2.LocalizePosition(nb:GetPos() + dir)
+	return CLUALOCOMOTION.INF_Approach(self, pos, goalweight)
+end
+
+CLUALOCOMOTION.INF_FaceTowards = CLUALOCOMOTION.INF_FaceTowards or CLUALOCOMOTION.FaceTowards
+function CLUALOCOMOTION:FaceTowards(goal)
+	local nb = self:GetNextBot()
+	local dir = (goal - nb:GetPos()):GetNormalized()
+	local pos = InfMap2.LocalizePosition(nb:GetPos() + dir)
+	return CLUALOCOMOTION.INF_FaceTowards(self, pos)
 end
