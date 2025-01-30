@@ -1,6 +1,5 @@
 hook.Add("SetupWorldFog", "!infmap_fog", function()
     local color = InfMap2.Visual.Fog.Color
-	local co = LocalPlayer():GetMegaPos()[3]
 	render.FogStart(InfMap2.Visual.Fog.Start)
 	render.FogMaxDensity(InfMap2.Visual.Fog.MaxDensity)
 	render.FogColor(color.r, color.g, color.b)
