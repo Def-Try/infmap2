@@ -17,12 +17,14 @@
 --
 --     ---- RENDER DATA ----
 --     visual = {
---         material = "infmap2/grasslit" -- string, material that terrain should use
---         uvscale = 100                 -- number, infmap uv scale
---         perfacenormals = true,        -- bool, whether normals are calculater per-face or per-vertex
---         dolighting = false,           -- bool, whether we should calculate custom lighting
 --         renderdistance = 2,           -- number, how much megachunks around player we show
 --         megachunksize = 20,           -- number, megachunk size (how much megachunk extends in each direction, in chunks)
+--         terrain = {
+--             material = "infmap2/grasslit" -- string, material that terrain should use
+--             uvscale = 100                 -- number, infmap uv scale
+--             perfacenormals = true,        -- bool, whether normals are calculater per-face or per-vertex
+--             dolighting = false,           -- bool, whether we should calculate custom lighting
+--         },
 --     }
 --
 --     ---- ENTITY DATA ----
@@ -96,12 +98,14 @@ return {
         samplesize = 20000 / 3,
     },
     visual = {
-        material = "infmap2/grasslit",
-        uvscale = 100,
-        perfacenormals = true,
-        dolighting = false,
         renderdistance = 2,
         megachunksize = 30,
+        terrain = {
+            material = "infmap2/grasslit",
+            uvscale = 100,
+            perfacenormals = true,
+            dolighting = false,
+        },
     },
 
     spawner = function(ply)

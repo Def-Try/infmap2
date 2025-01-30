@@ -47,19 +47,21 @@ if not main then
     main = include("infmap2/gm_inf_bliss/main.lua")
 end
 main.world = main.world or {}
-main.world.visual = main.world.visual or {}
+main.visual = main.visual or {}
+main.visual.terrain = main.visual.terrain or {}
 InfMap2.UsesGenerator = main.world.use_generator
 if InfMap2.UsesGenerator then
     InfMap2.HeightFunction = main.world.generator
     InfMap2.SampleSize = main.world.samplesize
     InfMap2.GenPerTick = main.world.genpertick
 
-    InfMap2.PerFaceNormals = main.visual.perfacenormals
-    InfMap2.DoLighting = main.visual.dolighting
-    InfMap2.Material = main.visual.material
-    InfMap2.UVScale = main.visual.uvscale
     InfMap2.RenderDistance = main.visual.renderdistance
     InfMap2.MegachunkSize = main.visual.megachunksize
+    
+    InfMap2.PerFaceNormals = main.visual.terrain.perfacenormals
+    InfMap2.DoLighting = main.visual.terrain.dolighting
+    InfMap2.Material = main.visual.terrain.material
+    InfMap2.UVScale = main.visual.terrain.uvscale
 end
 
 InfMap2.ChunkSize = main.chunksize
