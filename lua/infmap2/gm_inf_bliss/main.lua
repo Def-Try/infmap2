@@ -116,6 +116,8 @@ return {
             layers = 10,
             size = 512,
             scale = 1,
+            direction = Vector(0, 1, 0),
+            speed = 500,
             color = Color(255, 255, 255),
             accentcolor = Color(127, 127, 127),
             density_function = function(x, y, layer)

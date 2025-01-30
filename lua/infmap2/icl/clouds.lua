@@ -57,13 +57,17 @@ hook.Add("PreDrawTranslucentRenderables", "infmap_clouds", function(_, sky)
 		coroutine.resume(cloud_coro)
 	end
 
+    local speed = InfMap2.Visual.Clouds.Speed
+    local direction = InfMap2.Visual.Clouds.Direction
+    local move = (((CurTime()) % speed) - speed / 2) * 10000
+
 	-- render cloud planes
-    render.PushFilterMag(TEXFILTER.NONE)
-    render.PushFilterMin(TEXFILTER.NONE)
 	for i = 1, InfMap2.Visual.Clouds.Layers do -- overlay planes to give amazing 3d look
 		render.SetMaterial(InfMap2.Cache.cloud_mats[i])
-		render.DrawQuadEasy(Vector(0, 0, (i - 1) * 10000 + InfMap2.Visual.Clouds.Height), Vector(0, 0, 1), 20000000, 20000000)
+		render.DrawQuadEasy(
+            Vector(direction[1] * move + offset[1] * InfMap2.ChunkSize,
+                   direction[2] * move + offset[2] * InfMap2.ChunkSize,
+                   (i - 1) * 10000 + InfMap2.Visual.Clouds.Height
+            ), Vector(0, 0, 1), 20000000, 20000000)
 	end
-    render.PopFilterMag()
-    render.PopFilterMin()
 end)

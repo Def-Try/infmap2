@@ -87,9 +87,11 @@ if InfMap2.Visual.HasClouds then
     InfMap2.Visual.Clouds.Size = main.visual.clouds.size
     InfMap2.Visual.Clouds.Scale = main.visual.clouds.scale
     InfMap2.Visual.Clouds.DensityFunction = main.visual.clouds.density_function
+    InfMap2.Visual.Clouds.Direction = main.visual.clouds.direction
+    InfMap2.Visual.Clouds.Speed = main.visual.clouds.speed
 end
 
-InfMap2.Visual.HasFog = main.visual.clouds.has_fog or false
+InfMap2.Visual.HasFog = main.visual.fog.has_fog or false
 if InfMap2.Visual.HasFog then
     InfMap2.Visual.Fog.Color = main.visual.fog.color
     InfMap2.Visual.Fog.Start = main.visual.fog.fogstart
