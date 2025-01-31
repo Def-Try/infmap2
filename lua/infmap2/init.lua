@@ -11,9 +11,6 @@ include("infmap2/ish/functions.lua")
 include("infmap2/ish/detours.lua")
 
 if SERVER then
-    include     ("infmap2/isv/world.lua")
-    include     ("infmap2/isv/positioning.lua")
-    include     ("infmap2/isv/detours.lua")
     AddCSLuaFile("infmap2/icl/world.lua")
     AddCSLuaFile("infmap2/icl/clouds.lua")
     AddCSLuaFile("infmap2/icl/fog.lua")
@@ -21,14 +18,15 @@ if SERVER then
     AddCSLuaFile("infmap2/icl/detours.lua")
     AddCSLuaFile("infmap2/icl/debug.lua")
     AddCSLuaFile("infmap2/icl/sound.lua")
+    AddCSLuaFile("infmap2/icl/misc.lua")
 
+    include("infmap2/isv/world.lua")
+    include("infmap2/isv/positioning.lua")
+    include("infmap2/isv/detours.lua")
     include("infmap2/isv/wrapping.lua")
     include("infmap2/isv/crosschunkcollision.lua")
     include("infmap2/isv/concommands.lua")
     include("infmap2/isv/sound.lua")
-
-    resource.AddSingleFile("materials/infmap2/grasslit.vmt")
-    resource.AddSingleFile("materials/infmap2/grassunlit.vmt")
 end
 
 if CLIENT then
@@ -38,6 +36,7 @@ if CLIENT then
     include("infmap2/icl/positioning.lua")
     include("infmap2/icl/detours.lua")
     include("infmap2/icl/sound.lua")
+    include("infmap2/icl/misc.lua")
 end
 
 InfMap2.MaxVelocity = 13503.95 * 20 -- mach 20 in hammer units
@@ -100,6 +99,8 @@ if InfMap2.Visual.HasFog then
 end
 
 InfMap2.ChunkSize = main.chunksize
+
+include("infmap2/ish/baking.lua")
 
 hook.Add("InitPostEntity", "InfMap2Init", function() timer.Simple(0, function()
     RunConsoleCommand("sv_maxvelocity", InfMap2.MaxVelocity)

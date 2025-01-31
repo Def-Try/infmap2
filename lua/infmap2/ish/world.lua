@@ -13,9 +13,9 @@ function InfMap2.GenerateChunkVertexMesh(megapos)
     assert(InfMap2.ChunkSize ~= nil, "InfMap2.ChunkSize is not set up")
     assert(InfMap2.World.Terrain.SampleSize ~= nil, "InfMap2.World.Terrain.SampleSize is not set up")
 
-    --if InfMap2.Cache.ChunkMeshes["v"..tostring(megapos)] then
-    --    return table.Copy(InfMap2.Cache.ChunkMeshes["v"..tostring(megapos)])
-    --end
+    if InfMap2.Cache.ChunkMeshes["v"..tostring(megapos)] then
+        return table.Copy(InfMap2.Cache.ChunkMeshes["v"..tostring(megapos)])
+    end
 
     local heightmap = {}
     local chunk_size = InfMap2.ChunkSize

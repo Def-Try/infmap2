@@ -78,7 +78,8 @@ else
     end)
 end
 
-local scale = 1
+resource.AddSingleFile("materials/infmap2/grasslit.vmt")
+resource.AddSingleFile("materials/infmap2/grassunlit.vmt")
 
 return {
     chunksize = 20000, -- leaves 12768 units for contraptions and fast passing entities
@@ -88,13 +89,12 @@ return {
             height_function = function(x, y)
                 x = x / InfMap2.ChunkSize / 2
                 y = y / InfMap2.ChunkSize / 2
-
-                x, y = x / scale, y / scale
+                
                 if (x > -0.5 and x < 0.5) or (y > -0.5 and y < 0.5) then return -15 end
                 x = x - 3
                 local final = simplex.Noise2D(x / 25, y / 25 + 100000) * 75000
                 final = final / math.max((simplex.Noise2D(x / 100, y / 100) * 15) ^ 3, 1)
-                final = final * scale
+                final = final
                 return final / 2
             end,
             samplesize = 20000 / 3,

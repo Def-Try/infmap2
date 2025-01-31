@@ -16,63 +16,21 @@ hook.Add("PostDrawHUD", "InfMap2GeneratorThink", function()
     for i=0,InfMap2.World.GenPerTick do
         local coro = table.Random(coroutines)
         if not coro then continue end
-        coroutine.resume(coro)
-        if coroutine.status(coro) ~= "suspended" then coroutines[table.KeyFromValue(coroutines, coro)] = nil end
+        if coroutine.status(coro) ~= "suspended" then coroutines[table.KeyFromValue(coroutines, coro)] = nil continue end
+        local ok, err = coroutine.resume(coro)
+        if not ok then ErrorNoHalt(err) end
     end
     if #coroutines > 0 then
-        surface.SetDrawColor(0, 0, 0, 190)
-
-        surface.DrawRect(ScrW()/4, ScrH()/2-48, ScrW()/2, 100)
-        surface.DrawRect(ScrW()/4, ScrH()/2+56, ScrW()/2, 24)
-
-        surface.SetDrawColor(255, 255, 255, 255)
-	    surface.DrawOutlinedRect(ScrW()/4, ScrH()/2-48, ScrW()/2, 100, 2)
-	    surface.DrawOutlinedRect(ScrW()/4, ScrH()/2+56, ScrW()/2, 24, 2)
-        surface.DrawRect(ScrW()/4+4, ScrH()/2+60, (ScrW()/2-8)*(samples_done/samples_need), 16)
-
-        draw.DrawText("InfMap2 "..InfMap2.Version, "DermaDefault",
-                      ScrW()/4, ScrH()/2-62, Color(255, 255, 255), TEXT_ALIGN_LEFT)
-
-        draw.DrawText("Please wait\n"..
-                      #coroutines.." megachunk"..(#coroutines > 1 and "s" or "").." generating\n"..
-                      math.Round((samples_done/samples_need)*100).."% ("..samples_done.."/"..samples_need..") samples done",
-                      "DermaLarge",
-                      ScrW()/2, ScrH()/2-48, Color(255, 255, 255), TEXT_ALIGN_CENTER)
-
-        --for i=0,1 do surface.DrawCircle(ScrW()/2-20, ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5+math.pi/2)+1)/2) end
-        --for i=0,1 do surface.DrawCircle(ScrW()/2,    ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5)+1)/2) end
-        --for i=0,1 do surface.DrawCircle(ScrW()/2+20, ScrH()/2-34, 8-i, 255, 255, 255, 255*(math.sin(CurTime()*5-math.pi/2)+1)/2) end
-
-        local delta = (RealTime() % 5) / 2.5
-        if delta > 1 then
-            delta = 0.5-(delta-1)
-            for x=0,2,1 do
-                for y=-1,1,1 do
-                    local d = (2-x) * 3 + y
-                    local delta = math.ease.OutCirc(math.min(1, delta * 10 - 0.3 * d))
-                    surface.SetDrawColor(255, 255, 255, 255*delta)
-                    surface.DrawRect(ScrW()/4+15+22*x, ScrH()/2-10-22*y-math.min(15, 15*(1-delta)), 20, 20)
-                end
-            end
-            return
-        end
-        for x=0,2,1 do
-            for y=-1,1,1 do
-                local d = (2-x) * 3 + (1-y)
-                local delta = math.ease.OutCirc(math.min(1, delta * 10 - 0.3 * d))
-                surface.SetDrawColor(255, 255, 255, 255*delta)
-                surface.DrawRect(ScrW()/4+math.min(15, 15*delta)+22*x, ScrH()/2-10-22*y, 20, 20)
-            end
-        end
+        InfMap2.ProgressPopupDraw(#coroutines.." megachunk"..(#coroutines > 1 and "s" or "").." generating", samples_done, samples_need)
     end
 end)
 
 local genvismeshone = function(megapos)
+    assert(megapos.z == 0, "genvismeshone: megapos.z is not 0")
+
     if InfMap2.Cache.ChunkMeshes["m"..tostring(megapos)] then
         return table.Copy(InfMap2.Cache.ChunkMeshes["m"..tostring(megapos)])
     end
-
-    assert(megapos.z == 0, "genvismeshone: megapos.z is not 0")
 
     local heightmap = {}
     local normals = {}
@@ -165,6 +123,10 @@ end
 local genvismeshcoro = function()
     local megapos, megasize, callback, docontinue = coroutine.yield()
 
+    if InfMap2.Cache.ChunkMeshes["f"..tostring(megapos)] then
+        return callback(table.Copy(InfMap2.Cache.ChunkMeshes["f"..tostring(megapos)]))
+    end
+
     local samples = InfMap2.ChunkSize / InfMap2.World.Terrain.SampleSize
     for x = -(megasize.x / 2), (megasize.x / 2) do
         for y = -(megasize.y / 2), (megasize.y / 2) do
@@ -192,6 +154,8 @@ local genvismeshcoro = function()
         end
     end
     
+    InfMap2.Cache.ChunkMeshes["f"..tostring(megapos)] = vismesh
+
     callback(vismesh)
 end
 
@@ -208,8 +172,9 @@ function InfMap2.GenerateChunkVisualMesh(megapos, megasize, callback, docontinue
     assert(InfMap2.World.Terrain.SampleSize ~= nil, "InfMap2.World.Terrain.SampleSize is not set up")
 
     local coro = coroutine.create(genvismeshcoro)
-    coroutine.resume(coro) -- start
-    coroutine.resume(coro, megapos, megasize, callback, docontinue) -- first yield, requested params
+    coroutine.resume(coro)
+    local ok, err = coroutine.resume(coro, megapos, megasize, callback, docontinue) -- first yield, requested params
+    if not ok then ErrorNoHalt(err) end
     coroutines[#coroutines+1] = coro
 end
 
@@ -239,6 +204,7 @@ function InfMap2.BuildMeshObjects(mesh_)
 
     mesh.Begin(meshes[#meshes], MATERIAL_TRIANGLES, math.min(10922, count / 3))
     for _,vtx in ipairs(mesh_) do
+        --PrintTable(vtx)
         mesh.Position(vtx[1])
         mesh.TexCoord(0, vtx[2], vtx[3])
         
@@ -267,11 +233,6 @@ function InfMap2.BuildMeshObjects(mesh_)
 
     return meshes
 end
-
-InfMap2.Cache.ChunkQueue = InfMap2.Cache.ChunkQueue or {
-    Remove = {},
-    Create = {}
-}
 
 ---Generates a megachunk.
 ---@param megapos Vector megachunk megapos (megamegapos)
