@@ -1,6 +1,9 @@
 local last_megachunk
 
 local function frustrum(ent)
+    -- for some reason frustrum dies on linux?
+    if not system.IsWindows() then return true end
+    
     if ent:EntIndex() == -1 then return true end
     local mins, maxs = ent:GetRenderBounds()
     local hash = tostring(mins)..tostring(maxs)
