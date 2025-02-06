@@ -37,7 +37,7 @@ local mtrx = Matrix()
 
 local function renderoverride_nest(self)
     if not frustrum(self) then return end
-    mtrx:SetTranslation(LocalPlayer():GetPos())
+    mtrx:SetTranslation(INF_EyePos() - LocalPlayer():GetPos())
     cam.PushModelMatrix(mtrx)
     cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
         self:INF_RenderOverride()
@@ -46,7 +46,7 @@ local function renderoverride_nest(self)
 end
 local function renderoverride_raw(self)
     if not frustrum(self) then return end
-    mtrx:SetTranslation(LocalPlayer():GetPos())
+    mtrx:SetTranslation(INF_EyePos() - LocalPlayer():GetPos())
     cam.PushModelMatrix(mtrx)
     cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
         self:DrawModel()

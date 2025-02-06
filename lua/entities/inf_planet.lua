@@ -18,7 +18,6 @@ local atmosphere = Material("infmap/atmosphere")
 function ENT:Initialize()
     if not self.INF_PlanetData then return end
     if CLIENT then
-        self:SetRenderBounds(Vector(), Vector(), Vector(1, 1, 1) * self.INF_PlanetData.Radius)
         self.INF_PlanetVisMesh = InfMap2.GeneratePlanetVisualMesh(self.INF_PlanetData, self:GetPos())
         self.INF_RenderMesh = Mesh()
         self.INF_RenderMatrix = Matrix()
@@ -65,7 +64,7 @@ end
 function ENT:Think()
     if self.INF_PlanetData and not IsValid(self:GetPhysicsObject()) then return self:Initialize() end
     if self.INF_PlanetType then return end
-    self.INF_PlanetType = self:GetNW2String("INF_PlanetType")
+    self.INF_PlanetType = self:GetNW2String("INF_PlanetType", nil)
     if not self.INF_PlanetType then return end
     self.INF_PlanetData = InfMap2.Space.Planets[self.INF_PlanetType]
     self:Initialize()
@@ -87,11 +86,15 @@ function ENT:DrawTranslucent()
     end
 
     render.SetMaterial(self.INF_PlanetData.MaterialOverrides["inside"])
+    self:SetRenderBounds(Vector(), Vector(), Vector(1, 1, 1) * self.INF_PlanetData.Radius)
 
     render.ResetModelLighting(1, 1, 1)
+    --local mtrx = cam.GetModelMatrix()
+    --cam.INF_PopModelMatrix()
     cam.PushModelMatrix(self.INF_RenderMatrix)
     self.INF_RenderMesh:Draw()
     cam.PopModelMatrix()
+    --cam.INF_PushModelMatrix(mtrx)
 end
 
 hook.Add("PhysgunPickup", "InfMap2PlanetPhysgunable", function(ply, ent)
