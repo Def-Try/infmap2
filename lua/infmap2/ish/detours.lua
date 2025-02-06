@@ -66,6 +66,110 @@ end
 local function tracefunc(fake, real, tracedata)
     tracedata.INF_TraceInfo = tracedata.INF_TraceInfo or {}
     local direction = (tracedata.endpos - tracedata.start):GetNormalized()
+    local length = (tracedata.start - tracedata.endpos):Length()
+    local real_start_pos, real_start_offset = InfMap2.LocalizePosition(tracedata.start)
+    local _, real_end_offset = InfMap2.LocalizePosition(tracedata.endpos)
+    local filter = tracedata.filter
+    local data = table.Copy(tracedata)
+
+    data.filter = generate_filter_function(real_start_offset, filter)
+
+    data.start = real_start_pos
+    data.endpos = data.start + direction * length
+
+    local report = {}
+    tracedata.INF_TraceInfo[#tracedata.INF_TraceInfo+1] = report
+
+	local hit_data
+
+    if real_start_offset ~= real_end_offset then
+        -- cross chunk trace, possible hit canditates from other chunks
+        local mindist, endpos, endplane = find_chunk_hit_plane(direction, real_start_pos)
+        report.crosschunk = {
+            mindist=mindist,
+            endpos=endpos,
+            endplane=endplane,
+        }
+
+        local newdata = table.Copy(tracedata)
+        newdata.INF_TraceInfo = tracedata.INF_TraceInfo
+        newdata.INF_DoNotHandleEntities = true
+        newdata.start = endpos + -endplane*InfMap2.ChunkSize + direction -- in another chunk
+        newdata.endpos = newdata.start + direction * math.max(0, length - mindist - 1)
+
+        newdata.start = InfMap2.UnlocalizePosition(newdata.start, real_start_offset + endplane)
+        newdata.endpos = InfMap2.UnlocalizePosition(newdata.endpos, real_start_offset + endplane)
+
+        hit_data = fake(newdata)
+        hit_data.Fraction = (tracedata.start - hit_data.HitPos):Length() / length
+        report.crosschunk.hit_data = hit_data
+        report.crosschunk.dist = (tracedata.start - hit_data.HitPos):Length()
+    end
+    report.real = {}
+
+    local hit_data2 = real(data)
+    if hit_data2.Hit and (not hit_data or hit_data2.Fraction <= hit_data.Fraction) then
+        hit_data = hit_data2
+        hit_data.HitPos = InfMap2.UnlocalizePosition(hit_data.HitPos, real_start_offset)
+    end
+    report.real.hit_data = hit_data2
+
+    report.real.dist = (tracedata.start - hit_data2.HitPos):Length()
+
+    if hit_data and (IsValid(hit_data.Entity) or hit_data.Entity:IsWorld()) and not tracedata.INF_DoNotHandleEntities then
+        local ent = hit_data.Entity
+        if ent:GetClass() == "inf_chunk" then -- hit the inf_chunk, the world terrain
+            hit_data.Entity = game.GetWorld()
+            hit_data.HitWorld = true
+            hit_data.HitNonWorld = false -- wtf garry
+        end
+        if ent:GetClass() == "inf_crosschunkclone" then -- hit crosschunk clone, lie about hitting some entity
+            ---@diagnostic disable-next-line: undefined-field
+            hit_data.Entity = hit_data.Entity.INF_ReferenceData.Parent
+        end
+        if ent:IsWorld() then -- directly hit the world, meaning that something is really far away
+            hit_data = nil
+        end
+    end
+
+    --if hit_data then
+    --    hit_data.HitPos = hit_data.HitPos + hit_data.HitNormal * 20 -- spawning props sometimes clip through
+    --end
+
+    if hit_data and hit_data.Hit then
+        hit_data.Fraction = (tracedata.start - hit_data.HitPos):Length() / length
+    end
+
+	return hit_data or {
+        Entity = NULL,
+        Fraction = 1,
+        FractionLeftSolid = 0,
+        Hit = false,
+        HitBox = 0,
+        HitGroup = 0,
+        HitNoDraw = false,
+        HitNonWorld = false,
+        HitNormal = Vector(0, 0, 0),
+        HitPos = tracedata.endpos,
+        HitSky = false,
+        HitTexture = "** empty **",
+        HitWorld = false,
+        MatType = 0,
+        Normal = direction,
+        PhysicsBone = 0,
+        StartPos = tracedata.start,
+        SurfaceProps = 0,
+        StartSolid = false,
+        AllSolid = false,
+        SurfaceFlags = 0,
+        DispFlags = 0,
+        Contents = CONTENTS_EMPTY
+    }
+end
+
+local function tracefunc(fake, real, tracedata)
+    tracedata.INF_TraceInfo = tracedata.INF_TraceInfo or {}
+    local direction = (tracedata.endpos - tracedata.start):GetNormalized()
     local length = math.min((tracedata.start - tracedata.endpos):Length(),
                             InfMap2.ChunkSize * 6)
                             -- limit incase someone tries to trace 10 BAJILLION UNITS
@@ -109,7 +213,7 @@ local function tracefunc(fake, real, tracedata)
         local newdata = {
             start = endpos + -endplane*InfMap2.ChunkSize + direction, -- in another chunk
             endpos = tracedata.start + direction * math.max(0, length - mindist - 1),
-            filter = generate_filter_function(real_start_offset, filter),
+            filter = tracedata.filter, -- we're calling recursively, provide original filter
             mask = tracedata.mask,
             collisiongroup = tracedata.collisiongroup,
             ignoreworld = tracedata.ignoreworld,
@@ -117,14 +221,17 @@ local function tracefunc(fake, real, tracedata)
             hitclientonly = tracedata.hitclientonly,
             INF_TraceInfo = tracedata.INF_TraceInfo,
             INF_DoNotHandleEntities = true,
+            INF_RealStartPos = (tracedata.INF_RealStartPos or tracedata.start)
         }
         newdata.start = InfMap2.UnlocalizePosition(newdata.start, real_start_offset + endplane)
         newdata.endpos = InfMap2.UnlocalizePosition(newdata.endpos, real_start_offset + endplane)
 
-        hit_data = fake(newdata)
-        hit_data.Fraction = (tracedata.start - hit_data.HitPos):Length() / length
-        report.crosschunk.hit_data = hit_data
-        report.crosschunk.dist = (tracedata.start - hit_data.HitPos):Length()
+        if (newdata.endpos - newdata.INF_RealStartPos):Length() < InfMap2.ChunkSize * 6 then
+            hit_data = fake(newdata)
+            hit_data.Fraction = (tracedata.start - hit_data.HitPos):Length() / length
+            report.crosschunk.hit_data = hit_data
+            report.crosschunk.dist = (tracedata.start - hit_data.HitPos):Length()
+        end
     end
     report.real = {}
 
@@ -189,7 +296,6 @@ local function tracefunc(fake, real, tracedata)
 
     if tracedata.output then
         table.Add(tracedata.output, hit_data)
-        return
     end
 
 	return hit_data
