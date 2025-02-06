@@ -4,6 +4,7 @@ local function find_closest_planet_distance(ply)
     local closest = math.huge
     local pos = ply:GetPos()
     for _,planet in ipairs(InfMap2.Cache.SpawnedPlanets) do
+        if not IsValid(planet) then continue end
         closest = math.min(planet:GetPos():Distance(pos), closest)
     end
     return closest
@@ -32,9 +33,12 @@ timer.Create("InfMap2SpaceGenerator", 0, 0, function()
         local planettypes = table.GetKeys(InfMap2.Space.Planets)
         local planet = ents.Create("inf_planet")
         planet:Spawn()
-        -- not sure why megapos isn't able to be set up right there. oh well.
+        -- not sure why megapos isn't able to be set up right there. oh well, give it a tick
         timer.Simple(0, function()
             planet:SetPos(pos)
+        end)
+        -- give a few more ticks for everything to reach clients properly
+        timer.Simple(engine.TickInterval() * 3, function()
             planet:SetNW2String("INF_PlanetType", planettypes[math.random(1, #planettypes)])
         end)
         table.insert(InfMap2.Cache.SpawnedPlanets, planet)

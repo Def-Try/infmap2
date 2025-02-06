@@ -140,8 +140,7 @@ return {
         planets = {
             earth = {
                 height_function = function(x, y)
-                    return (simplex.Noise2D(x / 15000, y / 15000) * 2000) /
-                            math.max(simplex.Noise2D(x / 9000, y / 9000) * 10, 1)
+                    return simplex.Noise2D(x / 10000, y / 10000) * 1000
                 end,
                 atmosphere = {Vector(0.66, 0.86, 0.95), 0.25},
                 clouds = 1,
@@ -150,8 +149,8 @@ return {
                     inside = "infmap2/grasslit",
                     clouds = "infmap_planets/earth_clouds"
                 },
-                radius = 1000,
-                samplesize = 100,
+                radius = 5000,
+                samplesize = 500,
                 uvscale = 10,
             }
         }

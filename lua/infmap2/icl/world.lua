@@ -393,6 +393,21 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
     end
 end)
 
+local pushed = false
+hook.Add("RenderScene", "InfMap2RenderWorld", function()
+    if pushed then cam.INF_PopModelMatrix() end
+    cam.INF_PushModelMatrix(InfMap2.ViewMatrix, false)
+    pushed = true
+end)
+hook.Add("PostRenderTranslucentRenderables", "InfMap2RenderWorld", function()
+    cam.INF_PopModelMatrix()
+    pushed = false
+end)
+hook.Add("PostRender", "InfMap2RenderWorld", function()
+    if not pushed then return end
+    cam.INF_PopModelMatrix()
+end)
+
 hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
     if not InfMap2.World.HasTerrain then return end
     if not InfMap2.Cache.material then InfMap2.Cache.material = Material(InfMap2.Visual.Terrain.Material) end
@@ -409,15 +424,10 @@ hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
     render.OverrideDepthEnable(false, false)
     render.OverrideColorWriteEnable(false, false)
 
-    cam.INF_PushModelMatrix(InfMap2.ViewMatrix, false)
     render.SetMaterial(InfMap2.Cache.material)
     for _,meshes in pairs(InfMap2.ChunkMeshes.Draw) do
         for i=1,#meshes do meshes[i]:Draw() end
     end
-end)
-
-hook.Add("PostRenderTranslucentRenderables", "InfMap2RenderWorld", function()
-    cam.INF_PopModelMatrix()
 end)
 
 hook.Add("ShutDown", "InfMap2RenderWorld", function()

@@ -15,9 +15,9 @@ local function frustrum(ent)
     local pos = ent:GetPos() + ent:OBBCenter() - LocalPlayer():GetMegaPos() * InfMap2.ChunkSize
     local show = false
     if pos:Distance(EyePos()) < 10 then
-        show = true
+        show = true -- very close
     elseif pos:Distance(EyePos()) > InfMap2.ChunkSize * InfMap2.Visual.MegachunkSize / 2 then
-        show = false
+        show = false -- too far, don't bother
     else
         show = util.PixelVisible(pos, ent.INF_Diagonal, ent.INF_PixVisHandle) > 0
     end
@@ -37,18 +37,21 @@ local mtrx = Matrix()
 
 local function renderoverride_nest(self)
     if not frustrum(self) then return end
-    mtrx:SetTranslation(INF_EyePos() - LocalPlayer():GetPos())
-    cam.PushModelMatrix(mtrx)
+    --mtrx:SetTranslation(INF_EyePos() - self.INF_VisualOffset)
+    --cam.PushModelMatrix(mtrx)
+    local mtrx = cam.GetModelMatrix()
+    cam.INF_PopModelMatrix()
     cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
         self:INF_RenderOverride()
     cam.End3D()
-    cam.PopModelMatrix()
+    cam.INF_PushModelMatrix(mtrx)
+    --cam.PopModelMatrix()
 end
 local function renderoverride_raw(self)
     if not frustrum(self) then return end
-    mtrx:SetTranslation(INF_EyePos() - LocalPlayer():GetPos())
+    mtrx:SetTranslation(self.INF_VisualOffset)
     cam.PushModelMatrix(mtrx)
-    cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
+    cam.Start3D(EyePos())
         self:DrawModel()
     cam.End3D()
     cam.PopModelMatrix()

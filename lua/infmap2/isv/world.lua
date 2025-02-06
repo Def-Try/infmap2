@@ -11,31 +11,31 @@ function InfMap2.CreateWorldChunk(megapos)
 end
 
 hook.Add("PlayerSpawnedEffect", "InfMap2SpawnEffectCorrect", function(ply, model, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
+    timer.Simple(0, function() InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos()) end)
 end)
 
 hook.Add("PlayerSpawnedNPC", "InfMap2SpawnNPCCorrect", function(ply, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
+    timer.Simple(0, function() InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos()) end)
 end)
 
 hook.Add("PlayerSpawnedProp", "InfMap2SpawnPropCorrect", function(ply, model, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
+    timer.Simple(0, function() InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos()) end)
 end)
 
 hook.Add("PlayerSpawnedRagdoll", "InfMap2SpawnRagdollCorrect", function(ply, model, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
+    timer.Simple(0, function() InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos()) end)
 end)
 
 hook.Add("PlayerSpawnedSENT", "InfMap2SpawnSENTCorrect", function(ply, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
+    timer.Simple(0, function() InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos()) end)
 end)
 
 hook.Add("PlayerSpawnedSWEP", "InfMap2SpawnSWEPCorrect", function(ply, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
+    timer.Simple(0, function() InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos()) end)
 end)
 
 hook.Add("PlayerSpawnedVehicle", "InfMap2SpawnVehicleCorrect", function(ply, ent)
-    InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos())
+    timer.Simple(0, function() InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos()) end)
 end)
 
 timer.Create("InfMap2RemoveUnusedChunks", 0.5, 0, function()

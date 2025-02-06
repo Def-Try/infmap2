@@ -34,13 +34,13 @@ render.INF_DrawBeam = render.INF_DrawBeam or render.DrawBeam
 function render.DrawBeam(start, endpos, width, texstart, texend, color) return render.INF_DrawBeam(localize(start), localize(endpos), width, texstart, texend, color) end
 render.INF_AddBeam = render.INF_AddBeam or render.AddBeam
 function render.AddBeam(start, width, texend, color) return render.INF_AddBeam(localize(start), width, texend, color) end
+--]]
 
 render.INF_Model = render.INF_Model or render.Model
 function render.Model(settings, csent)
 	settings.pos = localize(settings.pos)
 	return render.INF_Model(settings, csent)
 end
---]]
 
 render.INF_RenderView = render.INF_RenderView or render.RenderView
 function render.RenderView(view)
@@ -111,4 +111,9 @@ function cam.PopModelMatrix()
 		InfMap2.Cache.CameraMatrixPointer = InfMap2.Cache.CameraMatrixPointer + 1
 		cam.INF_PushModelMatrix(InfMap2.Cache.CameraMatrixStack[i][1], true)
 	end
+end
+
+cam.INF_Start3D2D = cam.INF_Start3D2D or cam.Start3D2D
+function cam.Start3D2D(pos, ang, scl)
+	return cam.INF_Start3D2D(localize(pos), ang, scl)
 end

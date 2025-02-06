@@ -15,7 +15,8 @@ if not InfMap2 then return end
 
 local atmosphere = Material("infmap/atmosphere")
 
-function ENT:Initialize()
+function ENT:Initialize(ready)
+    if not ready then return end
     if not self.INF_PlanetData then return end
     if CLIENT then
         self.INF_PlanetVisMesh = InfMap2.GeneratePlanetVisualMesh(self.INF_PlanetData, self:GetPos())
@@ -62,12 +63,17 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
-    if self.INF_PlanetData and not IsValid(self:GetPhysicsObject()) then return self:Initialize() end
-    if self.INF_PlanetType then return end
+    if self.INF_LastPos ~= self:GetPos() and self.INF_PlanetData then
+        self.INF_LastPos = self:GetPos()
+        self:Initialize(true)
+        return
+    end
+    -- if self.INF_PlanetData and not IsValid(self:GetPhysicsObject()) then return self:Initialize(true) end
+    if self.INF_PlanetType and self.INF_PlanetType ~= "" then return end
     self.INF_PlanetType = self:GetNW2String("INF_PlanetType", nil)
-    if not self.INF_PlanetType then return end
+    if not self.INF_PlanetType or self.INF_PlanetType == "" then return end
     self.INF_PlanetData = InfMap2.Space.Planets[self.INF_PlanetType]
-    self:Initialize()
+    self:Initialize(true)
 end
 
 function ENT:DrawTranslucent()
@@ -91,6 +97,7 @@ function ENT:DrawTranslucent()
     render.ResetModelLighting(1, 1, 1)
     --local mtrx = cam.GetModelMatrix()
     --cam.INF_PopModelMatrix()
+    self.INF_RenderMatrix:SetTranslation(self:GetPos())
     cam.PushModelMatrix(self.INF_RenderMatrix)
     self.INF_RenderMesh:Draw()
     cam.PopModelMatrix()
