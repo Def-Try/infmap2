@@ -399,7 +399,8 @@ hook.Add("RenderScene", "InfMap2RenderWorld", function()
     cam.INF_PushModelMatrix(InfMap2.ViewMatrix, false)
     pushed = true
 end)
-hook.Add("PostRenderTranslucentRenderables", "InfMap2RenderWorld", function()
+hook.Add("PostRenderTranslucentRenderables", "InfMap2RenderWorld", function(depth, skybox, skybox3d)
+    if depth or skybox or skybox3d then return end
     cam.INF_PopModelMatrix()
     pushed = false
 end)
@@ -410,7 +411,9 @@ end)
 
 hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
     if not InfMap2.World.HasTerrain then return end
-    if not InfMap2.Cache.material then InfMap2.Cache.material = Material(InfMap2.Visual.Terrain.Material) end
+    if not InfMap2.Cache.material then
+        InfMap2.Cache.material = Material(InfMap2.Visual.Terrain.Material)
+    end
 
     -- unfuck_lighting, thanks gwater 2 !
     if not IsValid(csent) then csent = ClientsideModel("error.mdl") end
