@@ -66,13 +66,26 @@ end
 local function tracefunc(fake, real, tracedata)
     tracedata.INF_TraceInfo = tracedata.INF_TraceInfo or {}
     local direction = (tracedata.endpos - tracedata.start):GetNormalized()
-    local length = (tracedata.start - tracedata.endpos):Length()
+    local length = math.min((tracedata.start - tracedata.endpos):Length(),
+                            InfMap2.Visual.MegachunkSize * InfMap2.Visual.RenderDistance)
+                            -- limit incase someone tries to trace 10 BAJILLION UNITS
+                            -- (looking at you wiremod)
     local real_start_pos, real_start_offset = InfMap2.LocalizePosition(tracedata.start)
     local _, real_end_offset = InfMap2.LocalizePosition(tracedata.endpos)
     local filter = tracedata.filter
-    local data = table.Copy(tracedata)
-
-    data.filter = generate_filter_function(real_start_offset, filter)
+    local data = {
+        start = tracedata.start,
+        endpos = tracedata.endpos,
+        filter = generate_filter_function(real_start_offset, filter),
+        mask = tracedata.mask,
+        collisiongroup = tracedata.collisiongroup,
+        ignoreworld = tracedata.ignoreworld,
+        output = tracedata.output,
+        whitelist = tracedata.whitelist,
+        hitclientonly = tracedata.hitclientonly,
+        INF_TraceInfo = tracedata.INF_TraceInfo,
+        INF_DoNotHandleEntities = tracedata.INF_DoNotHandleEntities,
+    }
 
     data.start = real_start_pos
     data.endpos = data.start + direction * length
@@ -91,12 +104,18 @@ local function tracefunc(fake, real, tracedata)
             endplane=endplane,
         }
 
-        local newdata = table.Copy(tracedata)
-        newdata.INF_TraceInfo = tracedata.INF_TraceInfo
-        newdata.INF_DoNotHandleEntities = true
-        newdata.start = endpos + -endplane*InfMap2.ChunkSize + direction -- in another chunk
-        newdata.endpos = newdata.start + direction * math.max(0, length - mindist - 1)
-
+        local newdata = {
+            start = endpos + -endplane*InfMap2.ChunkSize + direction, -- in another chunk
+            endpos = tracedata.start + direction * math.max(0, length - mindist - 1),
+            filter = generate_filter_function(real_start_offset, filter),
+            mask = tracedata.mask,
+            collisiongroup = tracedata.collisiongroup,
+            ignoreworld = tracedata.ignoreworld,
+            whitelist = tracedata.whitelist,
+            hitclientonly = tracedata.hitclientonly,
+            INF_TraceInfo = tracedata.INF_TraceInfo,
+            INF_DoNotHandleEntities = true,
+        }
         newdata.start = InfMap2.UnlocalizePosition(newdata.start, real_start_offset + endplane)
         newdata.endpos = InfMap2.UnlocalizePosition(newdata.endpos, real_start_offset + endplane)
 
@@ -140,7 +159,7 @@ local function tracefunc(fake, real, tracedata)
         hit_data.Fraction = (tracedata.start - hit_data.HitPos):Length() / length
     end
 
-	return hit_data or {
+    hit_data = hit_data or {
         Entity = NULL,
         Fraction = 1,
         FractionLeftSolid = 0,
@@ -165,6 +184,13 @@ local function tracefunc(fake, real, tracedata)
         DispFlags = 0,
         Contents = CONTENTS_EMPTY
     }
+
+    if tracedata.output then
+        table.Add(tracedata.output, hit_data)
+        return
+    end
+
+	return hit_data
 end
 
 local function generate_trace_function(real)
