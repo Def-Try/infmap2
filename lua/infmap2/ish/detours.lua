@@ -67,15 +67,17 @@ local function tracefunc(fake, real, tracedata)
     tracedata.INF_TraceInfo = tracedata.INF_TraceInfo or {}
     local direction = (tracedata.endpos - tracedata.start):GetNormalized()
     local length = math.min((tracedata.start - tracedata.endpos):Length(),
-                            InfMap2.Visual.MegachunkSize * InfMap2.Visual.RenderDistance)
+                            InfMap2.ChunkSize * 6)
                             -- limit incase someone tries to trace 10 BAJILLION UNITS
                             -- (looking at you wiremod)
     local real_start_pos, real_start_offset = InfMap2.LocalizePosition(tracedata.start)
     local _, real_end_offset = InfMap2.LocalizePosition(tracedata.endpos)
     local filter = tracedata.filter
     local data = {
-        start = tracedata.start,
-        endpos = tracedata.endpos,
+        start = Vector(tracedata.start),
+        endpos = Vector(tracedata.endpos),
+        maxs = tracedata.maxs and Vector(tracedata.maxs),
+        mins = tracedata.mins and Vector(tracedata.mins),
         filter = generate_filter_function(real_start_offset, filter),
         mask = tracedata.mask,
         collisiongroup = tracedata.collisiongroup,
