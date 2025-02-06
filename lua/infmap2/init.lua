@@ -6,6 +6,7 @@ if InfMap2.Debug == nil then InfMap2.Debug = false end
 InfMap2.Version = "0.1b"
 
 include("infmap2/ish/world.lua")
+include("infmap2/ish/space.lua")
 include("infmap2/ish/collision.lua")
 include("infmap2/ish/functions.lua")
 include("infmap2/ish/detours.lua")
@@ -13,6 +14,7 @@ include("infmap2/ish/detours.lua")
 if SERVER then
     AddCSLuaFile("infmap2/icl/world.lua")
     AddCSLuaFile("infmap2/icl/clouds.lua")
+    AddCSLuaFile("infmap2/icl/space.lua")
     AddCSLuaFile("infmap2/icl/fog.lua")
     AddCSLuaFile("infmap2/icl/positioning.lua")
     AddCSLuaFile("infmap2/icl/detours.lua")
@@ -21,6 +23,7 @@ if SERVER then
     AddCSLuaFile("infmap2/icl/misc.lua")
 
     include("infmap2/isv/world.lua")
+    include("infmap2/isv/space.lua")
     include("infmap2/isv/positioning.lua")
     include("infmap2/isv/detours.lua")
     include("infmap2/isv/wrapping.lua")
@@ -32,6 +35,7 @@ end
 if CLIENT then
     include("infmap2/icl/world.lua")
     include("infmap2/icl/clouds.lua")
+    include("infmap2/icl/space.lua")
     include("infmap2/icl/fog.lua")
     include("infmap2/icl/positioning.lua")
     include("infmap2/icl/detours.lua")
@@ -48,6 +52,7 @@ InfMap2.Visual = {}
 InfMap2.Visual.Terrain = {}
 InfMap2.Visual.Clouds = {}
 InfMap2.Visual.Fog = {}
+InfMap2.Space = {}
 
 local main = include("infmap2/"..game.GetMap().."/main.lua")
 if not main then
@@ -61,6 +66,7 @@ main.visual.terrain = main.visual.terrain or {}
 main.visual.clouds = main.visual.clouds or {}
 main.visual.fog = main.visual.fog or {}
 
+InfMap2.ChunkSize = main.chunksize
 InfMap2.World.HasTerrain = main.world.terrain.has_terrain or false
 InfMap2.Visual.HasTerrain = InfMap2.World.HasTerrain -- alias
 if InfMap2.World.HasTerrain then
@@ -98,7 +104,26 @@ if InfMap2.Visual.HasFog then
     InfMap2.Visual.Fog.MaxDensity = main.visual.fog.maxdensity
 end
 
-InfMap2.ChunkSize = main.chunksize
+InfMap2.Space.HasSpace = main.space.has_space or false
+if InfMap2.Space.HasSpace then
+    InfMap2.Space.PlanetDistance = main.space.planet_distance
+    InfMap2.Space.Height = main.space.height
+    InfMap2.Space.Planets = {}
+    for name, data in pairs(main.space.planets) do
+        local idata = {}
+        InfMap2.Space.Planets[name] = idata
+        idata.HeightFunction = data.height_function
+        idata.Atmosphere = data.atmosphere
+        idata.Clouds = data.clouds
+        idata.Radius = data.radius
+        idata.SampleSize = data.samplesize
+        idata.UVScale = data.uvscale
+        idata.MaterialOverrides = {}
+        for n, material in pairs(data.material_overrides) do
+            idata.MaterialOverrides[n] = Material(material)
+        end
+    end
+end
 
 include("infmap2/ish/baking.lua")
 

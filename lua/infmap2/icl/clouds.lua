@@ -45,7 +45,8 @@ local cloud_coro = coroutine.create(function()
     end
 end)
 
-hook.Add("PreDrawTranslucentRenderables", "infmap_clouds", function(_, sky)
+-- TODO: baked clouds
+hook.Add("PreDrawTranslucentRenderables", "InfMap2Clouds", function(_, sky)
     if not InfMap2.Visual.HasClouds then return end
 	if sky then return end -- dont render in skybox
 	local offset = LocalPlayer():GetMegaPos()

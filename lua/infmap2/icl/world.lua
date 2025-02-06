@@ -409,12 +409,15 @@ hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
     render.OverrideDepthEnable(false, false)
     render.OverrideColorWriteEnable(false, false)
 
-    cam.PushModelMatrix(InfMap2.ViewMatrix, false)
+    cam.INF_PushModelMatrix(InfMap2.ViewMatrix, false)
     render.SetMaterial(InfMap2.Cache.material)
     for _,meshes in pairs(InfMap2.ChunkMeshes.Draw) do
         for i=1,#meshes do meshes[i]:Draw() end
     end
-    cam.PopModelMatrix()
+end)
+
+hook.Add("PostRenderTranslucentRenderables", "InfMap2RenderWorld", function()
+    cam.INF_PopModelMatrix()
 end)
 
 hook.Add("ShutDown", "InfMap2RenderWorld", function()

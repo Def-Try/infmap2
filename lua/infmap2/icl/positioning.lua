@@ -33,17 +33,25 @@ local function frustrum(ent)
     return show
 end
 
+local mtrx = Matrix()
+
 local function renderoverride_nest(self)
     if not frustrum(self) then return end
+    mtrx:SetTranslation(LocalPlayer():GetPos())
+    cam.PushModelMatrix(mtrx)
     cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
         self:INF_RenderOverride()
     cam.End3D()
+    cam.PopModelMatrix()
 end
 local function renderoverride_raw(self)
     if not frustrum(self) then return end
+    mtrx:SetTranslation(LocalPlayer():GetPos())
+    cam.PushModelMatrix(mtrx)
     cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
         self:DrawModel()
     cam.End3D()
+    cam.PopModelMatrix()
 end
 
 function InfMap2.EntityUpdateMegapos(ent, megapos)

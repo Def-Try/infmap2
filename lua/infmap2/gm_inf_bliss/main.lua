@@ -133,6 +133,29 @@ return {
             maxdensity = 0.5
         }
     },
+    space = {
+        has_space = true,
+        planet_distance = 400000,
+        height = 500000,
+        planets = {
+            earth = {
+                height_function = function(x, y)
+                    return (simplex.Noise2D(x / 15000, y / 15000) * 2000) /
+                            math.max(simplex.Noise2D(x / 9000, y / 9000) * 10, 1)
+                end,
+                atmosphere = {Vector(0.66, 0.86, 0.95), 0.25},
+                clouds = 1,
+                material_overrides = {
+                    outside = "infmap_planets/earth",
+                    inside = "infmap2/grasslit",
+                    clouds = "infmap_planets/earth_clouds"
+                },
+                radius = 1000,
+                samplesize = 100,
+                uvscale = 10,
+            }
+        }
+    },
 
     spawner = function(ply)
         ply:SetPos(Vector(0, 0, 10))

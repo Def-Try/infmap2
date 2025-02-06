@@ -8,6 +8,8 @@ function render.ComputeLighting(pos, normal) return render.INF_ComputeLighting(l
 render.INF_ComputePixelDiameterOfSphere = render.INF_ComputePixelDiameterOfSphere or render.ComputePixelDiameterOfSphere
 function render.ComputePixelDiameterOfSphere(pos, radius) return render.INF_ComputePixelDiameterOfSphere(localize(pos), radius) end
 
+-- handled by world transform matrix
+--[[
 render.INF_DrawBeam = render.INF_DrawBeam or render.DrawBeam
 function render.DrawBeam(start, endpos, width, texstart, texend, color) return render.INF_DrawBeam(localize(start), localize(endpos), width, texstart, texend, color) end
 render.INF_DrawBox = render.INF_DrawBox or render.DrawBox
@@ -38,6 +40,8 @@ function render.Model(settings, csent)
 	settings.pos = localize(settings.pos)
 	return render.INF_Model(settings, csent)
 end
+--]]
+
 render.INF_RenderView = render.INF_RenderView or render.RenderView
 function render.RenderView(view)
 	view.origin = localize(view.origin)
@@ -51,8 +55,12 @@ function ENTITY:SetRenderBoundsWS(mins, maxs)
 end
 
 ENTITY.INF_SetRenderBounds = ENTITY.INF_SetRenderBounds or ENTITY.SetRenderBounds
-function ENTITY:SetRenderBounds(mins, maxs)
-	self.INF_RenderBounds = {mins, maxs}
+function ENTITY:SetRenderBounds(mins, maxs, add)
+	if self:GetMegaPos() == LocalPlayer():GetMegaPos() then
+		self:INF_SetRenderBounds(mins, maxs, add)
+	end
+	add = add or vector_origin
+	self.INF_RenderBounds = {mins - add, maxs + add}
 end
 
 ENTITY.INF_GetRenderBounds = ENTITY.INF_GetRenderBounds or ENTITY.GetRenderBounds
@@ -65,6 +73,42 @@ end
 
 INF_EyePos = INF_EyePos or EyePos
 function EyePos()
-	return LocalPlayer():EyePos()
+	return InfMap2.UnlocalizePosition(INF_EyePos(), LocalPlayer():GetMegaPos())
 end
-EyePos = INF_EyePos
+
+InfMap2.Cache.CameraMatrixStack = InfMap2.Cache.CameraMatrixStack or {}
+InfMap2.Cache.CameraMatrixPointer = InfMap2.Cache.CameraMatrixPointer or 0
+
+cam.INF_PushModelMatrix = cam.INF_PushModelMatrix or cam.PushModelMatrix
+function cam.PushModelMatrix(matrix, multiply)
+	table.insert(InfMap2.Cache.CameraMatrixStack, {matrix, multiply}) -- push
+	InfMap2.Cache.CameraMatrixPointer = InfMap2.Cache.CameraMatrixPointer + 1
+	if not multiply then
+		for i=1, InfMap2.Cache.CameraMatrixPointer do
+			if InfMap2.Cache.CameraMatrixPointer == 1 then break end
+			cam.INF_PopModelMatrix()
+		end
+		InfMap2.Cache.CameraMatrixPointer = 1
+	end
+	cam.INF_PushModelMatrix(matrix, true)
+end
+
+cam.INF_PopModelMatrix = cam.INF_PopModelMatrix or cam.PopModelMatrix
+function cam.PopModelMatrix()
+	local matrix, multiply = unpack(table.remove(InfMap2.Cache.CameraMatrixStack)) -- pop
+	cam.INF_PopModelMatrix()
+	InfMap2.Cache.CameraMatrixPointer = InfMap2.Cache.CameraMatrixPointer - 1
+	if multiply then return end
+	InfMap2.Cache.CameraMatrixPointer = 0
+	if #InfMap2.Cache.CameraMatrixStack == 0 then return end
+	local backtrack = 0
+	for i=#InfMap2.Cache.CameraMatrixStack, 1, -1 do
+		local data = InfMap2.Cache.CameraMatrixStack[i]
+		if not data[2] then backtrack = -1 end
+		backtrack = backtrack + 1
+	end
+	for i=#InfMap2.Cache.CameraMatrixStack - backtrack, #InfMap2.Cache.CameraMatrixStack do
+		InfMap2.Cache.CameraMatrixPointer = InfMap2.Cache.CameraMatrixPointer + 1
+		cam.INF_PushModelMatrix(InfMap2.Cache.CameraMatrixStack[i][1], true)
+	end
+end
