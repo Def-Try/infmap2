@@ -64,7 +64,7 @@ end
 
 function ENT:Think()
     -- not sure why, but for some reason planettype arrives BEFORE position was set?
-    -- reinitialize that bitch
+    -- reinitialize that b*tch
     if self.INF_LastPos ~= self:GetPos() and self.INF_PlanetData then
         self.INF_LastPos = self:GetPos()
         self:Initialize(true)
