@@ -90,10 +90,6 @@ timer.Create("InfMap2WorldWrapping", 0.1, 0, function()
         if ent:GetVelocity() == vector_origin then continue end -- no velocity, no possible reason to teleport
         if IsValid(ent:GetParent()) then continue end -- parent is valid, teleport is handled by it
         if ent:IsPlayer() and not ent:Alive() then continue end -- player is dead, don't teleport
-        if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize) then
-            ent.INF_ConstraintMain = nil
-            continue
-        end -- still in chunk, just clear constraint main
         if not InfMap2.IsMainContraptionEntity(ent) then continue end -- not main contraption entity, teleporting *will* break stuff
         ents_to_wrap[#ents_to_wrap+1] = ent
     end
@@ -101,7 +97,11 @@ end)
 
 hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_to_wrap) do
     if not IsValid(ent) then continue end -- ent died
-    if IsValid(ent.INF_ConstraintMain) then continue end -- has a "master" constraint entity
+    if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize - 1) then
+        ent.INF_ConstraintMain = nil
+        continue
+    end -- still in chunk, just clear constraint main
+    if IsValid(ent.INF_ConstraintMain) and ent.INF_ConstraintMain ~= ent then continue end -- has a "master" constraint entity
     if ent:IsPlayerHolding() then continue end -- being held by player
 
     local pos, megapos_offset = InfMap2.LocalizePosition(ent:INF_GetPos())

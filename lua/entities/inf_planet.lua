@@ -83,12 +83,15 @@ function ENT:Draw()
     local data = self.INF_PlanetData
 
     local col = Color(255, 255, 255, EyePos().z / InfMap2.Space.Height * 255)
+    local dst = LocalPlayer():GetPos():Distance(self:GetPos())
+
+    local detail = (11 - math.Round(math.min(10, math.max(1, dst / 70000)))) * 5
 
     render.SetMaterial(data.MaterialOverrides["outside"])
-    render.DrawSphere(self:GetPos(), (data.Radius + 7), 50, 50, col)
+    render.DrawSphere(self:GetPos(), (data.Radius + 7), detail, detail, col)
 
     -- don't draw inside if too far
-    if LocalPlayer():GetPos():Distance(self:GetPos()) > self.INF_PlanetData.Radius * 2 then return end
+    if dst > self.INF_PlanetData.Radius * 2 then return end
 
     if data.Atmosphere then
         local atmos = data.Atmosphere
