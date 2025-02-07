@@ -265,6 +265,22 @@ local csent = ClientsideModel("error.mdl")
 local lighting_table = {model = "models/shadertest/vertexlit.mdl", pos = Vector()}
 local cubemap_table  = {model = "models/shadertest/envballs.mdl",  pos = Vector()}
 
+local predicted_teleport = false
+hook.Add("Tick", "InfMap2LPWrappingPrediction", function()
+    predicted_teleport = false
+end)
+hook.Add("PostRender", "InfMap2LPWrappingPrediction", function()
+    if predicted_teleport then return end
+    local lp = LocalPlayer()
+    local rawpos = lp:INF_GetPos()
+    local real, mega = InfMap2.LocalizePosition(rawpos)
+    if mega ~= vector_origin then
+        lp:INF_SetPos(real)
+        InfMap2.EntityUpdateMegapos(lp, lp:GetMegaPos() + mega)
+        predicted_teleport = true
+    end
+end)
+
 -- This is bad, but I haven't found any other *RELIABLE* way of localizing calcview.
 -- (Honestly, like, hooks are so bad.)
 -- This works by moving every CalcView hook added by any other addon to INF_CalcView hook
@@ -292,13 +308,12 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
     end
     override = false
     hook.Add("Tick", "InfMap2UpdateCalcViewRelativeOrigin", function()
-        --do return end
         relativeorigin = LocalPlayer():EyePos()
     end)
     hook.Add("CalcView", "InfMap2CalcView", function(ply, pos, angles, fov, znear, zfar)
         --do return end
         calcviewing = true
-        local view = hook.Run("INF_CalcView", ply, pos + ply:GetMegaPos()* InfMap2.ChunkSize, angles, fov, znear, zfar)
+        local view = hook.Run("INF_CalcView", ply, pos + ply:GetMegaPos() * InfMap2.ChunkSize, angles, fov, znear, zfar)
         calcviewing = false
 
         local view_fallback = {
@@ -311,7 +326,7 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
         }
 
         if not view then
-            view = gmod.GetGamemode():CalcView(ply, pos + ply:GetMegaPos()* InfMap2.ChunkSize, angles, fov, znear, zfar)
+            view = gmod.GetGamemode():CalcView(ply, pos + ply:GetMegaPos() * InfMap2.ChunkSize, angles, fov, znear, zfar)
         end
         if not view then
             view = view_fallback
@@ -319,8 +334,8 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
 
         local offset = (view.origin - relativeorigin)
         -- TODO: needs to account for megapos too?
-        local pos, megapos = InfMap2.LocalizePosition(view.origin - offset) -- view.origin - offset)
-        view.origin = pos + offset -- InfMap2.UnlocalizePosition(pos, megapos - LocalPlayer():GetMegaPos())
+        local pos, megapos = InfMap2.LocalizePosition(view.origin - offset)
+        view.origin = pos + offset
 
         InfMap2.ViewMatrix:SetTranslation(-megapos * InfMap2.ChunkSize)
         return view
