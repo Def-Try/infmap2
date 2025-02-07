@@ -102,6 +102,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
             end
         end
         last_megachunk = megachunk
+        return
     end
 
 	for _, child in ipairs(ent:GetChildren()) do
