@@ -69,6 +69,6 @@ hook.Add("PreDrawTranslucentRenderables", "InfMap2Clouds", function(_, sky)
             Vector(direction[1] * move + offset[1] * InfMap2.ChunkSize,
                    direction[2] * move + offset[2] * InfMap2.ChunkSize,
                    (i - 1) * 10000 + InfMap2.Visual.Clouds.Height
-            ), Vector(0, 0, 1), 20000000, 20000000)
+            ), Vector(0, 0, 1), 20000000, 20000000, color_white)
 	end
 end)
