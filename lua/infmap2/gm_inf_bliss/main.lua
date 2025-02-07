@@ -142,7 +142,7 @@ return {
                 height_function = function(x, y)
                     return simplex.Noise2D(x / 10000, y / 10000) * 1000
                 end,
-                atmosphere = {Vector(0.66, 0.86, 0.95), 0.25},
+                atmosphere = Color(168, 219, 242, 64),
                 clouds = 1,
                 material_overrides = {
                     outside = "infmap_planets/earth",

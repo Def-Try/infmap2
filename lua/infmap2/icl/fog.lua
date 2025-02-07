@@ -1,4 +1,4 @@
-hook.Add("SetupWorldFog", "!infmap_fog", function()
+hook.Add("SetupWorldFog", "InfMap2WorldFog", function()
     local color = InfMap2.Visual.Fog.Color
 	render.FogStart(InfMap2.Visual.Fog.Start)
 	render.FogMaxDensity(InfMap2.Visual.Fog.MaxDensity)

@@ -1,4 +1,7 @@
 local ENTITY = FindMetaTable("Entity")
+local CLUALOCOMOTION = FindMetaTable("CLuaLocomotion")
+
+----- Entity detours -----
 
 -- get setentity data since theres no GetEntity
 ENTITY.INF_SetEntity = ENTITY.INF_SetEntity or ENTITY.SetEntity
@@ -27,4 +30,22 @@ function ENTITY:Spawn()
         self:SetPos(self:INF_GetPos())
     end
     return self:INF_Spawn()
+end
+
+----- CLuaLocomotion detours -----
+
+CLUALOCOMOTION.INF_Approach = CLUALOCOMOTION.INF_Approach or CLUALOCOMOTION.Approach
+function CLUALOCOMOTION:Approach(goal, goalweight)
+    local nb = self:GetNextBot()
+    local dir = (goal - nb:GetPos()):GetNormalized()
+    local pos = InfMap2.LocalizePosition(nb:GetPos() + dir)
+    return CLUALOCOMOTION.INF_Approach(self, pos, goalweight)
+end
+
+CLUALOCOMOTION.INF_FaceTowards = CLUALOCOMOTION.INF_FaceTowards or CLUALOCOMOTION.FaceTowards
+function CLUALOCOMOTION:FaceTowards(goal)
+    local nb = self:GetNextBot()
+    local dir = (goal - nb:GetPos()):GetNormalized()
+    local pos = InfMap2.LocalizePosition(nb:GetPos() + dir)
+    return CLUALOCOMOTION.INF_FaceTowards(self, pos)
 end

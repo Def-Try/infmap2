@@ -1,6 +1,11 @@
 InfMap2.GeneratedChunks = InfMap2.GeneratedChunks or {}
 
+---Updates entity megaposition, moving it between chunks
+---@param ent Entity
+---@param megapos Vector
 function InfMap2.EntityUpdateMegapos(ent, megapos)
+    ---@class Entity
+    ent = ent
     ent:SetMegaPos(megapos)
     ent:SetCustomCollisionCheck(true)
 
@@ -14,6 +19,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
     ent:SetMegaPos(megapos)
 
     if ent:IsPlayer() or ent:IsNPC() then
+        ---@cast ent Player|NPC
         for _, weapon in ipairs(ent:GetWeapons()) do
             weapon:SetCustomCollisionCheck(true)
 
@@ -44,7 +50,6 @@ hook.Add("OnEntityCreated", "InfMap2EntityCreated", function(ent) timer.Simple(0
         for i=1,#neighbors do
             local pos = megapos + neighbors[i]
             if InfMap2.GeneratedChunks[tostring(pos)] then continue end
-            -- InfMap2.GeneratedChunks[tostring(pos)] = true
             InfMap2.GeneratedChunks[tostring(pos)] = InfMap2.CreateWorldChunk(pos)
         end
     end

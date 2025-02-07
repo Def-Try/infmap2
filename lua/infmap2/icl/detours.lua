@@ -51,6 +51,9 @@ end
 local ENTITY = FindMetaTable("Entity")
 ENTITY.INF_SetRenderBoundsWS = ENTITY.INF_SetRenderBoundsWS or ENTITY.SetRenderBoundsWS
 function ENTITY:SetRenderBoundsWS(mins, maxs)
+	if self:GetMegaPos() == LocalPlayer():GetMegaPos() then
+		self:INF_SetRenderBoundsWS(mins, maxs)
+	end
 	self.INF_RenderBounds = {self:WorldToLocal(mins), self:WorldToLocal(maxs)}
 end
 
@@ -95,7 +98,7 @@ end
 
 cam.INF_PopModelMatrix = cam.INF_PopModelMatrix or cam.PopModelMatrix
 function cam.PopModelMatrix()
-	local matrix, multiply = unpack(table.remove(InfMap2.Cache.CameraMatrixStack)) -- pop
+	local _, multiply = unpack(table.remove(InfMap2.Cache.CameraMatrixStack)) -- pop
 	cam.INF_PopModelMatrix()
 	InfMap2.Cache.CameraMatrixPointer = InfMap2.Cache.CameraMatrixPointer - 1
 	if multiply then return end

@@ -114,6 +114,10 @@ if InfMap2.Space.HasSpace then
         InfMap2.Space.Planets[name] = idata
         idata.HeightFunction = data.height_function
         idata.Atmosphere = data.atmosphere
+        if idata.Atmosphere then
+            local r, g, b, a = idata.Atmosphere:Unpack()
+            idata.Atmosphere = {Vector(r / 255, g / 255, b / 255), a / 255}
+        end
         idata.Clouds = data.clouds
         idata.Radius = data.radius
         idata.SampleSize = data.samplesize
@@ -122,6 +126,9 @@ if InfMap2.Space.HasSpace then
         for n, material in pairs(data.material_overrides) do
             idata.MaterialOverrides[n] = Material(material)
         end
+        idata.MaterialOverrides["outside"] = idata.MaterialOverrides["outside"] or Material("infmap2/planets/"..name.."_outside")
+        idata.MaterialOverrides["inside"] = idata.MaterialOverrides["inside"] or Material("infmap2/planets/"..name.."_inside")
+        idata.MaterialOverrides["clouds"] = idata.MaterialOverrides["clouds"] or Material("infmap2/planets/"..name.."_clouds")
     end
 end
 

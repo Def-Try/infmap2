@@ -63,12 +63,13 @@ function ENT:Initialize(ready)
 end
 
 function ENT:Think()
+    -- not sure why, but for some reason planettype arrives BEFORE position was set?
+    -- reinitialize that bitch
     if self.INF_LastPos ~= self:GetPos() and self.INF_PlanetData then
         self.INF_LastPos = self:GetPos()
         self:Initialize(true)
         return
     end
-    -- if self.INF_PlanetData and not IsValid(self:GetPhysicsObject()) then return self:Initialize(true) end
     if self.INF_PlanetType and self.INF_PlanetType ~= "" then return end
     self.INF_PlanetType = self:GetNW2String("INF_PlanetType", nil)
     if not self.INF_PlanetType or self.INF_PlanetType == "" then return end
@@ -76,13 +77,19 @@ function ENT:Think()
     self:Initialize(true)
 end
 
-function ENT:DrawTranslucent()
+function ENT:Draw()
     if not self.INF_PlanetType then return end
     if not self.INF_PlanetData then return end
     local data = self.INF_PlanetData
 
+    local col = Color(255, 255, 255, EyePos().z / InfMap2.Space.Height * 255)
+
     render.SetMaterial(data.MaterialOverrides["outside"])
-    render.DrawSphere(self:GetPos(), (data.Radius + 7), 50, 50)
+    render.DrawSphere(self:GetPos(), (data.Radius + 7), 50, 50, col)
+
+    -- don't draw inside if too far
+    if LocalPlayer():GetPos():Distance(self:GetPos()) > self.INF_PlanetData.Radius * 2 then return end
+
     if data.Atmosphere then
         local atmos = data.Atmosphere
 		atmosphere:SetVector("$color", atmos[1])
@@ -95,13 +102,11 @@ function ENT:DrawTranslucent()
     self:SetRenderBounds(Vector(), Vector(), Vector(1, 1, 1) * self.INF_PlanetData.Radius)
 
     render.ResetModelLighting(1, 1, 1)
-    --local mtrx = cam.GetModelMatrix()
-    --cam.INF_PopModelMatrix()
+    
     self.INF_RenderMatrix:SetTranslation(self:GetPos())
     cam.PushModelMatrix(self.INF_RenderMatrix)
     self.INF_RenderMesh:Draw()
     cam.PopModelMatrix()
-    --cam.INF_PushModelMatrix(mtrx)
 end
 
 hook.Add("PhysgunPickup", "InfMap2PlanetPhysgunable", function(ply, ent)

@@ -1,5 +1,9 @@
 AddCSLuaFile()
 
+---Generates planet vertex (physics) mesh
+---@param planetinfo table planet info
+---@param pos Vector planet position
+---@return table<Vector> mesh vertex mesh
 function InfMap2.GeneratePlanetVertexMesh(planetinfo, pos)
     assert(InfMap2.Space.HasSpace, "InfMap2 does not use a space generator")
     assert(planetinfo.HeightFunction ~= nil, "planetinfo.HeightFunction is not set up")
@@ -84,10 +88,14 @@ function InfMap2.GeneratePlanetVertexMesh(planetinfo, pos)
     return table.Copy(planet_mesh)
 end
 
+---Generates planet visual mesh
+---@param planetinfo table planet info
+---@param pos Vector planet position
+---@return table<Vector, number, number, Vector> mesh visual mesh
 function InfMap2.GeneratePlanetVisualMesh(planetinfo, pos)
-    --if InfMap2.Cache.ChunkMeshes["pv"..tostring(pos)] then
-    --    return table.Copy(InfMap2.Cache.ChunkMeshes["pv"..tostring(pos)])
-    --end
+    if InfMap2.Cache.ChunkMeshes["pv"..tostring(pos)] then
+        return table.Copy(InfMap2.Cache.ChunkMeshes["pv"..tostring(pos)])
+    end
     local pvmesh = InfMap2.GeneratePlanetVertexMesh(planetinfo, pos)
 
     local planet_mesh = {}

@@ -272,9 +272,6 @@ local cubemap_table  = {model = "models/shadertest/envballs.mdl",  pos = Vector(
 --  localize data from there, just so that thirdperson / vehicle / etc mods don't explode.
 -- Also, we detour hook.Add *just* in case if any addon for some ungodly reason wants to
 --  add CalcView hooks after the game has started.
--- No, this does not support DLib hook library.
--- F*** DLib hook.
--- Really.
 hook.Add("Think", "InfMap2FixF***ingCalcView", function()
     --do return end
     local override = false
@@ -455,7 +452,7 @@ big_plane:BuildFromTriangles({
 })
 local plane_matrix = Matrix()
 
-hook.Add("PostDraw2DSkyBox", "infmap_terrain_skybox", function() -- draw skybox
+hook.Add("PostDraw2DSkyBox", "InfMap2TerrainSkybox", function() -- draw skybox
     if not InfMap2.World.HasTerrain then return end
     if not InfMap2.Cache.material then InfMap2.Cache.material = Material(InfMap2.Visual.Terrain.Material) end
 

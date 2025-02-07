@@ -7,22 +7,37 @@ local round = math.Round
 --==== POSITIONING ====--
 -- functions related to positioning of entities in world
 
-function InfMap2.ClampVector(pos, max)
-	return Vector(clamp(pos[1], -max, max), clamp(pos[2], -max, max), clamp(pos[3], -max, max))
+---Clamps vector coordinates
+---@param vec Vector
+---@param max number
+---@return Vector
+function InfMap2.ClampVector(vec, max)
+	return Vector(clamp(vec[1], -max, max), clamp(vec[2], -max, max), clamp(vec[3], -max, max))
 end
 
-function InfMap2.RoundVector(pos, decimals)
-    return Vector(round(pos[1], decimals), round(pos[2], decimals), round(pos[3], decimals))
+---Rounds vector coordinates
+---@param vec Vector
+---@param decimals integer
+---@return Vector
+function InfMap2.RoundVector(vec, decimals)
+    return Vector(round(vec[1], decimals), round(vec[2], decimals), round(vec[3], decimals))
 end
 
+---Returns chebyshev (chess-like) distance between vectors
+---@param pos1 Vector
+---@param pos2 Vector
+---@return number
 function InfMap2.ChebyshevDistance(pos1, pos2)
-    local chebyshev = (pos1 - pos2)
-    chebyshev = math.abs(chebyshev.x) + math.abs(chebyshev.y) + math.abs(chebyshev.z)
+    local difference = (pos1 - pos2)
+    local chebyshev = math.abs(difference.x) + math.abs(difference.y) + math.abs(difference.z)
     return chebyshev
 end
 
+---Checks if vector is in chunk space
+---@param pos Vector
+---@param size number
+---@return boolean
 function InfMap2.PositionInChunkSpace(pos, size)
-    -- +1 to avoid reocurring teleport when entity is perfectly at chunk boundary
     local halfsize = ((size or InfMap2.ChunkSize) / 2)
     if pos.x <= -halfsize or pos.x >= halfsize then return false end
     if pos.y <= -halfsize or pos.y >= halfsize then return false end
@@ -30,6 +45,11 @@ function InfMap2.PositionInChunkSpace(pos, size)
     return true
 end
 
+---Localizes position
+---@param pos Vector
+---@param size number?
+---@return Vector localpos
+---@return Vector megapos
 function InfMap2.LocalizePosition(pos, size)
     local size = size or InfMap2.ChunkSize
     local offset = Vector(
@@ -48,15 +68,26 @@ function InfMap2.LocalizePosition(pos, size)
     return pos, offset
 end
 
-function InfMap2.UnlocalizePosition(pos, megapos, size)
-    return (megapos or Vector()) * (size or InfMap2.ChunkSize) + pos
+---Delocalizes position
+---@param localpos Vector
+---@param megapos Vector?
+---@param size number?
+---@return Vector
+function InfMap2.UnlocalizePosition(localpos, megapos, size)
+    return (megapos or Vector()) * (size or InfMap2.ChunkSize) + localpos
 end
 
+---Checks AABB intersection
+---@param min_a Vector
+---@param max_a Vector
+---@param min_b Vector
+---@param max_b Vector
+---@return boolean
 function InfMap2.IntersectBox(min_a, max_a, min_b, max_b) 
 	local x_check = max_b[1] < min_a[1] or min_b[1] > max_a[1]
 	local y_check = max_b[2] < min_a[2] or min_b[2] > max_a[2]
 	local z_check = max_b[3] < min_a[3] or min_b[3] > max_a[3]
-	return !(x_check or y_check or z_check)
+	return not (x_check or y_check or z_check)
 end
 
 --==== Useless Entity Filter ====--
@@ -107,6 +138,9 @@ InfMap2.DisablePickup = InfMap2.DisablePickup or {
     inf_crosschunkclone = true
 }
 
+---Checks if entity is useless to the infmap.
+---@param ent Entity
+---@return boolean
 function InfMap2.UselessEntitiesFilter(ent)
     if not IsValid(ent) then return true end
     if InfMap2.UselessEntities[ent:GetClass()] then return true end
@@ -128,6 +162,9 @@ local function constrained_invalid_filter(ent)
     return not valid
 end
 
+---Checks if entity is the main contraption entity
+---@param ent Entity
+---@return boolean
 function InfMap2.IsMainContraptionEntity(ent)
     if constrained_invalid_filter(ent) then return false end
     local idx = ent:EntIndex()
@@ -145,12 +182,20 @@ function InfMap2.IsMainContraptionEntity(ent)
     return true
 end
 
+---Recursively finds all connected entities
+---@param mainent Entity
+---@param children table<Entity>
+---@param seen table<boolean>
+---@return table<Entity> children
 function InfMap2.FindAllConnected_Recurse(mainent, children, seen)
     -- have we already checked that ent?
     if seen[mainent] then return children end
     seen[mainent] = true
     if not mainent:IsValid() then return children end
     children[#children+1] = mainent
+
+    ---@class Entity
+    mainent = mainent
 
     -- find constrained
     if SERVER then
@@ -175,26 +220,33 @@ function InfMap2.FindAllConnected_Recurse(mainent, children, seen)
     end
 
     -- if vehicle add driver
-    if mainent:IsVehicle() and mainent.GetDriver and not seen[mainent:GetDriver()] then
-        seen[mainent:GetDriver()] = true
-        if IsValid(mainent:GetDriver()) then
-            children[#children+1] = mainent:GetDriver()
+    if mainent:IsVehicle() then
+        ---@cast mainent Vehicle
+        if mainent.GetDriver and not seen[mainent:GetDriver()] then
+            seen[mainent:GetDriver()] = true
+            if IsValid(mainent:GetDriver()) then
+                children[#children+1] = mainent:GetDriver()
+            end
         end
     end
 
     -- if player add hands
-    if mainent:IsPlayer() and mainent.GetHands and not seen[mainent:GetHands()] then
-        seen[mainent:GetHands()] = true
-        if IsValid(mainent:GetHands()) then
-            children[#children+1] = mainent:GetHands()
+    if mainent:IsPlayer() then
+        ---@cast mainent Player
+        if mainent.GetHands and not seen[mainent:GetHands()] then
+            seen[mainent:GetHands()] = true
+            if IsValid(mainent:GetHands()) then
+                children[#children+1] = mainent:GetHands()
+            end
         end
     end
-
-    -- if 
 
     return children
 end
 
+---Finds all connected entities
+---@param ent Entity
+---@return table<Entity>
 function InfMap2.FindAllConnected(ent)
     local children, seen = {}, {}
     local children = InfMap2.FindAllConnected_Recurse(ent, children, seen)
@@ -220,10 +272,10 @@ function ENTITY:SetMegaPos(vec)
     self.INF_MegaPos = Vector(vec)
     if not SERVER then return end
     self:SetNW2Vector("INF_MegaPos", vec)
-    net.Start("InfMap2_ChangeMegaPos")
-        net.WriteEntity(self)
-        net.WriteVector(vec)
-    net.Broadcast()
+    --net.Start("InfMap2_ChangeMegaPos")
+    --    net.WriteEntity(self)
+    --    net.WriteVector(vec)
+    --net.Broadcast()
 end
 
 function ENTITY:GetMegaPos()

@@ -35,29 +35,33 @@ end
 
 local mtrx = Matrix()
 
-local function renderoverride_nest(self)
-    if not frustrum(self) then return end
-    --mtrx:SetTranslation(INF_EyePos() - self.INF_VisualOffset)
-    --cam.PushModelMatrix(mtrx)
-    local mtrx = cam.GetModelMatrix()
-    cam.INF_PopModelMatrix()
-    cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
-        self:INF_RenderOverride()
-    cam.End3D()
-    cam.INF_PushModelMatrix(mtrx)
-    --cam.PopModelMatrix()
-end
-local function renderoverride_raw(self)
+local function renderoverride_nest(self, flags)
     if not frustrum(self) then return end
     mtrx:SetTranslation(self.INF_VisualOffset)
     cam.PushModelMatrix(mtrx)
     cam.Start3D(EyePos())
-        self:DrawModel()
+        self:INF_RenderOverride(flags)
+    cam.End3D()
+    cam.PopModelMatrix()
+end
+local function renderoverride_raw(self, flags)
+    if not frustrum(self) then return end
+    mtrx:SetTranslation(self.INF_VisualOffset)
+    cam.PushModelMatrix(mtrx)
+    cam.Start3D(EyePos())
+        self:DrawModel(flags)
     cam.End3D()
     cam.PopModelMatrix()
 end
 
+---Updates entity megaposition, moving it between chunks
+---@param ent Entity
+---@param megapos Vector
 function InfMap2.EntityUpdateMegapos(ent, megapos)
+    -- make luals happy
+    ---@class Entity
+    ent = ent
+    
     ent:SetMegaPos(megapos)
 
     if ent:IsWorld() then return end
@@ -70,7 +74,6 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
             if not ent2:GetMegaPos() then continue end
             InfMap2.EntityUpdateMegapos(ent2, ent2:GetMegaPos())
         end
-        --InfMap2.ViewMatrix:SetTranslation(-megapos * InfMap2.ChunkSize--[[@as Vector]])
 
         local _, megachunk = InfMap2.LocalizePosition(megapos, InfMap2.Visual.MegachunkSize)
 

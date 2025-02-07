@@ -1,5 +1,8 @@
 InfMap2.Cache.ChunkMeshes = InfMap2.Cache.ChunkMeshes or {}
 
+---Creates world chunk
+---@param megapos Vector
+---@return Entity chunk
 function InfMap2.CreateWorldChunk(megapos)
     if InfMap2.Debug then print("[INFMAP] Creating world chunk "..tostring(megapos)) end
     assert(InfMap2.World.HasTerrain, "InfMap2 does not use a generator")

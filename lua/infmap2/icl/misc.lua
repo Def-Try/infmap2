@@ -1,3 +1,8 @@
+---Draws infmap2 progress popup (for stuff like map baking or megachunk generation)
+---@param text string Text to display
+---@param progress number How much has been done
+---@param total number How much needs tobe done
+---@param yoff integer? Y offset (0 is center)
 function InfMap2.ProgressPopupDraw(text, progress, total, yoff)
     yoff = (yoff or 0)*150
     surface.SetDrawColor(0, 0, 0, 190)
@@ -14,7 +19,7 @@ function InfMap2.ProgressPopupDraw(text, progress, total, yoff)
                     ScrW()/4, ScrH()/2-62+yoff, Color(255, 255, 255), TEXT_ALIGN_LEFT)
 
     draw.DrawText("Please wait\n"..text.."\n"..
-                    math.Round((progress/total)*100).."% ("..progress.."/"..total..") samples done",
+                    math.Round((progress/total)*100).."% ("..progress.."/"..total..") done",
                     "DermaLarge",
                     ScrW()/2, ScrH()/2-48+yoff, Color(255, 255, 255), TEXT_ALIGN_CENTER)
 
