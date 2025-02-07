@@ -392,18 +392,21 @@ end)
 
 local pushed = false
 hook.Add("RenderScene", "InfMap2RenderWorld", function()
+    --do return end
     if pushed then cam.INF_PopModelMatrix() end
     cam.INF_PushModelMatrix(InfMap2.ViewMatrix, false)
     pushed = true
 end)
 hook.Add("PostRenderTranslucentRenderables", "InfMap2RenderWorld", function(depth, skybox, skybox3d)
     if depth or skybox or skybox3d then return end
+    if not pushed then return end
     cam.INF_PopModelMatrix()
     pushed = false
 end)
 hook.Add("PostRender", "InfMap2RenderWorld", function()
     if not pushed then return end
     cam.INF_PopModelMatrix()
+    pushed = false
 end)
 
 hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
@@ -469,8 +472,8 @@ hook.Add("PostDraw2DSkyBox", "InfMap2TerrainSkybox", function() -- draw skybox
 
 	InfMap2.Cache.material:SetFloat("$alpha", 1)
 	plane_matrix:SetTranslation(InfMap2.UnlocalizePosition(Vector(), -offset))
-	cam.PushModelMatrix(plane_matrix)
+	--cam.PushModelMatrix(plane_matrix)
 	big_plane:Draw()
-	cam.PopModelMatrix()
+	--cam.PopModelMatrix()
 	render.OverrideDepthEnable(false, false)
 end)

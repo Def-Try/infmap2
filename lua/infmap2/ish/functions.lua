@@ -272,10 +272,10 @@ function ENTITY:SetMegaPos(vec)
     self.INF_MegaPos = Vector(vec)
     if not SERVER then return end
     self:SetNW2Vector("INF_MegaPos", vec)
-    --net.Start("InfMap2_ChangeMegaPos")
-    --    net.WriteEntity(self)
-    --    net.WriteVector(vec)
-    --net.Broadcast()
+    net.Start("InfMap2_ChangeMegaPos")
+        net.WriteEntity(self)
+        net.WriteVector(vec)
+    net.Broadcast()
 end
 
 function ENTITY:GetMegaPos()
