@@ -204,7 +204,6 @@ function InfMap2.BuildMeshObjects(mesh_)
 
     mesh.Begin(meshes[#meshes], MATERIAL_TRIANGLES, math.min(10922, count / 3))
     for _,vtx in ipairs(mesh_) do
-        --PrintTable(vtx)
         mesh.Position(vtx[1])
         mesh.TexCoord(0, vtx[2], vtx[3])
         
@@ -247,6 +246,8 @@ function InfMap2.CreateWorldMegaChunk(megapos)
     InfMap2.GeneratedChunks[tostring(megapos)] = true
 end
 
+---Removes megachunk
+---@param megapos Vector megachunk megapos (megamegapos)
 function InfMap2.RemoveWorldMegaChunk(megapos)
     if InfMap2.Debug then print("[INFMAP] World megachunk removal requested at "..tostring(megapos)) end
     local idx = InfMap2.ChunkMeshes.Index[tostring(megapos)]
@@ -260,10 +261,6 @@ function InfMap2.RemoveWorldMegaChunk(megapos)
     InfMap2.ChunkMeshes.Index[tostring(megapos)] = nil
     InfMap2.GeneratedChunks[tostring(megapos)] = nil
 end
-
-local csent = ClientsideModel("error.mdl")
-local lighting_table = {model = "models/shadertest/vertexlit.mdl", pos = Vector()}
-local cubemap_table  = {model = "models/shadertest/envballs.mdl",  pos = Vector()}
 
 local predicted_teleport = false
 hook.Add("Tick", "InfMap2LPWrappingPrediction", function()
@@ -405,9 +402,12 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
     end
 end)
 
+local csent = ClientsideModel("error.mdl")
+local lighting_table = {model = "models/shadertest/vertexlit.mdl", pos = Vector()}
+local cubemap_table  = {model = "models/shadertest/envballs.mdl",  pos = Vector()}
+
 local pushed = false
 hook.Add("RenderScene", "InfMap2RenderWorld", function()
-    --do return end
     if pushed then cam.INF_PopModelMatrix() end
     cam.INF_PushModelMatrix(InfMap2.ViewMatrix, false)
     pushed = true
