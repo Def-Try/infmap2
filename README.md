@@ -1,11 +1,10 @@
 <div align="center"><h1>InfMap2</h1><p>Breaking source bounds since 2024</p></div>
 
-[![powered by googer](https://img.shields.io/badge/powered%20by-googer-0077ff?style=for-the-badge&logo=lua&logoColor=%230077ff)](https://github.com/Def-Try)
-
+[![see the workshop item](https://img.shields.io/badge/see%20on-steam%20workshop-0077ff?style=for-the-badge&logo=steam&logoColor=%230077ff)](https://steamcommunity.com/sharedfiles/itemedittext/?id=3423422716)
 ---
 
 This is a successor to [Infinite Map Base](https://github.com/meetric1/gmod-infinite-map) (hereinafter: infmap1) made by [meetric1](https://github.com/meetric1).
-Because infinite map base is now (pretty much) abandoned, I decided to attempt to rewrite it, providing better performance, easier API, more features and better compatibility.
+Because infinite map base is now (pretty much) discontinued, I decided to attempt to rewrite it, providing better performance, easier API, more features and better compatibility.
 
 Features
 ---
