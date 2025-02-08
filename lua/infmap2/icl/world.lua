@@ -267,6 +267,7 @@ hook.Add("Tick", "InfMap2LPWrappingPrediction", function()
     predicted_teleport = false
 end)
 hook.Add("PostRender", "InfMap2LPWrappingPrediction", function()
+    do return end
     if predicted_teleport then return end
     local lp = LocalPlayer()
     local rawpos = lp:INF_GetPos()

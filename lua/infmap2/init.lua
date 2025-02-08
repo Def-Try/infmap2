@@ -1,5 +1,21 @@
 AddCSLuaFile()
 
+hook.Add("HUDPaint", "INFMAP2WIPBANNERREMOVEMELATER", function()
+    local h = 52+26
+    surface.SetDrawColor(0, 0, 0, 190)
+
+    surface.DrawRect(ScrW() / 4, 5, ScrW() / 2, h)
+
+    surface.SetDrawColor(255, 255, 255, 255)
+    surface.DrawOutlinedRect(ScrW() / 4, 5, ScrW() / 2, h, 2)
+
+    draw.DrawText("InfMap2 "..InfMap2.Version, "DermaDefault",
+        ScrW() / 2, 9, color_white, TEXT_ALIGN_CENTER)
+
+    draw.DrawText("THIS IS A DEVELOPER PREVIEW\nEVERYTHING YOU SEE IS SUBJECT TO CHANGE",
+    "DermaLarge", ScrW() / 2, 19, color_white, TEXT_ALIGN_CENTER)
+end)
+
 --if InfMap2.Debug == nil then InfMap2.Debug = true end
 if InfMap2.Debug == nil then InfMap2.Debug = false end
 
