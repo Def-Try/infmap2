@@ -145,9 +145,7 @@ return {
                 atmosphere = Color(168, 219, 242, 64),
                 clouds = 1,
                 material_overrides = {
-                    outside = "infmap_planets/earth",
                     inside = "infmap2/grasslit",
-                    clouds = "infmap_planets/earth_clouds"
                 },
                 radius = 5000,
                 samplesize = 500,

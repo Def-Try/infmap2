@@ -13,7 +13,7 @@ ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 
 if not InfMap2 then return end
 
-local atmosphere = Material("infmap/atmosphere")
+local atmosphere = Material("infmap2/space/atmosphere")
 
 function ENT:Initialize(ready)
     if not ready then return end

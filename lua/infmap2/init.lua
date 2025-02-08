@@ -15,7 +15,7 @@ hook.Add("HUDPaint", "INFMAP2WIPBANNERREMOVEMELATER", function()
     draw.DrawText("InfMap2 "..InfMap2.Version, "DermaDefault",
         ScrW() / 2, 9, color_white, TEXT_ALIGN_CENTER)
 
-    draw.DrawText("THIS IS A DEVELOPER PREVIEW\nEVERYTHING YOU SEE IS SUBJECT TO CHANGE",
+    draw.DrawText("THIS IS A BETA VERSION\nEVERYTHING YOU SEE IS SUBJECT TO CHANGE",
     "DermaLarge", ScrW() / 2, 19, color_white, TEXT_ALIGN_CENTER)
 end)
 
