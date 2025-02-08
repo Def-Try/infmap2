@@ -1,6 +1,9 @@
 AddCSLuaFile()
 
+InfMap2.EnableDevBanner = true
+
 hook.Add("HUDPaint", "INFMAP2WIPBANNERREMOVEMELATER", function()
+    if not InfMap2.EnableDevBanner then return end
     local h = 52+26
     surface.SetDrawColor(0, 0, 0, 190)
 
