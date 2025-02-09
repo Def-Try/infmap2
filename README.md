@@ -22,3 +22,7 @@ For a video explanation, see Meetric's video - infmap2 isn't any different. [`In
 Documentation
 ---
 TODO: docs
+
+Creating Your Own Infmap
+---
+TODO: tutorial
