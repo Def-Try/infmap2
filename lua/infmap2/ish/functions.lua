@@ -35,7 +35,7 @@ end
 
 ---Checks if vector is in chunk space
 ---@param pos Vector
----@param size number
+---@param size number?
 ---@return boolean
 function InfMap2.PositionInChunkSpace(pos, size)
     local halfsize = ((size or InfMap2.ChunkSize) / 2)
@@ -223,10 +223,10 @@ function InfMap2.FindAllConnected_Recurse(mainent, children, seen)
     if mainent:IsVehicle() then
         ---@cast mainent Vehicle
         if mainent.GetDriver and not seen[mainent:GetDriver()] then
-            seen[mainent:GetDriver()] = true
             if IsValid(mainent:GetDriver()) then
-                children[#children+1] = mainent:GetDriver()
+                InfMap2.FindAllConnected_Recurse(mainent:GetDriver(), children, seen)
             end
+            seen[mainent:GetDriver()] = true
         end
     end
 
@@ -234,10 +234,10 @@ function InfMap2.FindAllConnected_Recurse(mainent, children, seen)
     if mainent:IsPlayer() then
         ---@cast mainent Player
         if mainent.GetHands and not seen[mainent:GetHands()] then
-            seen[mainent:GetHands()] = true
             if IsValid(mainent:GetHands()) then
-                children[#children+1] = mainent:GetHands()
+                InfMap2.FindAllConnected_Recurse(mainent:GetHands(), children, seen)
             end
+            seen[mainent:GetHands()] = true
         end
     end
 
