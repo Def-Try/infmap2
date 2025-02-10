@@ -338,7 +338,10 @@ end
 
 PHYSOBJ.INF_CalculateForceOffset = PHYSOBJ.INF_CalculateForceOffset or PHYSOBJ.CalculateForceOffset
 function PHYSOBJ:CalculateForceOffset(impulse, position)
-    return self:INF_CalculateForceOffset(impulse, InfMap2.LocalizePosition(position))
+    local main = self:GetEntity():GetPos()
+    local offset = position - main
+    local pos, _ = InfMap2.LocalizePosition(main)
+    return self:INF_CalculateForceOffset(impulse, pos + offset)
 end
 
 PHYSOBJ.INF_SetMaterial = PHYSOBJ.INF_SetMaterial or PHYSOBJ.SetMaterial
