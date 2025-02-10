@@ -213,9 +213,7 @@ function InfMap2.FindAllConnected_Recurse(mainent, children, seen)
     for _,ent in ents.Iterator() do
         if ent:GetParent() ~= mainent then continue end
         if seen[ent] then continue end
-        seen[ent] = true
-        if not ent:IsValid() then continue end
-        children[#children+1] = ent
+        if not ent:IsValid() then seen[ent] = true continue end
         InfMap2.FindAllConnected_Recurse(ent, children, seen)
     end
 
@@ -250,12 +248,18 @@ end
 function InfMap2.FindAllConnected(ent)
     local children, seen = {}, {}
     local children = InfMap2.FindAllConnected_Recurse(ent, children, seen)
-    for _,child in ipairs(children) do
-        if not child:IsVehicle() or not child.GetDriver
-           or not IsValid(child:GetDriver()) or seen[child:GetDriver()] then continue end
-        children[#children+1] = child:GetDriver()
-        seen[child:GetDriver()] = true
-    end
+    -- hate this
+    -- for _,child in ipairs(children) do
+    --     if child:IsVehicle() then
+    --         ---@cast child Vehicle
+    --         if child.GetDriver and not seen[child:GetDriver()] then
+    --             if IsValid(child:GetDriver()) then
+    --                 InfMap2.FindAllConnected_Recurse(child:GetDriver(), children, seen)
+    --             end
+    --             seen[child:GetDriver()] = true
+    --         end
+    --     end
+    -- end
     return children
 end
 

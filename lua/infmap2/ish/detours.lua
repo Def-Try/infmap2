@@ -248,13 +248,13 @@ function ENTITY:EyePos()
 end
 
 ENTITY.INF_LocalToWorld = ENTITY.INF_LocalToWorld or ENTITY.LocalToWorld
-function ENTITY:LocalToWorld(pos)
-	return InfMap2.UnlocalizePosition(self:INF_LocalToWorld(pos), self:GetMegaPos())
+function ENTITY:LocalToWorld(position)
+    return InfMap2.UnlocalizePosition(self:INF_LocalToWorld(position), self:GetMegaPos())
 end
 
 ENTITY.INF_WorldToLocal = ENTITY.INF_WorldToLocal or ENTITY.WorldToLocal
 function ENTITY:WorldToLocal(pos)
-	return self:INF_WorldToLocal(-InfMap2.UnlocalizePosition(-pos, self:GetMegaPos()))
+	return self:INF_WorldToLocal(InfMap2.UnlocalizePosition(pos, self:GetMegaPos()))
 end
 
 ENTITY.INF_NearestPoint = ENTITY.INF_NearestPoint or ENTITY.NearestPoint
@@ -328,7 +328,12 @@ end
 
 PHYSOBJ.INF_GetVelocityAtPoint = PHYSOBJ.INF_GetVelocityAtPoint or PHYSOBJ.GetVelocityAtPoint
 function PHYSOBJ:GetVelocityAtPoint(position)
-    return self:INF_GetVelocityAtPoint(InfMap2.UnlocalizePosition(position, self:GetEntity():GetMegaPos()))
+    local main = self:GetEntity():GetPos()
+    local offset = position - main
+    local pos, _ = InfMap2.LocalizePosition(main)
+
+    return self:INF_GetVelocityAtPoint(pos + offset)
+    -- return self:INF_GetVelocityAtPoint(InfMap2.UnlocalizePosition(position, self:GetEntity():GetMegaPos()))
 end
 
 PHYSOBJ.INF_CalculateForceOffset = PHYSOBJ.INF_CalculateForceOffset or PHYSOBJ.CalculateForceOffset
