@@ -43,5 +43,28 @@ function height_function(x, y)
     return math.max(-1000, math.min(0.5 * x, 1000))
 end
 ```
+To make our map work, we have to:
+1. Create a BSP base. Copying default (gm_inf_bliss) one should work. Please note that second word in it *has* to be `inf`, otherwise map won't be recognized!
+2. Create `lua/infmap2/<your_map_name>` directory in your addon.
+3. Create `lua/infmap2/<your_map_name>/main.lua` file in your addon with next contents:
+```lua
+return {
+    world = {
+        terrain = {
+            has_terrain = true, -- don't change!!
+            height_function = function(x, y) -- your height function here!
+                return math.max(-1000, math.min(0.5 * x, 1000))
+            end,
+        }
+    },
+    visual = {
+        renderdistance = 2, -- how much to render
+        terrain = {
+            material = "infmap2/grasslit", -- your map material here!
+            uvscale = 100 -- change to scale texture to terrain!
+        }
+    }
+}
+```
 Everything else just describes how map looks or behaves. \
 If you want to know more, see Documentation.
