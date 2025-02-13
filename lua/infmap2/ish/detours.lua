@@ -253,8 +253,11 @@ function ENTITY:LocalToWorld(position)
 end
 
 ENTITY.INF_WorldToLocal = ENTITY.INF_WorldToLocal or ENTITY.WorldToLocal
-function ENTITY:WorldToLocal(pos)
-	return self:INF_WorldToLocal(InfMap2.UnlocalizePosition(pos, self:GetMegaPos()))
+function ENTITY:WorldToLocal(position)
+    local main = self:GetPos()
+    local offset = position - main
+    local pos, _ = InfMap2.LocalizePosition(main)
+    return self:INF_WorldToLocal(pos + offset)
 end
 
 ENTITY.INF_NearestPoint = ENTITY.INF_NearestPoint or ENTITY.NearestPoint
@@ -329,7 +332,10 @@ end
 
 PHYSOBJ.INF_WorldToLocal = PHYSOBJ.INF_WorldToLocal or PHYSOBJ.WorldToLocal
 function PHYSOBJ:WorldToLocal(position)
-    return self:INF_WorldToLocal(position - InfMap2.UnlocalizePosition(Vector(), self:GetEntity():GetMegaPos()))
+    local main = self:GetEntity():GetPos()
+    local offset = position - main
+    local pos, _ = InfMap2.LocalizePosition(main)
+    return self:INF_WorldToLocal(pos + offset)
 end
 
 PHYSOBJ.INF_GetVelocityAtPoint = PHYSOBJ.INF_GetVelocityAtPoint or PHYSOBJ.GetVelocityAtPoint
