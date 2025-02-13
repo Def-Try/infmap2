@@ -19,6 +19,7 @@ local function find_closest_player_distance(pos)
 end
 
 timer.Create("InfMap2SpaceGenerator", 0, 0, function()
+    if not InfMap2.Space.HasSpace then return end
     for _, ply in player.Iterator() do
         if ply:GetPos().z < InfMap2.Space.Height + InfMap2.Space.PlanetDistance then continue end
         local closest = find_closest_planet_distance(ply)

@@ -24,44 +24,6 @@ if InfMap2.Debug == nil then InfMap2.Debug = false end
 
 InfMap2.Version = "0.1b"
 
-include("infmap2/ish/world.lua")
-include("infmap2/ish/space.lua")
-include("infmap2/ish/collision.lua")
-include("infmap2/ish/functions.lua")
-include("infmap2/ish/detours.lua")
-
-if SERVER then
-    AddCSLuaFile("infmap2/icl/world.lua")
-    AddCSLuaFile("infmap2/icl/clouds.lua")
-    AddCSLuaFile("infmap2/icl/space.lua")
-    AddCSLuaFile("infmap2/icl/fog.lua")
-    AddCSLuaFile("infmap2/icl/positioning.lua")
-    AddCSLuaFile("infmap2/icl/detours.lua")
-    AddCSLuaFile("infmap2/icl/debug.lua")
-    AddCSLuaFile("infmap2/icl/sound.lua")
-    AddCSLuaFile("infmap2/icl/misc.lua")
-
-    include("infmap2/isv/world.lua")
-    include("infmap2/isv/space.lua")
-    include("infmap2/isv/positioning.lua")
-    include("infmap2/isv/detours.lua")
-    include("infmap2/isv/wrapping.lua")
-    include("infmap2/isv/crosschunkcollision.lua")
-    include("infmap2/isv/concommands.lua")
-    include("infmap2/isv/sound.lua")
-end
-
-if CLIENT then
-    include("infmap2/icl/world.lua")
-    include("infmap2/icl/clouds.lua")
-    include("infmap2/icl/space.lua")
-    include("infmap2/icl/fog.lua")
-    include("infmap2/icl/positioning.lua")
-    include("infmap2/icl/detours.lua")
-    include("infmap2/icl/sound.lua")
-    include("infmap2/icl/misc.lua")
-end
-
 InfMap2.MaxVelocity = 13503.95 * 20 -- mach 20 in hammer units
 InfMap2.SourceBounds = Vector(2^14, 2^14, 2^14)
 
@@ -176,6 +138,44 @@ if InfMap2.Space.HasSpace then
         idata.MaterialOverrides["inside"] = idata.MaterialOverrides["inside"] or Material("infmap2/planets/"..name.."_inside")
         idata.MaterialOverrides["clouds"] = idata.MaterialOverrides["clouds"] or Material("infmap2/planets/"..name.."_clouds")
     end
+end
+
+include("infmap2/ish/world.lua")
+include("infmap2/ish/space.lua")
+include("infmap2/ish/collision.lua")
+include("infmap2/ish/functions.lua")
+include("infmap2/ish/detours.lua")
+
+if SERVER then
+    AddCSLuaFile("infmap2/icl/world.lua")
+    AddCSLuaFile("infmap2/icl/clouds.lua")
+    AddCSLuaFile("infmap2/icl/space.lua")
+    AddCSLuaFile("infmap2/icl/fog.lua")
+    AddCSLuaFile("infmap2/icl/positioning.lua")
+    AddCSLuaFile("infmap2/icl/detours.lua")
+    AddCSLuaFile("infmap2/icl/debug.lua")
+    AddCSLuaFile("infmap2/icl/sound.lua")
+    AddCSLuaFile("infmap2/icl/misc.lua")
+
+    include("infmap2/isv/world.lua")
+    include("infmap2/isv/space.lua")
+    include("infmap2/isv/positioning.lua")
+    include("infmap2/isv/detours.lua")
+    include("infmap2/isv/wrapping.lua")
+    include("infmap2/isv/crosschunkcollision.lua")
+    include("infmap2/isv/concommands.lua")
+    include("infmap2/isv/sound.lua")
+end
+
+if CLIENT then
+    include("infmap2/icl/world.lua")
+    include("infmap2/icl/clouds.lua")
+    include("infmap2/icl/space.lua")
+    include("infmap2/icl/fog.lua")
+    include("infmap2/icl/positioning.lua")
+    include("infmap2/icl/detours.lua")
+    include("infmap2/icl/sound.lua")
+    include("infmap2/icl/misc.lua")
 end
 
 include("infmap2/ish/baking.lua")
