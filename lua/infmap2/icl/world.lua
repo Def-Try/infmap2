@@ -455,41 +455,41 @@ hook.Add("ShutDown", "InfMap2RenderWorld", function()
     end
 end)
 
--- skybox bigass plane
-local scale = 10000
-local size = 200000 * scale
-local uvsize = 100 * scale
-local min = -100000
-local big_plane = Mesh()
-big_plane:BuildFromTriangles({
-	{pos = Vector(size, size, min), normal = Vector(0, 0, 1), u = uvsize, v = 0, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
-	{pos = Vector(size, -size, min), normal = Vector(0, 0, 1), u = uvsize, v = uvsize, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
-	{pos = Vector(-size, -size, min), normal = Vector(0, 0, 1), u = 0, v = uvsize, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
-	{pos = Vector(size, size, min), normal = Vector(0, 0, 1), u = uvsize, v = 0, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
-	{pos = Vector(-size, -size, min), normal = Vector(0, 0, 1), u = 0, v = uvsize, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
-	{pos = Vector(-size, size, min), normal = Vector(0, 0, 1), u = 0, v = 0, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
-})
-local plane_matrix = Matrix()
+if InfMap2.Visual.Skybox.HasSkybox then
+    -- skybox bigass plane
+    local size = InfMap2.Visual.Skybox.Size
+    local uvsize = InfMap2.Visual.Skybox.UVScale
+    local min = InfMap2.Visual.Skybox.Height
+    local big_plane = Mesh()
+    big_plane:BuildFromTriangles({
+        {pos = Vector(size, size, min), normal = Vector(0, 0, 1), u = uvsize, v = 0, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
+        {pos = Vector(size, -size, min), normal = Vector(0, 0, 1), u = uvsize, v = uvsize, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
+        {pos = Vector(-size, -size, min), normal = Vector(0, 0, 1), u = 0, v = uvsize, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
+        {pos = Vector(size, size, min), normal = Vector(0, 0, 1), u = uvsize, v = 0, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
+        {pos = Vector(-size, -size, min), normal = Vector(0, 0, 1), u = 0, v = uvsize, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
+        {pos = Vector(-size, size, min), normal = Vector(0, 0, 1), u = 0, v = 0, tangent = Vector(1, 0, 0), userdata = {1, 0, 0, -1}},
+    })
+    local plane_matrix = Matrix()
 
-hook.Add("PostDraw2DSkyBox", "InfMap2TerrainSkybox", function() -- draw skybox
-    if not InfMap2.World.HasTerrain then return end
-    if not InfMap2.Cache.material then InfMap2.Cache.material = Material(InfMap2.Visual.Terrain.Material) end
+    hook.Add("PostDraw2DSkyBox", "InfMap2TerrainSkybox", function() -- draw skybox
+        if not InfMap2.Cache.skyboxmaterial then InfMap2.Cache.skyboxmaterial = Material(InfMap2.Visual.Skybox.Material) end
 
-    -- dont draw to z buffer, this is skybox
-	render.OverrideDepthEnable(true, false)
-	render.SetMaterial(InfMap2.Cache.material)
-    -- fullbright
-	render.ResetModelLighting(2, 2, 2)
-	render.SetLocalModelLights()
+        -- dont draw to z buffer, this is skybox
+        render.OverrideDepthEnable(true, false)
+        render.SetMaterial(InfMap2.Cache.material)
+        -- fullbright
+        render.ResetModelLighting(2, 2, 2)
+        render.SetLocalModelLights()
 
-	local offset = LocalPlayer():GetMegaPos()
-	offset[1] = offset[1] % 1000
-	offset[2] = offset[2] % 1000
+        local offset = LocalPlayer():GetMegaPos()
+        offset[1] = offset[1] % 1000
+        offset[2] = offset[2] % 1000
 
-	InfMap2.Cache.material:SetFloat("$alpha", 1)
-	plane_matrix:SetTranslation(InfMap2.UnlocalizePosition(Vector(), -offset))
-	--cam.PushModelMatrix(plane_matrix)
-	big_plane:Draw()
-	--cam.PopModelMatrix()
-	render.OverrideDepthEnable(false, false)
-end)
+        InfMap2.Cache.material:SetFloat("$alpha", 1)
+        plane_matrix:SetTranslation(InfMap2.UnlocalizePosition(Vector(), -offset))
+        --cam.PushModelMatrix(plane_matrix)
+        big_plane:Draw()
+        --cam.PopModelMatrix()
+        render.OverrideDepthEnable(false, false)
+    end)
+end

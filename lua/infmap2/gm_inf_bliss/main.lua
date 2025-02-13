@@ -131,6 +131,13 @@ return {
             fogstart = 500000,
             fogend = 1000000,
             maxdensity = 0.5
+        },
+        skybox = {
+            has_skybox = true,
+            material = "infmap2/grasslit",
+            size = 2000000000,
+            uvscale = 1000000,
+            height = -100000
         }
     },
     space = {
