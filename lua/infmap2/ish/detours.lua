@@ -308,7 +308,10 @@ end
 
 PHYSOBJ.INF_ApplyForceOffset = PHYSOBJ.INF_ApplyForceOffset or PHYSOBJ.ApplyForceOffset
 function PHYSOBJ:ApplyForceOffset(impulse, position)
-    return self:INF_ApplyForceOffset(impulse, InfMap2.UnlocalizePosition(position, self:GetEntity():GetMegaPos()))
+    local main = self:GetEntity():GetPos()
+    local offset = position - main
+    local pos, _ = InfMap2.LocalizePosition(main)
+    return self:INF_ApplyForceOffset(impulse, pos + offset)
 end
 
 PHYSOBJ.INF_LocalToWorld = PHYSOBJ.INF_LocalToWorld or PHYSOBJ.LocalToWorld
@@ -318,7 +321,10 @@ end
 
 PHYSOBJ.INF_CalculateVelocityOffset = PHYSOBJ.INF_CalculateVelocityOffset or PHYSOBJ.CalculateVelocityOffset
 function PHYSOBJ:CalculateVelocityOffset(impulse, position)
-    return self:INF_CalculateVelocityOffset(impulse, InfMap2.UnlocalizePosition(position, self:GetEntity():GetMegaPos()))
+    local main = self:GetEntity():GetPos()
+    local offset = position - main
+    local pos, _ = InfMap2.LocalizePosition(main)
+    return self:INF_CalculateVelocityOffset(impulse, pos + offset)
 end
 
 PHYSOBJ.INF_WorldToLocal = PHYSOBJ.INF_WorldToLocal or PHYSOBJ.WorldToLocal
@@ -333,7 +339,6 @@ function PHYSOBJ:GetVelocityAtPoint(position)
     local pos, _ = InfMap2.LocalizePosition(main)
 
     return self:INF_GetVelocityAtPoint(pos + offset)
-    -- return self:INF_GetVelocityAtPoint(InfMap2.UnlocalizePosition(position, self:GetEntity():GetMegaPos()))
 end
 
 PHYSOBJ.INF_CalculateForceOffset = PHYSOBJ.INF_CalculateForceOffset or PHYSOBJ.CalculateForceOffset
