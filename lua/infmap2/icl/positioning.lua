@@ -1,9 +1,7 @@
 local last_megachunk
 
+local maxdist = InfMap2.ChunkSize * InfMap2.Visual.MegachunkSize / 2
 local function frustrum(ent)
-    -- for some reason frustrum dies on linux?
-    if not system.IsWindows() then return true end
-    
     if ent:EntIndex() == -1 then return true end
     local mins, maxs = ent:GetRenderBounds()
     local hash = tostring(mins)..tostring(maxs)
@@ -12,43 +10,52 @@ local function frustrum(ent)
         ent.INF_RenderBoundsHash = hash
     end
 
-    local pos = ent:GetPos() + ent:OBBCenter() - LocalPlayer():GetMegaPos() * InfMap2.ChunkSize
-    local show = false
-    if pos:Distance(EyePos()) < 10 then
-        show = true -- very close
-    elseif pos:Distance(EyePos()) > InfMap2.ChunkSize * InfMap2.Visual.MegachunkSize / 2 then
-        show = false -- too far, don't bother
-    else
-        show = util.PixelVisible(pos, ent.INF_Diagonal, ent.INF_PixVisHandle) > 0
+    local eyepos = EyePos()
+
+    local real_pos = ent:INF_GetPos() + ent:OBBCenter()
+    local pos = real_pos + ent:GetMegaPos() * InfMap2.ChunkSize
+    local disttoeye = pos:Distance(eyepos)
+    if disttoeye < 10 then
+        return true -- very close
+    elseif disttoeye > maxdist then
+        return false -- too far, don't bother
+    end
+    
+    local direction = (pos - eyepos)
+    direction:Normalize()
+
+    if direction:Dot(EyeAngles():Forward()) <= 0 then
+        return false
     end
 
-    -- we don't do this above because we need to use util.PixelVisible
-    -- to update PixVisHandle data or something, otherwise in first frame
-    -- after changing chunks every entity will be "invisible" from last point of view
-    if ent.INF_ForceFrustrum then
-        ent.INF_ForceFrustrum = nil
-        show = true
-    end
+    local toscreenpos = pos:ToScreen()
+    local sphererad = render.ComputePixelDiameterOfSphere(pos, ent.INF_Diagonal) / 2
 
-    return show
+    if toscreenpos.x < -sphererad or
+       toscreenpos.x > ScrW()+sphererad or
+       toscreenpos.y < -sphererad or
+       toscreenpos.y > ScrH()+sphererad then
+        return false
+    end
+    return true
 end
 
 local mtrx = Matrix()
 
 local function renderoverride_nest(self, flags)
-    if not frustrum(self) then return end
+    if not self.INF_InFrustrum then return end
     mtrx:SetTranslation(self.INF_VisualOffset)
     cam.PushModelMatrix(mtrx)
-    cam.Start3D(EyePos())
+    cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
         self:INF_RenderOverride(flags)
     cam.End3D()
     cam.PopModelMatrix()
 end
 local function renderoverride_raw(self, flags)
-    if not frustrum(self) then return end
+    if not self.INF_InFrustrum then return end
     mtrx:SetTranslation(self.INF_VisualOffset)
     cam.PushModelMatrix(mtrx)
-    cam.Start3D(EyePos())
+    cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
         self:DrawModel(flags)
     cam.End3D()
     cam.PopModelMatrix()
@@ -139,8 +146,6 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
     ent:AddEFlags(EFL_IN_SKYBOX)
 
     ent.INF_VisualOffset = visual_offset
-    ent.INF_PixVisHandle = ent.INF_PixVisHandle or util.GetPixelVisibleHandle()
-    ent.INF_ForceFrustrum = true
 
     if ent.INF_ValidRenderOverride then
         ent.RenderOverride = renderoverride_nest
@@ -148,3 +153,14 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
         ent.RenderOverride = renderoverride_raw
     end
 end
+
+hook.Add("PreDrawTranslucentRenderables", "InfMap2FrustrumCalc", function()
+    --do return end
+    local megapos = LocalPlayer():GetMegaPos()
+    for _,ent in ents.Iterator() do
+        if not ent.INF_VisualOffset then continue end
+        if ent:GetMegaPos() == megapos then continue end
+        if ent:GetClass() == "inf_chunk" then continue end
+        ent.INF_InFrustrum = frustrum(ent)
+    end
+end)
