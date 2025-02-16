@@ -13,7 +13,7 @@ end
 
 local function unfuck_keyvalue(self, value)
     if not self:GetKeyValues()[value] then return end
-    self:SetKeyValue(value, tostring(InfMap2.UnlocalizePosition(Vector(self:GetKeyValues()[value]), -self:GetMegaPos())))
+    self:SetKeyValue(value, tostring(InfMap2.UnlocalizePosition(Vector(self:GetKeyValues()[value]), -self:GetMegaPos()--[[@as Vector]])))
 end
 ENTITY.INF_Spawn = ENTITY.INF_Spawn or ENTITY.Spawn
 function ENTITY:Spawn()
@@ -49,3 +49,9 @@ function CLUALOCOMOTION:FaceTowards(goal)
     local pos = InfMap2.LocalizePosition(nb:GetPos() + dir)
     return CLUALOCOMOTION.INF_FaceTowards(self, pos)
 end
+
+
+----- random detours -----
+
+-- map is infinite, everything is in world!
+function util.IsInWorld(pos) return true end

@@ -392,3 +392,11 @@ function CTAKEDAMAGEINFO:GetDamagePosition()
 	end
 	return InfMap2.UnlocalizePosition(self:INF_GetDamagePosition(), inflictor:GetMegaPos())
 end
+
+
+----- WireMod detours -----
+timer.Simple(0, function() -- delay by one tick because we run before wirelib initialized
+if WireLib and WireLib.clampPos then
+    function WireLib.clampPos(pos) return Vector(pos) end
+end
+end)

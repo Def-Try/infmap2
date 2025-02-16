@@ -28,6 +28,7 @@ local cloud_coro = coroutine.create(function()
         for layer = 1, InfMap2.Visual.Clouds.Layers do
             render.PushRenderTarget(InfMap2.Cache.cloud_rts[layer]) cam.Start2D()
             for x = -half_size, half_size, scale do
+                ---@diagnostic disable-next-line: redundant-parameter
 				surface.SetDrawColor(col.r, col.g, col.b, density_function(x, y, layer) * 256)
 				surface.DrawRect(x+half_size, y+half_size, scale, scale)
             end
