@@ -7,10 +7,11 @@ ENT.Category		= "InfMap2"
 ENT.PrintName		= "Localizer"
 ENT.Author			= "googer_"
 ENT.Purpose			= "Entity to localize players or other entities on an infmap."
-ENT.Spawnable		= true
+ENT.Spawnable		= false
 ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 
 if not InfMap2 then return end
+ENT.Spawnable		= true
 
 function ENT:Initialize(ready)
     self:SetModel("models/props_lab/reciever01b.mdl")
