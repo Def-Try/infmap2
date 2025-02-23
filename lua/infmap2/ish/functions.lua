@@ -296,6 +296,7 @@ if CLIENT then
     net.Receive("InfMap2_ChangeMegaPos", function()
         ---@class Entity
         local ent = net.ReadEntity()
+        if not IsValid(ent) then return end
         ent.INF_MegaPos = net.ReadVector()
     end)
 end

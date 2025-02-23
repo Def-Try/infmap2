@@ -404,8 +404,6 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
 end)
 
 local csent = ClientsideModel("error.mdl")
-local lighting_table = {model = "models/shadertest/vertexlit.mdl", pos = Vector()}
-local cubemap_table  = {model = "models/shadertest/envballs.mdl",  pos = Vector()}
 
 local pushed = false
 hook.Add("RenderScene", "InfMap2RenderWorld", function()
@@ -433,15 +431,22 @@ hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
 
     -- unfuck_lighting, thanks gwater 2 !
     if not IsValid(csent) then csent = ClientsideModel("error.mdl") end
+    
     render.OverrideColorWriteEnable(true, false)
     render.OverrideDepthEnable(true, false)
-    csent:SetPos(Vector())
-    cubemap_table.angle = EyeAngles()
-    render.Model(cubemap_table, csent)
-    lighting_table.angle = EyeAngles()
-    render.Model(lighting_table, csent)
+    csent:SetNoDraw(true)
+    csent:SetPos(LocalPlayer():GetMegaPos() * InfMap2.ChunkSize)
+    csent:SetAngles(EyeAngles())
+
+    csent:SetModel("models/shadertest/vertexlit.mdl")
+    csent:DrawModel()
+
+    csent:SetModel("models/shadertest/envballs.mdl")
+    csent:DrawModel()
+
     render.OverrideDepthEnable(false, false)
     render.OverrideColorWriteEnable(false, false)
+
 
     render.SetMaterial(InfMap2.Cache.material)
     for _,meshes in pairs(InfMap2.ChunkMeshes.Draw) do

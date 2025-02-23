@@ -127,8 +127,3 @@ VECTOR.INF_ToScreen = VECTOR.INF_ToScreen or VECTOR.ToScreen
 function VECTOR:ToScreen()
 	return VECTOR.INF_ToScreen(localize(self))
 end
-
-render.INF_ComputePixelDiameterOfSphere = render.INF_ComputePixelDiameterOfSphere or render.ComputePixelDiameterOfSphere
-function render.ComputePixelDiameterOfSphere(pos, radius)
-	return render.INF_ComputePixelDiameterOfSphere(localize(pos), radius)
-end

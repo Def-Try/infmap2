@@ -76,9 +76,9 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
     local lp = LocalPlayer()
 
     if ent == lp then
-        for _, ent2 in ipairs(ents.GetAll()) do
+        for _, ent2 in ents.Iterator() do
             if ent2 == ent then continue end
-            if not ent2:GetMegaPos() then continue end
+            
             InfMap2.EntityUpdateMegapos(ent2, ent2:GetMegaPos())
         end
 
@@ -112,12 +112,12 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
         return
     end
 
+    -- clientside ents support
 	for _, child in ipairs(ent:GetChildren()) do
 		if child:EntIndex() ~= -1 then continue end
 		InfMap2.EntityUpdateMegapos(child, megapos)
 	end
 
-    ---@diagnostic disable-next-line: undefined-field
     local megaoffset = megapos - (lp:GetMegaPos() or Vector())
 
     if megaoffset == Vector() then

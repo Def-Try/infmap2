@@ -33,16 +33,16 @@ for x=-1,1 do for y=-1,1 do for z=-1,1 do
     neighbors[#neighbors+1] = Vector(x, y, z)
 end end end
 
+local unfilter = {
+	rpg_missile = true,
+	crossbow_bolt = true,
+}
 hook.Add("OnEntityCreated", "InfMap2EntityCreated", function(ent) timer.Simple(0, function()
     if not IsValid(ent) then return end
     if ent:GetClass() == "inf_chunk" then return end
+    if InfMap2.UselessEntitiesFilter(ent) and not unfilter[ent:GetClass()] then return end
 
     local megapos = ent:GetMegaPos()
-    --local owner = ent:GetOwner()
-    --if not IsValid(owner) then owner = ent:GetParent() end
-    --if IsValid(owner) and owner:GetMegaPos()then
-    --    megapos = owner:GetMegaPos()
-    --end
     InfMap2.EntityUpdateMegapos(ent, megapos)
     if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." created at megapos "..tostring(megapos)) end
 
