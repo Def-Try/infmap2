@@ -272,8 +272,8 @@ end
 -- MEGAPOS STUFF
 
 function ENTITY:SetMegaPos(vec)
-    if not IsValid(self) then return end
     self.INF_MegaPos = Vector(vec)
+    if not IsValid(self) then return end
     if not SERVER then return end
     self:SetNW2Vector("INF_MegaPos", vec)
     net.Start("InfMap2_ChangeMegaPos")
@@ -283,7 +283,7 @@ function ENTITY:SetMegaPos(vec)
 end
 
 function ENTITY:GetMegaPos()
-    if not IsValid(self) then return Vector() end
+    if not IsValid(self) then return Vector(self.INF_MegaPos) end
     return Vector(self.INF_MegaPos) or self:GetNW2Vector("INF_MegaPos", Vector())
 end
 

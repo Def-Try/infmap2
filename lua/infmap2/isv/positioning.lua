@@ -37,12 +37,12 @@ hook.Add("OnEntityCreated", "InfMap2EntityCreated", function(ent) timer.Simple(0
     if not IsValid(ent) then return end
     if ent:GetClass() == "inf_chunk" then return end
 
-    local megapos = Vector()
-    local owner = ent:GetOwner()
-    if not IsValid(owner) then owner = ent:GetParent() end
-    if IsValid(owner) and owner:GetMegaPos()then
-        megapos = owner:GetMegaPos()
-    end
+    local megapos = ent:GetMegaPos()
+    --local owner = ent:GetOwner()
+    --if not IsValid(owner) then owner = ent:GetParent() end
+    --if IsValid(owner) and owner:GetMegaPos()then
+    --    megapos = owner:GetMegaPos()
+    --end
     InfMap2.EntityUpdateMegapos(ent, megapos)
     if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." created at megapos "..tostring(megapos)) end
 
