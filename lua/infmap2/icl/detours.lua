@@ -34,13 +34,13 @@ render.INF_DrawBeam = render.INF_DrawBeam or render.DrawBeam
 function render.DrawBeam(start, endpos, width, texstart, texend, color) return render.INF_DrawBeam(localize(start), localize(endpos), width, texstart, texend, color) end
 render.INF_AddBeam = render.INF_AddBeam or render.AddBeam
 function render.AddBeam(start, width, texend, color) return render.INF_AddBeam(localize(start), width, texend, color) end
---]]
 
 render.INF_Model = render.INF_Model or render.Model
 function render.Model(settings, csent)
 	settings.pos = localize(settings.pos)
 	return render.INF_Model(settings, csent)
 end
+--]]
 
 render.INF_RenderView = render.INF_RenderView or render.RenderView
 function render.RenderView(view)
