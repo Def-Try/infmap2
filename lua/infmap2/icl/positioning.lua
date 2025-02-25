@@ -42,12 +42,12 @@ end
 
 local mtrx = Matrix()
 
-local function renderoverride_nest(self, flags)
+local function renderoverride_nest(self, flags, a, b, c, d, e)
     if not self.INF_InFrustrum then return end
     mtrx:SetTranslation(self.INF_VisualOffset)
     cam.PushModelMatrix(mtrx)
     cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
-        self:INF_RenderOverride(flags)
+        self:INF_RenderOverride(flags, a, b, c, d, e)
     cam.End3D()
     cam.PopModelMatrix()
 end
@@ -120,7 +120,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
 
     local megaoffset = megapos - (lp:GetMegaPos() or Vector())
 
-    if megaoffset == Vector() then
+    if megaoffset == vector_origin then
         ent.RenderOverride = ent.INF_RenderOverride
         if not ent.INF_InSkyboxFlag then ent:RemoveEFlags(EFL_IN_SKYBOX) end
         if ent:GetClass() ~= "inf_chunk" and ent.INF_OriginalRenderBounds then

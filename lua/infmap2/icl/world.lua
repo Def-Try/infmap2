@@ -329,6 +329,7 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
         if not view then
             view = view_fallback
         end
+        view.origin = view.origin or view_fallback.origin
 
         local offset = (view.origin - relativeorigin)
         -- TODO: needs to account for megapos too?
