@@ -1,112 +1,13 @@
 AddCSLuaFile()
 
+require("thorium")
+if not thorium then
+    print("[INFMAP2] Thorium not installed. Map baking and bake loading will not work!")
+    return
+end
+
 local function load_baked_map()
-    local pvertex_avail = file.Exists("infbake/"..game.GetMap()..".pvtx.txt", "DATA") and
-                          file.Exists("infbake/"..game.GetMap()..".pvidx.txt", "DATA")
-    local vvertex_avail = file.Exists("infbake/"..game.GetMap()..".vvtx.txt", "DATA") and
-                          file.Exists("infbake/"..game.GetMap()..".vvidx.txt", "DATA")
-    local normals_avail = file.Exists("infbake/"..game.GetMap()..".nrm.txt", "DATA") and
-                          file.Exists("infbake/"..game.GetMap()..".nidx.txt", "DATA")
-    local uvs_avail = file.Exists("infbake/"..game.GetMap()..".uvs.txt", "DATA")
-
-    print("[INFMAP2] PhysVertex available: "..(pvertex_avail and "yes" or "no"))
-    if pvertex_avail then
-        print("[INFMAP2] Found baked VERTEX data!")
-        local verts = {}
-        ---@diagnostic disable: undefined-field
-        local vtxfile = file.Open("infbake/"..game.GetMap()..".pvtx.txt", 'rb', "DATA")
-        while not vtxfile:EndOfFile() do
-            verts[#verts+1] = Vector(vtxfile:ReadFloat(),
-                                     vtxfile:ReadFloat(),
-                                     vtxfile:ReadFloat())
-        end
-        vtxfile:Close()
-        ---@diagnostic enable: undefined-field
-
-        ---@diagnostic disable: undefined-field
-        local vidxfile = file.Open("infbake/"..game.GetMap()..".pvidx.txt", 'rb', "DATA")
-        while not vidxfile:EndOfFile() do
-            local megapos = Vector(vidxfile:ReadShort(),
-                                   vidxfile:ReadShort(),
-                                   vidxfile:ReadShort())
-            local chunkmesh = {}
-            InfMap2.Cache.ChunkMeshes['v'..tostring(megapos)] = chunkmesh
-            for i=1,vidxfile:ReadULong(),1 do
-                chunkmesh[#chunkmesh+1] = verts[vidxfile:ReadULong()]
-            end
-        end
-        vidxfile:Close()
-        ---@diagnostic enable: undefined-field
-    end
-    if SERVER then return end
-    print("[INFMAP2] VisVertex available: "..(vvertex_avail and "yes" or "no"))
-    print("[INFMAP2] Normals available: "..(normals_avail and "yes" or "no"))
-    print("[INFMAP2] UVs available: "..(uvs_avail and "yes" or "no"))
-    if not SERVER and vvertex_avail and normals_avail and uvs_avail then
-        print("[INFMAP2] Found baked VISUAL data!")
-        local verts, vidx, normals = {}, {}, {}
-        ---@diagnostic disable: undefined-field
-        local vtxfile = file.Open("infbake/"..game.GetMap()..".vvtx.txt", 'rb', "DATA")
-        while not vtxfile:EndOfFile() do
-            verts[#verts+1] = Vector(vtxfile:ReadFloat(),
-                                     vtxfile:ReadFloat(),
-                                     vtxfile:ReadFloat())
-        end
-        vtxfile:Close()
-        ---@diagnostic enable: undefined-field
-
-        ---@diagnostic disable: undefined-field
-        local vidxfile = file.Open("infbake/"..game.GetMap()..".vvidx.txt", 'rb', "DATA")
-        while not vidxfile:EndOfFile() do
-            local megapos = Vector(vidxfile:ReadShort(),
-                                   vidxfile:ReadShort())
-            local chunkmesh = {}
-            vidx[tostring(megapos)] = chunkmesh
-            for i=1,vidxfile:ReadULong(),1 do
-                chunkmesh[#chunkmesh+1] = vidxfile:ReadULong()
-            end
-        end
-        vidxfile:Close()
-        ---@diagnostic enable: undefined-field
-
-        ---@diagnostic disable: undefined-field
-        local nrmfile = file.Open("infbake/"..game.GetMap()..".nrm.txt", 'rb', "DATA")
-        while not nrmfile:EndOfFile() do
-            normals[#normals+1] = Vector(nrmfile:ReadFloat(),
-                                         nrmfile:ReadFloat(),
-                                         nrmfile:ReadFloat())
-        end
-        nrmfile:Close()
-        ---@diagnostic enable: undefined-field
-
-        ---@diagnostic disable: undefined-field
-        local nidxfile = file.Open("infbake/"..game.GetMap()..".nidx.txt", 'rb', "DATA")
-        while not nidxfile:EndOfFile() do
-            local megapos = Vector(nidxfile:ReadShort(),
-                                   nidxfile:ReadShort())
-            local chunkmesh = {}
-            InfMap2.Cache.ChunkMeshes['f'..tostring(megapos * InfMap2.Visual.MegachunkSize)] = chunkmesh
-            for i=1,nidxfile:ReadULong(),1 do
-                chunkmesh[#chunkmesh+1] = {verts[vidx[tostring(megapos)][i]], 0, 0, normals[nidxfile:ReadULong()]}
-            end
-        end
-        nidxfile:Close()
-        ---@diagnostic enable: undefined-field
-        
-        ---@diagnostic disable: undefined-field
-        local uvsfile = file.Open("infbake/"..game.GetMap()..".uvs.txt", 'rb', "DATA")
-        while not uvsfile:EndOfFile() do
-            local megapos = Vector(uvsfile:ReadShort(),
-                                   uvsfile:ReadShort())
-            local chunkmesh = InfMap2.Cache.ChunkMeshes['f'..tostring(megapos * InfMap2.Visual.MegachunkSize)]
-            for i=1,uvsfile:ReadULong(),1 do
-                chunkmesh[i][2] = uvsfile:ReadFloat()
-                chunkmesh[i][3] = uvsfile:ReadFloat()
-            end
-        end
-        uvsfile:Close()
-        ---@diagnostic enable: undefined-field
-    end
+    print("[INFMAP2] todo: implement")
 end
 
 load_baked_map()
@@ -170,33 +71,28 @@ local function bake_geometry()
         coroutine.yield()
     end
 
-    file.CreateDir("infbake")
+    local phys_buf = thorium.gbuffer.New()
 
-    ---@diagnostic disable: undefined-field
-    local vtxfile = file.Open("infbake/"..game.GetMap()..".pvtx.txt", 'wb', "DATA")
-    for _, vert in ipairs(vertices) do
-        vtxfile:WriteFloat(vert[1])
-        vtxfile:WriteFloat(vert[2])
-        vtxfile:WriteFloat(vert[3])
+    phys_buf:WriteUInt(#vertices)
+    for _,vert in ipairs(vertices) do
+        phys_buf:WriteFloat(vert.x)
+        phys_buf:WriteFloat(vert.y)
+        phys_buf:WriteFloat(vert.z)
     end
-    vtxfile:Flush()
-    vtxfile:Close()
-    ---@diagnostic enable: undefined-field
 
-    ---@diagnostic disable: undefined-field
-    local vidxfile = file.Open("infbake/"..game.GetMap()..".pvidx.txt", 'wb', "DATA")
-    for xyz, chunk in pairs(chunks) do
-        vidxfile:WriteShort(xyz[1])
-        vidxfile:WriteShort(xyz[2])
-        vidxfile:WriteShort(xyz[3])
-        vidxfile:WriteULong(#chunk)
-        for _, idx in ipairs(chunk) do
-            vidxfile:WriteULong(idx)
+    phys_buf:WriteUInt(#table.GetKeys(chunks))
+    for xyz,chunk in pairs(chunks) do
+        phys_buf:WriteShort(xyz.x)
+        phys_buf:WriteShort(xyz.y)
+        phys_buf:WriteShort(xyz.z)
+        phys_buf:WriteUInt(#chunk)
+        for _,idx in ipairs(chunk) do
+            phys_buf:WriteUShort(idx)
         end
     end
-    vidxfile:Flush()
-    vidxfile:Close()
-    ---@diagnostic enable: undefined-field
+
+    file.CreateDir("infbake")
+    phys_buf:WriteToFile("infbake/"..game.GetMap()..".phys.dat")
 end
 
 local function bake_visual()
@@ -211,7 +107,7 @@ local function bake_visual()
         InfMap2.GenerateChunkVisualMesh(xy * InfMap2.Visual.MegachunkSize,
                                         Vector(1, 1) * InfMap2.Visual.MegachunkSize,
                                         function(cmesh)
-                                            gen[xy.x.." "..xy.y] = cmesh
+                                            gen[#gen+1] = {xy, cmesh}
                                             progress = progress + 1
                                         end,
                                         function() return true end)
@@ -221,117 +117,71 @@ local function bake_visual()
         if progress >= total then break end
     end
 
-    local verts, vindex = {}, {}
-    local normals, nindex = {}, {}
-
-    local chunkidxvtx = {}
-    local chunkidxnrm = {}
-    local chunkidxu, chunkidxv = {}, {}
-
-    local chunks = {}
+    local vertices, vertidx, uvs, uvidx, normals, normidx, chunks = {}, {}, {}, {}, {}, {}, {}
 
     progress = 0
-    for _, xy in ipairs(neighbors) do
-        local x, y = xy.x, xy.y
-        progress = progress + 1
+    for _, xy_megachunk in ipairs(gen) do
+        local xy, megachunk = xy_megachunk[1], xy_megachunk[2]
+        local chunk_idx = {}
+        chunks[xy] = chunk_idx
 
-        chunkidxvtx[x.." "..y] = {}
-        chunkidxnrm[x.." "..y] = {}
-        chunkidxu[x.." "..y] = {}
-        chunkidxv[x.." "..y] = {}
-
-        chunks[xy] = {chunkidxvtx[x.." "..y],
-                      chunkidxnrm[x.." "..y],
-                      chunkidxu[x.." "..y],
-                      chunkidxv[x.." "..y]}
-
-        local chunk = gen[x.." "..y]
-        for _,point in ipairs(chunk) do
-            local strvtx = tostring(point[1])
-            local strnrm = tostring(point[4])
-            if not vindex[strvtx] then
-                vindex[strvtx] = #verts + 1
-                verts[#verts+1] = point[1]
+        for _,dt in ipairs(megachunk) do
+            local vertstr = dt[1].x.." "..dt[1].y.." "..dt[1].z
+            local normstr = dt[4].x.." "..dt[4].y.." "..dt[4].z
+            if not vertidx[vertstr] then
+                vertidx[vertstr] = #vertices + 1
+                vertices[#vertices+1] = dt[1]
             end
-            if not nindex[strnrm] then
-                nindex[strnrm] = #normals + 1
-                normals[#normals+1] = point[4]
+            if not uvidx[dt[2]] then uvidx[dt[2]] = #uvs + 1 uvs[#uvs+1] = dt[2] end
+            if not uvidx[dt[3]] then uvidx[dt[3]] = #uvs + 1 uvs[#uvs+1] = dt[3] end
+            if not normidx[normstr] then
+                normidx[normstr] = #normals + 1
+                normals[#normals+1] = dt[4]
             end
-            chunkidxvtx[x.." "..y][_] = vindex[strvtx]
-            chunkidxnrm[x.." "..y][_] = nindex[strnrm]
 
-            chunkidxu[x.." "..y][_] = point[2]
-            chunkidxv[x.." "..y][_] = point[3]
+            chunk_idx[#chunk_idx+1] = {vertidx[vertstr],
+                                       uvidx[dt[2]], uvidx[dt[3]],
+                                       normidx[normstr]}
             if _ % 5000 == 0 then coroutine.yield() end
         end
-
+        progress = progress + 1
         coroutine.yield()
     end
 
-    ---@diagnostic disable: undefined-field
-    local vtxfile = file.Open("infbake/"..game.GetMap()..".vvtx.txt", 'wb', "DATA")
-    for _, vtx in ipairs(verts) do
-        vtxfile:WriteFloat(vtx[1])
-        vtxfile:WriteFloat(vtx[2])
-        vtxfile:WriteFloat(vtx[3])
-    end
-    vtxfile:Flush()
-    vtxfile:Close()
-    ---@diagnostic enable: undefined-field
-    
-    ---@diagnostic disable: undefined-field
-    local nrmfile = file.Open("infbake/"..game.GetMap()..".nrm.txt", 'wb', "DATA")
-    for _, nrm in ipairs(normals) do
-        nrmfile:WriteFloat(nrm[1])
-        nrmfile:WriteFloat(nrm[2])
-        nrmfile:WriteFloat(nrm[3])
-    end
-    nrmfile:Flush()
-    nrmfile:Close()
-    ---@diagnostic enable: undefined-field
+    local vis_buf = thorium.gbuffer.New()
 
-    ---@diagnostic disable: undefined-field
-    local vidxfile = file.Open("infbake/"..game.GetMap()..".vvidx.txt", 'wb', "DATA")
-    for xy, chunk in pairs(chunks) do
-        vidxfile:WriteShort(xy[1])
-        vidxfile:WriteShort(xy[2])
-        vidxfile:WriteULong(#chunk[1])
-        for _, idx in ipairs(chunk[1]) do
-            vidxfile:WriteULong(idx)
-        end
+    vis_buf:WriteUInt(#vertices)
+    for _,vert in ipairs(vertices) do
+        vis_buf:WriteFloat(vert.x)
+        vis_buf:WriteFloat(vert.y)
+        vis_buf:WriteFloat(vert.z)
     end
-    vidxfile:Flush()
-    vidxfile:Close()
-    ---@diagnostic enable: undefined-field
-    
-    ---@diagnostic disable: undefined-field
-    local nidxfile = file.Open("infbake/"..game.GetMap()..".nidx.txt", 'wb', "DATA")
-    for xy, chunk in pairs(chunks) do
-        nidxfile:WriteShort(xy[1])
-        nidxfile:WriteShort(xy[2])
-        nidxfile:WriteULong(#chunk[2])
-        for _, idx in ipairs(chunk[2]) do
-            nidxfile:WriteULong(idx)
-        end
+    vis_buf:WriteUInt(#normals)
+    for _,norm in ipairs(normals) do
+        vis_buf:WriteFloat(norm.x)
+        vis_buf:WriteFloat(norm.y)
+        vis_buf:WriteFloat(norm.z)
     end
-    nidxfile:Flush()
-    nidxfile:Close()
-    ---@diagnostic enable: undefined-field
+    vis_buf:WriteUInt(#uvs)
+    for _,u_or_v in ipairs(uvs) do
+        vis_buf:WriteFloat(u_or_v)
+    end
 
-    ---@diagnostic disable: undefined-field
-    local uvfile = file.Open("infbake/"..game.GetMap()..".uvs.txt", 'wb', "DATA")
-    for xy, chunk in pairs(chunks) do
-        uvfile:WriteShort(xy[1])
-        uvfile:WriteShort(xy[2])
-        uvfile:WriteULong(#chunk[3])
-        for idx, u in ipairs(chunk[3]) do
-            uvfile:WriteFloat(u)
-            uvfile:WriteFloat(chunk[4][idx])
+    vis_buf:WriteUInt(#table.GetKeys(chunks))
+    for xy,chunk in pairs(chunks) do
+        vis_buf:WriteShort(xy.x)
+        vis_buf:WriteShort(xy.y)
+        vis_buf:WriteUInt(#chunk)
+        for _,idx in ipairs(chunk) do
+            vis_buf:WriteUInt(idx[1])
+            vis_buf:WriteUShort(idx[2])
+            vis_buf:WriteUShort(idx[3])
+            vis_buf:WriteUInt(idx[4])
         end
     end
-    uvfile:Flush()
-    uvfile:Close()
-    ---@diagnostic enable: undefined-field
+
+    file.CreateDir("infbake")
+    vis_buf:WriteToFile("infbake/"..game.GetMap()..".vis.dat")
 end
 local function bakefunc()
     sprogress = 0
@@ -345,7 +195,7 @@ hook.Add("PostDrawHUD", "InfMap2BakingHUD", function()
     if not coro then return end
     if coroutine.status(coro) ~= "suspended" then coro = nil return end
     local ok, err = coroutine.resume(coro)
-    if not ok then ErrorNoHalt(err) end
+    if not ok then error(err.."\n\n"..debug.traceback(coro)) end
     if stage == "" then return end
     InfMap2.ProgressPopupDraw(sprogress.."/"..stotal..": "..stage, progress, total, 1)
 end)
