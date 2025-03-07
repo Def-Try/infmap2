@@ -60,27 +60,4 @@ timer.Create("InfMap2RemoveUnusedChunks", 5, 0, function()
         InfMap2.GeneratedChunks[tostring(chunkd[1])] = nil
         chunkd[2]:Remove()
     end
-
-    --[[
-    for _, ent in ents.Iterator() do
-        megapositions[#megapositions+1] = ent:GetMegaPos()
-    end
-    for megapos, chunkent in pairs(InfMap2.GeneratedChunks) do
-        megapos = Vector(megapos)
-        if not IsValid(chunkent) then continue end
-        local valid = false
-        for _, ent in ents.Iterator() do
-            if ent:GetClass() == "inf_chunk" then continue end
-            if InfMap2.ChebyshevDistance(ent:GetMegaPos(), megapos) <= 1 then
-                valid = true
-                break
-            end
-        end
-        if not valid then
-            if InfMap2.Debug then print("[INFMAP] Removing world chunk "..tostring(megapos)) end
-            InfMap2.GeneratedChunks[tostring(megapos)] = nil
-            chunkent:Remove()
-        end
-    end
-    --]]
 end)
