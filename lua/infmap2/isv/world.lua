@@ -49,9 +49,12 @@ timer.Create("InfMap2RemoveUnusedChunks", 5, 0, function()
 
     for _, ent in ents.Iterator() do
         if ent:GetClass() == "inf_chunk" then continue end
-        for _, chunkd in ipairs(chunks_to_remove) do
+        local chunks_to_remove2 = table.Copy(chunks_to_remove)
+        local removed = 0
+        for _, chunkd in ipairs(chunks_to_remove2) do
             if InfMap2.ChebyshevDistance(ent:GetMegaPos(), chunkd[1]) > 1 then continue end
-            table.remove(chunks_to_remove, _)
+            table.remove(chunks_to_remove, _ - removed)
+            removed = removed + 1
         end
     end
 
