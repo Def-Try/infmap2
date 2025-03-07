@@ -178,8 +178,6 @@ if CLIENT then
     include("infmap2/icl/misc.lua")
 end
 
-include("infmap2/ish/baking.lua")
-
 hook.Add("InitPostEntity", "InfMap2Init", function() timer.Simple(0, function()
     RunConsoleCommand("sv_maxvelocity", InfMap2.MaxVelocity)
     if CLIENT then
