@@ -37,6 +37,20 @@ local minichunk
 local minichunk_half
 local ratio
 
+local ents_blocked = {
+    ["class C_BaseFlex"]=true,
+    ["class C_PlayerResource"]=true,
+    ["class C_GMODGameRulesProxy"]=true,
+    ["class C_Sun"]=true,
+    ["class C_ShadowControl"]=true,
+    ["class C_FogController"]=true,
+    env_skypaint=true,
+    viewmodel=true,
+    gmod_hands=true,
+    physgun_beam=true,
+    worldspawn=true
+}
+
 local wireframe = Material("models/wireframe")
 function ENT:DrawChunk(drawpos, megapos, chunkent, angle, color, entstodraw)
     drawpos.z = drawpos.z + self:GetOffsetY()
@@ -56,14 +70,16 @@ function ENT:DrawChunk(drawpos, megapos, chunkent, angle, color, entstodraw)
     drawpos.z = drawpos.z - minichunk_half.z - 2
 
     for _, ent in ipairs(entstodraw) do
+        if not ent:IsPlayer() and (ents_blocked[ent:GetClass()] or ent:EntIndex() == -1 or IsValid(ent:GetParent())) then continue end
+        angle:RotateAroundAxis(angle:Right(), ent:EntIndex() * 10)
         local c = math.random(157, 177)
         local r = 0.5 * scale
         local color = Color(c,c,c)
         local drawpos2 = drawpos + ent:INF_GetPos() / ratio
         if ent:IsPlayer() then color.r = color.r + 78 r = r + 0.7 * scale end
         render.DrawWireframeSphere(drawpos2, r, 4, 4, color, true)
+        drawpos2.z = drawpos2.z + (math.sin(RealTime()+ent:EntIndex()*5)+1)/2
         if ent:IsPlayer() then
-            angle:RotateAroundAxis(angle:Right(), ent:EntIndex() * 10)
             render.DrawLine(drawpos2, drawpos2 + ent:EyeAngles():Forward() * 5 * scale, Color(255, 0, 0), true)
             render.DrawLine(drawpos2, drawpos2 + ent:GetVelocity() / 100 * scale, Color(0, 0, 255), true)
             drawpos2.z = drawpos2.z + r*2
@@ -75,7 +91,18 @@ function ENT:DrawChunk(drawpos, megapos, chunkent, angle, color, entstodraw)
             cam.Start3D2D(drawpos2, angle, 0.05 * scale)
                 draw.SimpleText(ent:Name(), "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
             cam.End3D2D()
+        else
+            drawpos2.z = drawpos2.z + r*2
+            cam.Start3D2D(drawpos2, angle, 0.05 * scale)
+                draw.SimpleText("["..ent:GetClass().." "..ent:EntIndex().."]", "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
+            cam.End3D2D()
+            -- and the other side
+            angle:RotateAroundAxis(angle:Right(), 180)
+            cam.Start3D2D(drawpos2, angle, 0.05 * scale)
+                draw.SimpleText("["..ent:GetClass().." "..ent:EntIndex().."]", "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
+            cam.End3D2D()
         end
+        angle:RotateAroundAxis(angle:Right(), -ent:EntIndex() * 10)
     end
 
     if not chunkent then return end
@@ -136,9 +163,9 @@ function ENT:DrawTranslucent(flags)
     self:DrawModel(flags)
     local drawpos = self:GetPos() + self:GetUp() * minichunk_half.z
 
-    render.DrawLine(drawpos, drawpos + vector_right   * 8, color_red,   true) -- positive x
-    render.DrawLine(drawpos, drawpos + vector_forward * 8, color_green, true) -- positive y
-    render.DrawLine(drawpos, drawpos + vector_up      * 8, color_blue,  true) -- positive z
+    render.DrawLine(drawpos, drawpos + vector_right   * 8 * scale, color_red,   true) -- positive x
+    render.DrawLine(drawpos, drawpos + vector_forward * 8 * scale, color_green, true) -- positive y
+    render.DrawLine(drawpos, drawpos + vector_up      * 8 * scale, color_blue,  true) -- positive z
 
     local c = math.random(225, 255)
     local color = Color(c,c,c)
