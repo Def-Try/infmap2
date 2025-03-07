@@ -36,17 +36,8 @@ local cloud_coro = coroutine.create(function()
         end
         coroutine.yield()
     end
-
-    render.SetColorMaterialIgnoreZ()
-    if scale > 1 then
-        for layer = 1, InfMap2.Visual.Clouds.Layers do
-            --BlurRenderTarget(InfMap2.Cache.cloud_rts[layer], 100, 100, scale*2)
-            -- TODO: blur? maybe?
-        end
-    end
 end)
 
--- TODO: baked clouds
 hook.Add("PreDrawTranslucentRenderables", "InfMap2Clouds", function(_, sky)
     if not InfMap2.Visual.HasClouds then return end
 	if sky then return end -- dont render in skybox
@@ -61,14 +52,14 @@ hook.Add("PreDrawTranslucentRenderables", "InfMap2Clouds", function(_, sky)
 
     local speed = InfMap2.Visual.Clouds.Speed
     local direction = InfMap2.Visual.Clouds.Direction * 10000
-    local move = (((CurTime()) % speed) - speed / 2)
+    local movex = ((offset[1] + direction[1] * CurTime() * 0.1 * speed + 250) % 500) - 250
+    local movey = ((offset[2] + direction[2] * CurTime() * 0.1 * speed + 250) % 500) - 250
 
 	-- render cloud planes
 	for i = 1, InfMap2.Visual.Clouds.Layers do -- overlay planes to give amazing 3d look
 		render.SetMaterial(InfMap2.Cache.cloud_mats[i])
 		render.DrawQuadEasy(
-            Vector(direction[1] * move + offset[1] * InfMap2.ChunkSize,
-                   direction[2] * move + offset[2] * InfMap2.ChunkSize,
+            Vector(movex, movey,
                    (i - 1) * 10000 + InfMap2.Visual.Clouds.Height
             ), Vector(0, 0, 1), 20000000, 20000000, color_white)
 	end

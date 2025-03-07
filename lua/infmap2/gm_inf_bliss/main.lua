@@ -119,7 +119,7 @@ return {
             direction = Vector(0, 1, 0),
             speed = 500,
             color = Color(255, 255, 255),
-            accentcolor = Color(127, 127, 127),
+            accentcolor = Color(200, 200, 200),
             density_function = function(x, y, layer)
                 return ((simplex.Noise3D(x / 30, y / 30, layer / 50) - layer * 0.015) * 1024
                          + (simplex.Noise2D(x / 7, y / 7) + 1) * 128) / 256

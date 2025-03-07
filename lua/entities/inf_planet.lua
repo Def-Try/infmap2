@@ -101,6 +101,7 @@ function ENT:Draw()
         render.DrawSphere(self:GetPos(), -(data.Radius + 7), 50, 50)
     end
 
+    self.INF_PlanetData.MaterialOverrides["inside"]:SetFloat("$alpha", 1)
     render.SetMaterial(self.INF_PlanetData.MaterialOverrides["inside"])
     self:SetRenderBounds(Vector(), Vector(), Vector(1, 1, 1) * self.INF_PlanetData.Radius)
 
