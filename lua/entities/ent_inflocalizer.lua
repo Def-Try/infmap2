@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-field
 AddCSLuaFile()
 
 ENT.Type = "anim"
@@ -12,57 +13,66 @@ ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 
 if not InfMap2 then return end
 ENT.Spawnable		= true
+ENT.Editable        = true
 
 function ENT:Initialize(ready)
     self:SetModel("models/props_lab/reciever01b.mdl")
 
     self:PhysicsInit(SOLID_VPHYSICS)
+    self:SetScale(1)
+    self:SetCullTerrain(true)
+    self:SetDrawTerrain(true)
+    self:SetOffsetY(0)
 end
 
-local minichunk = Vector(40, 40, 40)
-local minichunk_half = minichunk / 2
+function ENT:SetupDataTables()
+	self:NetworkVar("Float", 0, "Scale",         {KeyName="Scale",       Edit={type="Float",   order=1, min=0.1, max=10}})
+    self:NetworkVar("Bool",  0, "DrawTerrain",   {KeyName="DrawTerrain", Edit={type="Boolean", order=2}})
+	self:NetworkVar("Bool",  1, "CullTerrain",   {KeyName="CullTerrain", Edit={type="Boolean", order=3}})
+	self:NetworkVar("Float", 1, "OffsetY",       {KeyName="OffsetY",     Edit={type="Float",   order=4, min=-1000, max=1000}})
+end
+
+local scale
+local minichunk
+local minichunk_half
+local ratio
 
 local wireframe = Material("models/wireframe")
-function ENT:DrawChunk(drawpos, megapos, color)
-    local angle = Angle(angle_zero)
+function ENT:DrawChunk(drawpos, megapos, chunkent, angle, color, entstodraw)
+    drawpos.z = drawpos.z + self:GetOffsetY()
+    ---@diagnostic disable-next-line: param-type-mismatch
     render.DrawWireframeBox(drawpos, angle_zero, -minichunk_half, minichunk_half, color, true)
-    angle:RotateAroundAxis(angle:Right(), 90)
-    angle:RotateAroundAxis(angle:Up(), -90)
-    angle:RotateAroundAxis(angle:Right(), (RealTime() * 10) % 360)
     drawpos.z = drawpos.z + minichunk_half.z + 2
-    cam.Start3D2D(drawpos, angle, 0.1)
+    cam.Start3D2D(drawpos, angle, 0.1 * scale)
         local megapostext = megapos.x.." "..megapos.y.." "..megapos.z
 		draw.SimpleText(megapostext, "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
 	cam.End3D2D()
     -- and the other side
     angle:RotateAroundAxis(angle:Right(), 180)
-    cam.Start3D2D(drawpos, angle, 0.1)
+    cam.Start3D2D(drawpos, angle, 0.1 * scale)
         local megapostext = megapos.x.." "..megapos.y.." "..megapos.z
 		draw.SimpleText(megapostext, "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
 	cam.End3D2D()
     drawpos.z = drawpos.z - minichunk_half.z - 2
 
-    local ratio = InfMap2.ChunkSize / minichunk.z
-
-    local chunkent = nil
-
-    for _,ent in ents.Iterator() do
-        if ent:GetMegaPos() ~= megapos then continue end
-        if ent:GetClass() == "inf_chunk" then chunkent = ent continue end
-        local c = math.random(107, 127)
-        local r = 0.3
+    for _, ent in ipairs(entstodraw) do
+        local c = math.random(157, 177)
+        local r = 0.5 * scale
         local color = Color(c,c,c)
         local drawpos2 = drawpos + ent:INF_GetPos() / ratio
-        if ent:IsPlayer() then color.r = color.r + 127 r = r + 0.7 end
+        if ent:IsPlayer() then color.r = color.r + 78 r = r + 0.7 * scale end
         render.DrawWireframeSphere(drawpos2, r, 4, 4, color, true)
         if ent:IsPlayer() then
+            angle:RotateAroundAxis(angle:Right(), ent:EntIndex() * 10)
+            render.DrawLine(drawpos2, drawpos2 + ent:EyeAngles():Forward() * 5 * scale, Color(255, 0, 0), true)
+            render.DrawLine(drawpos2, drawpos2 + ent:GetVelocity() / 100 * scale, Color(0, 0, 255), true)
             drawpos2.z = drawpos2.z + r*2
-            cam.Start3D2D(drawpos2, angle, 0.05)
+            cam.Start3D2D(drawpos2, angle, 0.05 * scale)
                 draw.SimpleText(ent:Name(), "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
             cam.End3D2D()
             -- and the other side
             angle:RotateAroundAxis(angle:Right(), 180)
-            cam.Start3D2D(drawpos2, angle, 0.05)
+            cam.Start3D2D(drawpos2, angle, 0.05 * scale)
                 draw.SimpleText(ent:Name(), "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
             cam.End3D2D()
         end
@@ -71,6 +81,7 @@ function ENT:DrawChunk(drawpos, megapos, color)
     if not chunkent then return end
     if not chunkent.INF_ChunkMesh then return end
 
+    if not self:GetDrawTerrain() then return end
     render.SetMaterial(wireframe)
     local chunkmesh = chunkent.INF_ChunkMesh
     for i=1,#chunkmesh,6 do
@@ -78,27 +89,81 @@ function ENT:DrawChunk(drawpos, megapos, color)
            not InfMap2.PositionInChunkSpace(chunkmesh[i+1]) and
            not InfMap2.PositionInChunkSpace(chunkmesh[i+4]) and
            not InfMap2.PositionInChunkSpace(chunkmesh[i+2]) then continue end
-        render.DrawQuad(drawpos + chunkmesh[i] / ratio,
+        render.DrawQuad(drawpos + chunkmesh[i+2] / ratio,
+                        drawpos + chunkmesh[i] / ratio,
                         drawpos + chunkmesh[i+1] / ratio,
                         drawpos + chunkmesh[i+4] / ratio,
-                        drawpos + chunkmesh[i+2] / ratio,
                         color)
-        -- break
+    end
+    if self:GetCullTerrain() then return end
+    for i=1,#chunkmesh,6 do
+        if not InfMap2.PositionInChunkSpace(chunkmesh[i  ]) and
+           not InfMap2.PositionInChunkSpace(chunkmesh[i+1]) and
+           not InfMap2.PositionInChunkSpace(chunkmesh[i+4]) and
+           not InfMap2.PositionInChunkSpace(chunkmesh[i+2]) then continue end
+        render.DrawQuad(drawpos + chunkmesh[i+2] / ratio,
+                        drawpos + chunkmesh[i+4] / ratio,
+                        drawpos + chunkmesh[i+1] / ratio,
+                        drawpos + chunkmesh[i] / ratio,
+                        color)
     end
 end
 
+local color_red   = Color(255, 0, 0)
+local color_green = Color(0, 255, 0)
+local color_blue  = Color(0, 0, 255)
+local vector_forward = Vector(0, 1, 0)
+local vector_right = Vector(1, 0, 0)
+
 function ENT:Draw(flags) self:DrawTranslucent(flags) end
 function ENT:DrawTranslucent(flags)
+    if self:GetPos():Distance(LocalPlayer():GetPos()) > InfMap2.ChunkSize then return end
+    --do return self:DrawModel(flags) end
+    if scale ~= self:GetScale() then
+        scale = self:GetScale()
+
+        minichunk = Vector(40, 40, 40) * scale
+        minichunk_half = minichunk / 2
+
+        ratio = InfMap2.ChunkSize / minichunk.z
+    end
+
+    local angle = Angle(angle_zero)
+    angle:RotateAroundAxis(angle:Right(), 90)
+    angle:RotateAroundAxis(angle:Up(), -90)
+    angle:RotateAroundAxis(angle:Right(), (RealTime() * 10) % 360)
+
     self:DrawModel(flags)
-    local drawpos = self:GetPos() + self:GetUp() * minichunk.z
+    local drawpos = self:GetPos() + self:GetUp() * minichunk_half.z
+
+    render.DrawLine(drawpos, drawpos + vector_right   * 8, color_red,   true) -- positive x
+    render.DrawLine(drawpos, drawpos + vector_forward * 8, color_green, true) -- positive y
+    render.DrawLine(drawpos, drawpos + vector_up      * 8, color_blue,  true) -- positive z
+
     local c = math.random(225, 255)
     local color = Color(c,c,c)
-    self:DrawChunk(drawpos, self:GetMegaPos(), color)
-    local chunks = {}
-    for _,ply in player.Iterator() do
-        chunks[ply:GetMegaPos()] = _
+    local chunks, exists, chunkents, entstodraw = {}, {}, {}, {}
+    local i = 0
+    for _,ent in ents.Iterator() do
+        if ent:GetClass() == "inf_chunk" then chunkents[tostring(ent:GetMegaPos())] = ent continue end
+        if not exists[tostring(ent:GetMegaPos())] then
+            i = i + 1
+            chunks[ent:GetMegaPos()] = i
+        end
+        exists[tostring(ent:GetMegaPos())] = true
+        local etd = entstodraw[tostring(ent:GetMegaPos())] or {}
+        entstodraw[tostring(ent:GetMegaPos())] = etd
+
+        etd[#etd+1] = ent
     end
+
+    self:DrawChunk(drawpos, self:GetMegaPos(), chunkents[tostring(self:GetMegaPos())], angle, color, entstodraw[tostring(self:GetMegaPos())])
+
     chunks = table.Flip(chunks)
+    table.sort(chunks, function(a, b)
+        if not a then return false end
+        return a:Length() < b:Length()
+    end)
     local usedoffsets = {[tostring(vector_origin)]=true}
     for _,chunk in ipairs(chunks) do
         local realoffset = chunk - self:GetMegaPos()
@@ -126,8 +191,10 @@ function ENT:DrawTranslucent(flags)
                 realoffset.z = realoffset.z - 1
             end
         end
-        local drawpos = self:GetPos() + self:GetUp() * minichunk.z + (offset * minichunk.z)
-        self:DrawChunk(drawpos, chunk, color)
+        if chunk == self:GetMegaPos() then continue end
+        usedoffsets[tostring(offset)] = true
+        local drawpos = self:GetPos() + self:GetUp() * minichunk_half.z + (offset * minichunk.z)
+        self:DrawChunk(drawpos, chunk, chunkents[tostring(chunk)], angle, color, entstodraw[tostring(chunk)])
     end
     self:INF_SetRenderBoundsWS(vector_origin, vector_origin, InfMap2.SourceBounds)
 end

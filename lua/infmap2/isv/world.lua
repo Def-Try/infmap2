@@ -41,14 +41,36 @@ hook.Add("PlayerSpawnedVehicle", "InfMap2SpawnVehicleCorrect", function(ply, ent
     timer.Simple(0, function() InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos()) end)
 end)
 
-timer.Create("InfMap2RemoveUnusedChunks", 0.5, 0, function()
+timer.Create("InfMap2RemoveUnusedChunks", 5, 0, function()
+    local chunks_to_remove = {}
+    for megapos, chunkent in pairs(InfMap2.GeneratedChunks) do
+        chunks_to_remove[#chunks_to_remove+1] = {Vector(megapos), chunkent}
+    end
+
+    for _, ent in ents.Iterator() do
+        if ent:GetClass() == "inf_chunk" then continue end
+        for _, chunkd in ipairs(chunks_to_remove) do
+            if InfMap2.ChebyshevDistance(ent:GetMegaPos(), chunkd[1]) > 1 then continue end
+            table.remove(chunks_to_remove, _)
+        end
+    end
+
+    for _, chunkd in ipairs(chunks_to_remove) do
+        if InfMap2.Debug then print("[INFMAP] Removing world chunk "..tostring(chunkd[1])) end
+        InfMap2.GeneratedChunks[tostring(chunkd[1])] = nil
+        chunkd[2]:Remove()
+    end
+
+    --[[
+    for _, ent in ents.Iterator() do
+        megapositions[#megapositions+1] = ent:GetMegaPos()
+    end
     for megapos, chunkent in pairs(InfMap2.GeneratedChunks) do
         megapos = Vector(megapos)
         if not IsValid(chunkent) then continue end
         local valid = false
         for _, ent in ents.Iterator() do
             if ent:GetClass() == "inf_chunk" then continue end
-            if not ent:GetMegaPos() then continue end
             if InfMap2.ChebyshevDistance(ent:GetMegaPos(), megapos) <= 1 then
                 valid = true
                 break
@@ -60,4 +82,5 @@ timer.Create("InfMap2RemoveUnusedChunks", 0.5, 0, function()
             chunkent:Remove()
         end
     end
+    --]]
 end)
