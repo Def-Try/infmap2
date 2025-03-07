@@ -29,6 +29,7 @@ end
 function ENT:SetReferenceChunk(chunk)
     self.INF_ReferenceData.Chunk = chunk
     self.INF_ReferenceData.Megapos = self.INF_ReferenceData.Megapos + chunk
+    InfMap2.EntityUpdateMegapos(self, self.INF_ReferenceData.Megapos)
 end
 
 function ENT:InitializePhysics(convexes)
@@ -98,8 +99,8 @@ function ENT:Think()
         local phys = self:GetPhysicsObject()
         if phys:IsValid() then
             phys:EnableMotion(false)
-            phys:SetPos(self:GetPos())
-            phys:SetAngles(self:GetAngles())
+            --phys:SetPos(self:GetPos())
+            --phys:SetAngles(self:GetAngles())
         else
             if InfMap2.Debug then print("[INFMAP] Regenerating physics for CrossChunkClone", self) end
             self:Initialize()
@@ -119,8 +120,10 @@ function ENT:Think()
         return
     end
 
-    self:INF_SetPos(data.Parent:INF_GetPos() - data.Chunk * InfMap2.ChunkSize)
-    self:SetAngles(data.Parent:GetAngles())
+    self:INF_SetPos(parent:INF_GetPos() - data.Chunk * InfMap2.ChunkSize)
+
+    InfMap2.EntityUpdateMegapos(self, self.INF_ReferenceData.Megapos)
+    self:SetAngles(parent:GetAngles())
     
     local phys = self:GetPhysicsObject()
     if phys:IsValid() then phys:EnableMotion(false) end

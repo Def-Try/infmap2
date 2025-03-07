@@ -7,7 +7,7 @@ for x=-1,1 do for y=-1,1 do for z=-1,1 do
     neighbors[#neighbors+1] = Vector(x, y, z)
 end end end
 
-local vector_one = Vector(1, 1, 1)
+local vector_half = Vector(1, 1, 1) / 2
 
 -- vvvvvv     coroutine and error handling setup 
 local coro = coroutine.create(function() while true do local succ, err = pcall(function()
@@ -40,12 +40,12 @@ local coro = coroutine.create(function() while true do local succ, err = pcall(f
         
         ent.INF_Clones = ent.INF_Clones or {}
 
-        local aabb_min, aabb_max = ent:INF_WorldSpaceAABB()
+        local aabb_min, aabb_max = ent:WorldSpaceAABB()
 
         for i=1,#neighbors do
             local neighbor = neighbors[i]
             local chunk_pos = neighbor * InfMap2.ChunkSize
-            local chunk_min, chunk_max = chunk_pos - vector_one * InfMap2.ChunkSize, chunk_pos + vector_one * InfMap2.ChunkSize
+            local chunk_min, chunk_max = chunk_pos - vector_half * InfMap2.ChunkSize, chunk_pos + vector_half * InfMap2.ChunkSize
 
             if InfMap2.IntersectBox(aabb_min, aabb_max, chunk_min, chunk_max) then
                 -- don't clone twice
