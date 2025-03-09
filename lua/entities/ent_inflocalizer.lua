@@ -18,7 +18,7 @@ ENT.Editable        = true
 function ENT:Initialize(ready)
     self:SetModel("models/props_lab/reciever01b.mdl")
 
-    self:PhysicsInit(SOLID_VPHYSICS)
+    if SERVER then self:PhysicsInit(SOLID_VPHYSICS) end
     self:SetScale(1)
     self:SetCullTerrain(true)
     self:SetDrawTerrain(true)
@@ -142,8 +142,8 @@ local color_blue  = Color(0, 0, 255)
 local vector_forward = Vector(0, 1, 0)
 local vector_right = Vector(1, 0, 0)
 
-function ENT:Draw(flags) self:DrawTranslucent(flags) end
 function ENT:DrawTranslucent(flags)
+    self:DrawModel(flags)
     if self:GetPos():Distance(LocalPlayer():GetPos()) > InfMap2.ChunkSize then return end
     --do return self:DrawModel(flags) end
     if scale ~= self:GetScale() then
@@ -159,8 +159,6 @@ function ENT:DrawTranslucent(flags)
     angle:RotateAroundAxis(angle:Right(), 90)
     angle:RotateAroundAxis(angle:Up(), -90)
     angle:RotateAroundAxis(angle:Right(), (RealTime() * 10) % 360)
-
-    self:DrawModel(flags)
     local drawpos = self:GetPos() + self:GetUp() * minichunk_half.z
 
     render.DrawLine(drawpos, drawpos + vector_right   * 8 * scale, color_red,   true) -- positive x
