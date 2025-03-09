@@ -177,6 +177,7 @@ if CLIENT then
     include("infmap2/icl/sound.lua")
     include("infmap2/icl/misc.lua")
 end
+resource.AddFile("infmap2/space/sky.vmt")
 
 hook.Add("InitPostEntity", "InfMap2Init", function() timer.Simple(0, function()
     RunConsoleCommand("sv_maxvelocity", InfMap2.MaxVelocity)

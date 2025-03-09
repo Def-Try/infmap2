@@ -43,6 +43,7 @@ hook.Add("OnEntityCreated", "InfMap2EntityCreated", function(ent) timer.Simple(0
     if InfMap2.UselessEntitiesFilter(ent) and not unfilter[ent:GetClass()] then return end
 
     local megapos = ent:GetMegaPos()
+    ent:SetMegaPos(megapos) -- update on client
     InfMap2.EntityUpdateMegapos(ent, megapos)
     if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." created at megapos "..tostring(megapos)) end
 

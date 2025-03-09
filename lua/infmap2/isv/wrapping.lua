@@ -95,23 +95,10 @@ timer.Create("InfMap2WorldWrapping", 0.1, 0, function()
     end
 end)
 
-hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_to_wrap) do
-    if not IsValid(ent) then continue end -- ent died
-    if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize - 1) then
-        ent.INF_ConstraintMain = nil
-        continue
-    end -- still in chunk, just clear constraint main
-    if IsValid(ent.INF_ConstraintMain) and ent.INF_ConstraintMain ~= ent then continue end -- has a "master" constraint entity
-    if ent:IsPlayerHolding() then continue end -- being held by player
-
-    local pos, megapos_offset = InfMap2.LocalizePosition(ent:INF_GetPos())
-    local megapos = ent:GetMegaPos() + megapos_offset
-
-    if InfMap2.Debug then print("[INFMAP] Updating entity "..tostring(ent)) end
-    local entities = InfMap2.FindAllConnected(ent)
-
+function InfMap2.Teleport(ent, newpos)
     -- we need to do three passes over entities to teleport them properly
-
+    local pos, megapos = InfMap2.LocalizePosition(newpos)
+    local entities = InfMap2.FindAllConnected(ent)
     -- first: collect entities velocities and angles
     local mainvel, mainang = ent:GetVelocity(), ent:GetAngles()
     local velocities, angles = {}, {}
@@ -144,4 +131,21 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_t
            InfMap2.GeneratedChunks[tostring(pos)] = InfMap2.CreateWorldChunk(pos)
        end
     end
+end
+
+hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_to_wrap) do
+    if not IsValid(ent) then continue end -- ent died
+    if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize - 1) then
+        ent.INF_ConstraintMain = nil
+        continue
+    end -- still in chunk, just clear constraint main
+    if IsValid(ent.INF_ConstraintMain) and ent.INF_ConstraintMain ~= ent then continue end -- has a "master" constraint entity
+    if ent:IsPlayerHolding() then continue end -- being held by player
+
+    local pos, megapos_offset = InfMap2.LocalizePosition(ent:INF_GetPos())
+    local megapos = ent:GetMegaPos() + megapos_offset
+
+    if InfMap2.Debug then print("[INFMAP] Updating entity "..tostring(ent)) end
+
+    InfMap2.Teleport(ent, ent:GetPos())
 end end)

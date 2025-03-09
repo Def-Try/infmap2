@@ -2,6 +2,7 @@ local last_megachunk
 
 local maxdist = InfMap2.ChunkSize * InfMap2.Visual.MegachunkSize / 2
 local function frustrum(ent)
+    --do return true end
     if ent:EntIndex() == -1 then return true end
     local mins, maxs = ent:GetRenderBounds()
     local hash = tostring(mins)..tostring(maxs)
@@ -120,7 +121,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
 
     local megaoffset = megapos - (lp:GetMegaPos() or Vector())
 
-    if megaoffset == vector_origin then
+    if ent:GetClass() == "gmod_hands" or ent:GetClass() == "viewmodel" then --if megaoffset == vector_origin then
         ent.RenderOverride = ent.INF_RenderOverride
         if not ent.INF_InSkyboxFlag then ent:RemoveEFlags(EFL_IN_SKYBOX) end
         if ent:GetClass() ~= "inf_chunk" and ent.INF_OriginalRenderBounds then
