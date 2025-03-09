@@ -148,15 +148,19 @@ function ENT:DrawTranslucent(flags)
     local megapostext = megapos.x .. " " .. megapos.y .. " " .. megapos.z
 
     cam.Start3D2D(top, angle, 0.1 * self:GetScale())
-    draw.SimpleText(megapostext, "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
+        draw.SimpleText(megapostext, "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
     cam.End3D2D()
     -- and the other side
     angle:RotateAroundAxis(angle:Right(), 180)
     cam.Start3D2D(top, angle, 0.1 * self:GetScale())
-    draw.SimpleText(megapostext, "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
+        draw.SimpleText(megapostext, "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
     cam.End3D2D()
 
     self:DrawChunkTerrain(color, angle)
+
+    render.DrawWireframeBox(Vector(1, 0, 0)*minichunk_half.x / downscale, angle_zero,
+        Vector(0, -10, -5) / downscale, Vector(1, 10, 5) / downscale, Color(color.r, color.g-127, color.b-127, color.a),
+        true)
 
     cam.PopModelMatrix()
 end
@@ -167,14 +171,28 @@ function ENT:Think()
 
     if self:GetLocked() == -1 then
     elseif CurTime() - self:GetLocked() > 6.05 then
+        local selfpos = self:GetPos()
+        local elevation = selfpos.z - InfMap2.World.Terrain.HeightFunction(selfpos.x, selfpos.y)
         local tppos = self:GetChunk() * InfMap2.ChunkSize
-        tppos.z = InfMap2.World.Terrain.HeightFunction(tppos.x, tppos.y) + 25
+        local tpele = InfMap2.World.Terrain.HeightFunction(tppos.x, tppos.y)
+        if ((tpele - tppos.z) - InfMap2.ChunkSizeo / 2) <= InfMap2.ChunkSize then
+            tppos.z = tpele + elevation
+        end
         InfMap2.Teleport(self, tppos)
         self:SetLocked(-1)
         self:EmitSound("npc/turret_floor/die.wav", 450, 70)
+        self.playedsend = nil
+        self.playedcharge = nil
         return true
-    elseif CurTime() - self:GetLocked() > 6 then
+    elseif CurTime() - self:GetLocked() > 6 and not self.playedsend then
+        if self.playedsend then return true end
         self:EmitSound("ambient/levels/citadel/weapon_disintegrate2.wav")
+        self.playedsend = true
+        return true
+    elseif CurTime() - self:GetLocked() > 5 then
+        if self.playedcharge then return true end
+        self:EmitSound("npc/strider/charging.wav")
+        self.playedcharge = true
         return true
     end
 
@@ -190,26 +208,35 @@ function ENT:Think()
     if not closest then return true end
     local frac = mindist / self:GetScale() / 100
     if frac > 1 then return true end
+
+    local jumphitpos, jumphitnorm, jumphitfrac = util.IntersectRayWithOBB(
+        closest:EyePos(), closest:GetAimVector() * 100 * self:GetScale(),
+        self:GetPos() + self:GetUp() * (self:GetOffsetY() + (minichunk_half.z + 10) * self:GetScale())
+        + self:GetForward()*minichunk_half.x * self:GetScale(), self:GetAngles(),
+        Vector(0, -10, -5) * self:GetScale(), Vector(1, 10, 5) * self:GetScale())
+
     local hitpos, hitnorm, hitfrac = util.IntersectRayWithOBB(
         closest:EyePos(), closest:GetAimVector() * 100 * self:GetScale(),
         self:GetPos() + self:GetUp() * (self:GetOffsetY() + (minichunk_half.z + 10) * self:GetScale()),
         self:GetAngles(), -minichunk_half * self:GetScale(), minichunk_half * self:GetScale())
     if not closest:KeyDown(IN_USE) then return true end
     if self.cooldown and self.cooldown >= CurTime() then return true end
-    self.cooldown = CurTime() + 0.5
+    self.cooldown = CurTime() + 0.25
 
-    if not hitpos then
-        if closest:GetEyeTrace().Entity ~= self then return true end
+    if not hitpos and jumphitpos or jumphitfrac and jumphitfrac < hitfrac then
+        -- if closest:GetEyeTrace().Entity ~= self then return true end
         if self:GetLocked() ~= -1 then
             self:SetLocked(-1)
             self:EmitSound("buttons/button18.wav")
             return true
         end
         self:SetLocked(CurTime())
-        self:EmitSound("buttons/button17.wav")
+        self:EmitSound("buttons/button24.wav")
         return true
     end
+    if not hitnorm then return true end
     if self:GetLocked() ~= -1 then return true end
     self:SetChunk(self:GetChunk() - hitnorm)
+    self:EmitSound("buttons/button17.wav")
     return true
 end
