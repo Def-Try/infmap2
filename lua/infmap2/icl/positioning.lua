@@ -2,7 +2,7 @@ local last_megachunk
 
 local maxdist = InfMap2.ChunkSize * InfMap2.Visual.MegachunkSize / 2
 local function frustrum(ent)
-    do return true end
+    --do return true end
     if ent:EntIndex() == -1 then return true end
     local mins, maxs = ent:GetRenderBounds()
     local hash = tostring(mins)..tostring(maxs)
