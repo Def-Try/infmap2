@@ -2,7 +2,7 @@ local last_megachunk
 
 local maxdist = InfMap2.ChunkSize * InfMap2.Visual.MegachunkSize / 2
 local function frustrum(ent)
-    --do return true end
+    do return true end
     if ent:EntIndex() == -1 then return true end
     local mins, maxs = ent:GetRenderBounds()
     local hash = tostring(mins)..tostring(maxs)
@@ -65,7 +65,19 @@ end
 ---Updates entity megaposition, moving it between chunks
 ---@param ent Entity
 ---@param megapos Vector
-function InfMap2.EntityUpdateMegapos(ent, megapos)
+---@param attempts number?
+function InfMap2.EntityUpdateMegapos(ent, megapos, attempts)
+    local mins, maxs = ent:INF_GetRenderBounds()
+    if mins == maxs and mins == vector_origin and (attempts or 0) < 3 then
+        timer.Simple(0, function()
+            InfMap2.EntityUpdateMegapos(ent, megapos, (attempts or 0) + 1)
+        end)
+        return
+    end
+    if mins == maxs and mins == vector_origin and (attempts or 0) >= 3 then
+        if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." did not get valid renderbounds!") end
+    end
+
     -- make luals happy
     ---@class Entity
     ent = ent
@@ -121,7 +133,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
 
     local megaoffset = megapos - lp:GetMegaPos()
 
-    if ent:GetClass() == "gmod_hands" or ent:GetClass() == "viewmodel" then --if megaoffset == vector_origin then
+    if megaoffset == vector_origin then -- ent:GetClass() == "gmod_hands" or ent:GetClass() == "viewmodel" or 
         ent.RenderOverride = ent.INF_RenderOverride
         if not ent.INF_InSkyboxFlag then ent:RemoveEFlags(EFL_IN_SKYBOX) end
         if ent:GetClass() ~= "inf_chunk" and ent.INF_OriginalRenderBounds then

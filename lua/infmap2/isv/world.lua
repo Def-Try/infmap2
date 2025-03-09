@@ -12,7 +12,8 @@ function InfMap2.CreateWorldChunk(megapos)
     InfMap2.EntityUpdateMegapos(chunk, megapos)
     return chunk
 end
-
+--[[
+-- not needed anymore (?)
 hook.Add("PlayerSpawnedEffect", "InfMap2SpawnEffectCorrect", function(ply, model, ent)
     timer.Simple(0, function() if not IsValid(ent) then return end InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos()) end)
 end)
@@ -40,7 +41,7 @@ end)
 hook.Add("PlayerSpawnedVehicle", "InfMap2SpawnVehicleCorrect", function(ply, ent)
     timer.Simple(0, function() if not IsValid(ent) then return end InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos()) end)
 end)
-
+]]
 timer.Create("InfMap2RemoveUnusedChunks", 5, 0, function()
     local chunks_to_remove = {}
     for megapos, chunkent in pairs(InfMap2.GeneratedChunks) do

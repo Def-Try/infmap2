@@ -51,7 +51,7 @@ end
 local ENTITY = FindMetaTable("Entity")
 ENTITY.INF_SetRenderBoundsWS = ENTITY.INF_SetRenderBoundsWS or ENTITY.SetRenderBoundsWS
 function ENTITY:SetRenderBoundsWS(mins, maxs)
-	if self:GetMegaPos() == LocalPlayer():GetMegaPos() then
+	if self:GetMegaPos() == vector_origin then -- LocalPlayer():GetMegaPos() then
 		self:INF_SetRenderBoundsWS(mins, maxs)
 	end
 	self.INF_RenderBounds = {self:WorldToLocal(mins), self:WorldToLocal(maxs)}
@@ -59,7 +59,7 @@ end
 
 ENTITY.INF_SetRenderBounds = ENTITY.INF_SetRenderBounds or ENTITY.SetRenderBounds
 function ENTITY:SetRenderBounds(mins, maxs, add)
-	if self:GetMegaPos() == LocalPlayer():GetMegaPos() then
+	if self:GetMegaPos() == vector_origin then -- LocalPlayer():GetMegaPos() then
 		self:INF_SetRenderBounds(mins, maxs, add)
 	end
 	add = add or vector_origin
