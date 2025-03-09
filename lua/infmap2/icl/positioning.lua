@@ -2,7 +2,7 @@ local last_megachunk
 
 local maxdist = InfMap2.ChunkSize * InfMap2.Visual.MegachunkSize / 2
 local function frustrum(ent)
-    --do return true end
+    do return true end
     if ent:EntIndex() == -1 then return true end
     local mins, maxs = ent:GetRenderBounds()
     local hash = tostring(mins)..tostring(maxs)
@@ -119,7 +119,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos)
 		InfMap2.EntityUpdateMegapos(child, megapos)
 	end
 
-    local megaoffset = megapos - (lp:GetMegaPos() or Vector())
+    local megaoffset = megapos - lp:GetMegaPos()
 
     if ent:GetClass() == "gmod_hands" or ent:GetClass() == "viewmodel" then --if megaoffset == vector_origin then
         ent.RenderOverride = ent.INF_RenderOverride
@@ -160,7 +160,7 @@ hook.Add("PreDrawTranslucentRenderables", "InfMap2FrustrumCalc", function()
     local megapos = LocalPlayer():GetMegaPos()
     for _,ent in ents.Iterator() do
         if not ent.INF_VisualOffset then continue end
-        if ent:GetMegaPos() == megapos then continue end
+        --if ent:GetMegaPos() == megapos then continue end
         if ent:GetClass() == "inf_chunk" then continue end
         ent.INF_InFrustrum = frustrum(ent)
     end
