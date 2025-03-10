@@ -2,22 +2,8 @@ AddCSLuaFile()
 
 InfMap2.EnableDevBanner = true
 
-hook.Add("HUDPaint", "INFMAP2WIPBANNERREMOVEMELATER", function()
-    if not InfMap2.EnableDevBanner then return end
-    local h = 52+26
-    surface.SetDrawColor(0, 0, 0, 190)
-
-    surface.DrawRect(ScrW() / 4, 5, ScrW() / 2, h)
-
-    surface.SetDrawColor(255, 255, 255, 255)
-    surface.DrawOutlinedRect(ScrW() / 4, 5, ScrW() / 2, h, 2)
-
-    draw.DrawText("InfMap2 "..InfMap2.Version, "DermaDefault",
-        ScrW() / 2, 9, color_white, TEXT_ALIGN_CENTER)
-
-    draw.DrawText("THIS IS A BETA VERSION\nEVERYTHING YOU SEE IS SUBJECT TO CHANGE",
-    "DermaLarge", ScrW() / 2, 19, color_white, TEXT_ALIGN_CENTER)
-end)
+AddCSLuaFile("infmap2/icl/popups.lua")
+if CLIENT then include("infmap2/icl/popups.lua") end
 
 --if InfMap2.Debug == nil then InfMap2.Debug = true end
 if InfMap2.Debug == nil then InfMap2.Debug = false end
