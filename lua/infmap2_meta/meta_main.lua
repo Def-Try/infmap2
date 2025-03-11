@@ -17,7 +17,10 @@ InfMap2.MaxVelocity = 13503.95 * 20
 InfMap2.World.HasTerrain = true
 
 ---Height function for default infmap generator
-InfMap2.World.Terrain.HeightFunction = function(x, y) end
+---@param x number
+---@param y number
+---@return number z
+InfMap2.World.Terrain.HeightFunction = function(x, y) return 0 end
 ---Sample size for default infmap generator
 InfMap2.World.Terrain.SampleSize = 5000
 ---Whether to generate normals per vertex or per face on default infmap generator
