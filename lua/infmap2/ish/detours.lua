@@ -7,10 +7,10 @@ local PLAYER = FindMetaTable("Player")
 local NEXTBOT = FindMetaTable("NextBot")
 local CTAKEDAMAGEINFO = FindMetaTable("CTakeDamageInfo")
 
-InfMap2.TraceLine = InfMap2.TraceLine or util.TraceLine
-InfMap2.TraceHull = InfMap2.TraceHull or util.TraceHull
-InfMap2.TraceEntity = InfMap2.TraceEntity or util.TraceEntity
-InfMap2.TraceEntityHull = InfMap2.TraceEntityHull or util.TraceEntityHull
+util.INF_TraceLine = util.INF_TraceLine or util.TraceLine
+util.INF_TraceHull = util.INF_TraceHull or util.TraceHull
+util.INF_TraceEntity = util.INF_TraceEntity or util.TraceEntity
+util.INF_TraceEntityHull = util.INF_TraceEntityHull or util.TraceEntityHull
 
 local planes = {
     Vector(0, 0, -1), Vector(0, 0, 1),
@@ -206,10 +206,10 @@ end
 
 ----- Trace detours -----
 
-util.TraceLine = generate_trace_function(InfMap2.TraceLine)
-util.TraceHull = generate_trace_function(InfMap2.TraceHull)
-util.TraceEntity = generate_trace_function(InfMap2.TraceEntity)
-util.TraceEntityHull = generate_trace_function(InfMap2.TraceEntityHull)
+util.TraceLine = generate_trace_function(util.INF_TraceLine)
+util.TraceHull = generate_trace_function(util.INF_TraceHull)
+util.TraceEntity = generate_trace_function(util.INF_TraceEntity)
+util.TraceEntityHull = generate_trace_function(util.INF_TraceEntityHull)
 
 ----- Entity detours -----
 
