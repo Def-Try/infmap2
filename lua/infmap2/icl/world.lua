@@ -404,7 +404,8 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
     end
 end)
 
-local csent = ClientsideModel("error.mdl")
+local csent = InfMap2.Cache.CSEnt or ClientsideModel("error.mdl")
+InfMap2.Cache.CSEnt = csent
 
 local pushed = false
 hook.Add("RenderScene", "InfMap2RenderWorld", function()
@@ -424,7 +425,7 @@ hook.Add("PostRender", "InfMap2RenderWorld", function()
     pushed = false
 end)
 
-hook.Add("PreDrawTranslucentRenderables", "InfMap2RenderWorld", function()
+hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
     if not InfMap2.World.HasTerrain then return end
     if not InfMap2.Cache.material then
         InfMap2.Cache.material = Material(InfMap2.Visual.Terrain.Material)
@@ -438,13 +439,18 @@ hook.Add("PreDrawTranslucentRenderables", "InfMap2RenderWorld", function()
     end
 
     -- unfuck_lighting, thanks gwater 2 !
-    if not IsValid(csent) then csent = ClientsideModel("error.mdl") end
+    if not IsValid(csent) then
+        csent = ClientsideModel("error.mdl")
+        InfMap2.Cache.CSEnt = csent
+        csent:SetNoDraw(true)
+    end
     
+    local megaoffset = LocalPlayer():GetMegaPos() * InfMap2.ChunkSize
     render.OverrideColorWriteEnable(true, false)
     render.OverrideDepthEnable(true, false)
-    csent:SetNoDraw(true)
-    csent:SetPos(LocalPlayer():GetMegaPos() * InfMap2.ChunkSize)
+    csent:SetPos(megaoffset)
     csent:SetAngles(EyeAngles())
+    csent:SetupBones()
 
     csent:SetModel("models/shadertest/vertexlit.mdl")
     csent:DrawModel()
@@ -454,6 +460,33 @@ hook.Add("PreDrawTranslucentRenderables", "InfMap2RenderWorld", function()
 
     render.OverrideDepthEnable(false, false)
     render.OverrideColorWriteEnable(false, false)
+
+    local models = {
+        "models/props_foliage/bramble001a.mdl",
+        "models/props_foliage/cattails.mdl",
+        "models/props_foliage/shrub_01a.mdl",
+        "models/props_foliage/tree_deciduous_card_01_skybox.mdl",
+        -- "models/props_foliage/tree_deciduous_card_01.mdl"
+    }
+    for i=0,50,1 do
+        local pos = Vector(
+            util.SharedRandom("InfMap_DetailX_"..i, -InfMap2.ChunkSize/2,
+                                                     InfMap2.ChunkSize/2,
+                                                     megaoffset.x),
+            util.SharedRandom("InfMap_DetailY_"..i, -InfMap2.ChunkSize/2,
+                                                     InfMap2.ChunkSize/2,
+                                                     megaoffset.y)
+        ) + megaoffset
+        pos.z = InfMap2.GetTerrainHeightAt(pos.x, pos.y)
+
+        csent:SetPos(pos)
+        csent:SetModel(models[math.Round(util.SharedRandom("InfMap_DetailMDL_"..i, 1, #models, megaoffset.x + megaoffset.y))])
+        csent:SetAngles(Angle(0, 
+            util.SharedRandom("InfMap_DetailPitch_"..i, 0, 360,
+                                megaoffset.x), 0))
+        csent:SetupBones()
+        csent:DrawModel()
+    end
 
 
     render.SetMaterial(InfMap2.Cache.material)

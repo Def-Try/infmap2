@@ -69,3 +69,59 @@ function InfMap2.GenerateChunkVertexMesh(megapos)
 
     return table.Copy(chunk_mesh)
 end
+
+InfMap2.Cache.TerrainHeightCache = {}
+
+---Gets proper terrain height (according to SampleSize) at a position
+---@param x number
+---@param y number
+---@return number
+function InfMap2.GetTerrainHeightAt(x, y)
+    if InfMap2.Cache.TerrainHeightCache[x.." "..y] then 
+        return InfMap2.Cache.TerrainHeightCache[x.." "..y]
+    end
+
+  local localpos, megapos = InfMap2.LocalizePosition(Vector(x, y, 0))
+
+  local full_chunk_size = InfMap2.ChunkSize
+    local half_chunk_size = full_chunk_size / 2  -- Use full_chunk_size / 2 here
+    local sample_size = InfMap2.World.Terrain.SampleSize
+    local chunk_resolution = (full_chunk_size / sample_size) -- This is the number of samples per full chunk side
+    local half_chunk_resolution = half_chunk_size / sample_size
+    local height_function = InfMap2.World.Terrain.HeightFunction
+
+    -- Convert world coordinates to chunk coordinates
+    local chunkX = megapos.x
+    local chunkY = megapos.y
+
+    -- Calculate local coordinates within the chunk (-1 to 1)
+    local localX = localpos.x / sample_size
+    local localY = localpos.y / sample_size
+
+    local cellX = math.Round(localX * (chunk_resolution - 1) / 2) * 2
+    local cellY = math.Round(localY * (chunk_resolution - 1) / 2) * 2
+
+    local center = Vector(cellX, cellY, 0) * (sample_size / 2) +
+    Vector(chunkX, chunkY, 0) * full_chunk_size
+    local v0 = center + Vector( 1, -1, 0) * sample_size / 2
+    v0.z = height_function(v0.x * 2, v0.y * 2)
+    local v1 = center + Vector(-1,  1, 0) * sample_size / 2
+    v1.z = height_function(v1.x * 2, v1.y * 2)
+    local v2 = center + Vector( 1,  1, 0) * sample_size / 2
+    v2.z = height_function(v2.x * 2, v2.y * 2)
+    local v3 = center + Vector(-1, -1, 0) * sample_size / 2
+    v3.z = height_function(v3.x * 2, v3.y * 2)
+
+    local cellLocalX = localX * (chunk_resolution - 1) - cellX
+    local cellLocalY = localY * (chunk_resolution - 1) - cellY
+
+    local height
+    if cellLocalX + cellLocalY < 0 then
+        height = v3.z + (v0.z - v3.z) * ((cellLocalX + 1) / 2) + (v1.z - v3.z) * ((cellLocalY + 1) / 2)
+    else
+        height = v2.z + (v1.z - v2.z) * (1 - ((cellLocalX + 1) / 2)) + (v0.z - v2.z) * (1 - ((cellLocalY + 1) / 2))
+    end
+
+    InfMap2.Cache.TerrainHeightCache[x.." "..y] = height
+    return height
+end
