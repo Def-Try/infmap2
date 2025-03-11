@@ -175,7 +175,7 @@ function ENT:Think()
         local elevation = selfpos.z - InfMap2.World.Terrain.HeightFunction(selfpos.x, selfpos.y)
         local tppos = self:GetChunk() * InfMap2.ChunkSize
         local tpele = InfMap2.World.Terrain.HeightFunction(tppos.x, tppos.y)
-        if ((tpele - tppos.z) - InfMap2.ChunkSizeo / 2) <= InfMap2.ChunkSize then
+        if ((tpele - tppos.z) - InfMap2.ChunkSize / 2) <= InfMap2.ChunkSize then
             tppos.z = tpele + elevation
         end
         InfMap2.Teleport(self, tppos)
