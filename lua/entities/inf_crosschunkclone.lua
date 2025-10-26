@@ -160,3 +160,7 @@ end
 hook.Add("PhysgunPickup", "InfMap2CrossChunkClonePhysgunable", function(ply, ent)
     if ent:GetClass() == "inf_crosschunkclone" then return false end
 end)
+
+function ENT:Use(activator, caller, useType, value)
+    return self.INF_ReferenceData.Parent:Use(activator, caller, useType, value)
+end

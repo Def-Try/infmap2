@@ -470,7 +470,7 @@ hook.Add("PostDraw2DSkyBox", "InfMap2RenderWorld", function()
         "models/props_foliage/tree_deciduous_card_01_skybox.mdl",
         -- "models/props_foliage/tree_deciduous_card_01.mdl"
     }
-    for i=0,50,1 do
+    for i=0,100,1 do
         local pos = Vector(
             util.SharedRandom("InfMap_DetailX_"..i, -InfMap2.ChunkSize/2,
                                                      InfMap2.ChunkSize/2,
