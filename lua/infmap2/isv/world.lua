@@ -65,3 +65,34 @@ timer.Create("InfMap2RemoveUnusedChunks", 5, 0, function()
         chunkd[2]:Remove()
     end
 end)
+
+timer.Create("InfMap2SuffocatePlayers", 1, 0, function()
+    for _, ply in ipairs(player.GetAll()) do
+        local pos = ply:EyePos()
+        if ply:GetMoveType() ~= MOVETYPE_NONE then continue end
+        local terrain = InfMap2.GetTerrainHeightAt(pos.x, pos.y)
+        if pos.z >= terrain then continue end
+        local damageinfo = DamageInfo()
+        damageinfo:SetDamageType(DMG_DROWN)
+        damageinfo:SetDamage(20)
+        damageinfo:SetDamagePosition(ply:EyePos())
+        damageinfo:SetDamageForce(Vector(0, 0, terrain - pos.z))
+        ply:TakeDamageInfo(damageinfo)
+        ply:ViewPunch(Angle(-math.min(10, (damageinfo:GetDamageForce().z / 100)), 0, 0))
+    end
+end)
+hook.Add("PlayerTick", "InfMap2FreezePlayers", function(ply)
+    local pos = ply:GetPos()
+    if pos.z >= InfMap2.GetTerrainHeightAt(pos.x, pos.y) then
+        if not ply.INF_UnderTerrain then return end
+        ply:SetMoveType(MOVETYPE_WALK)
+        ply.INF_UnderTerrain = nil
+        return
+    end
+    if ply:GetMoveType() ~= MOVETYPE_WALK and ply:GetMoveType() ~= MOVETYPE_NONE then
+        ply.INF_UnderTerrain = nil
+    end
+    if ply:GetMoveType() ~= MOVETYPE_WALK then return end
+    ply:SetMoveType(MOVETYPE_NONE)
+    ply.INF_UnderTerrain = true
+end)

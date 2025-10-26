@@ -67,6 +67,7 @@ end
 ---@param megapos Vector
 ---@param attempts number?
 function InfMap2.EntityUpdateMegapos(ent, megapos, attempts)
+    if ent:GetClass() == "viewmodel" then return end -- TODO: use useless table?
     local mins, maxs = ent:INF_GetRenderBounds()
     if mins == maxs and mins == vector_origin and (attempts or 0) < 3 then
         timer.Simple(0, function()

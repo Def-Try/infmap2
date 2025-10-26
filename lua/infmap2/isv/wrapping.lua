@@ -143,6 +143,8 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_t
     if ent:IsPlayerHolding() then continue end -- being held by player
 
     if ent:GetClass() == "inf_crosschunkclone" then continue end -- crosschunk clone, we dont touch those
+    if ent:GetClass() == "predicted_viewmodel" then continue end -- no touchy viewmodels
+    if ent:GetClass() == "physgun_beam" then continue end -- no touchy physgun_beam
 
     local pos, megapos_offset = InfMap2.LocalizePosition(ent:INF_GetPos())
     local megapos = ent:GetMegaPos() + megapos_offset

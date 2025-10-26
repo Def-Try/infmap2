@@ -408,7 +408,7 @@ local csent = InfMap2.Cache.CSEnt or ClientsideModel("error.mdl")
 InfMap2.Cache.CSEnt = csent
 
 local pushed = false
-hook.Add("PreRender", "InfMap2RenderWorld", function() -- RenderScene
+hook.Add("RenderScene", "InfMap2RenderWorld", function() -- RenderScene
     if pushed then cam.INF_PopModelMatrix() end
     cam.INF_PushModelMatrix(InfMap2.ViewMatrix, false)
     pushed = true
@@ -425,7 +425,9 @@ hook.Add("PostRender", "InfMap2RenderWorld", function()
     pushed = false
 end)
 
-hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
+hook.Add("PostDraw2DSkyBox", "InfMap2RenderWorld", function()
+    --if depth or skybox or skybox3d then return end
+    --do return end
     if not InfMap2.World.HasTerrain then return end
     if not InfMap2.Cache.material then
         InfMap2.Cache.material = Material(InfMap2.Visual.Terrain.Material)
@@ -448,7 +450,7 @@ hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
     local megaoffset = LocalPlayer():GetMegaPos() * InfMap2.ChunkSize
     render.OverrideColorWriteEnable(true, false)
     render.OverrideDepthEnable(true, false)
-    csent:SetPos(megaoffset)
+    csent:INF_SetPos(megaoffset)
     csent:SetAngles(EyeAngles())
     csent:SetupBones()
 
@@ -537,3 +539,12 @@ if InfMap2.Visual.HasSkybox then
         render.OverrideDepthEnable(false, false)
     end)
 end
+
+hook.Add("RenderScreenspaceEffects", "InfMap2UnderTerrain", function()
+    local pos = LocalPlayer():EyePos()
+    if pos.z >= InfMap2.GetTerrainHeightAt(pos.x, pos.y) then
+        return
+    end
+    render.SetMaterial(InfMap2.Cache.material)
+    render.DrawScreenQuad()
+end)
