@@ -3,15 +3,25 @@ InfMap2.GeneratedChunks = InfMap2.GeneratedChunks or {}
 InfMap2.Cache.carries = InfMap2.Cache.carries or {}
 
 do
-    local function pickup(ply, ent) InfMap2.Cache.carries[ply] = ent InfMap2.Cache.carries[ent] = ply end
-    local function drop  (ply     ) InfMap2.Cache.carries[InfMap2.Cache.carries[ply]] = nil InfMap2.Cache.carries[ply] = nil end
+    local function pickup(ply, ent, meth)
+        InfMap2.Cache.carries[ply:SteamID()] = {ent, meth}
+        InfMap2.Cache.carries[ent:EntIndex()] = {ply, meth}
+    end
+    local function drop(ply) 
+        InfMap2.Cache.carries[InfMap2.Cache.carries[ply:SteamID()][1]:EntIndex()] = nil
+        InfMap2.Cache.carries[ply:SteamID()] = nil
+    end
 
-    hook.Add("OnPhysgunPickup",       "InfMap2EntityCarry", pickup)
-    hook.Add("PhysgunDrop",           "InfMap2EntityCarry", drop  )
-    hook.Add("GravGunOnPickedUp",     "InfMap2EntityCarry", pickup)
-    hook.Add("GravGunOnDropped",      "InfMap2EntityCarry", drop  )
-    hook.Add("OnPlayerPhysicsPickup", "InfMap2EntityCarry", pickup)
-    hook.Add("OnPlayerPhysicsDrop",   "InfMap2EntityCarry", drop  )
+    hook.Add("OnPhysgunPickup",       "InfMap2EntityCarry", function(ply, ent) pickup(ply, ent, "physgun") end)
+    hook.Add("PhysgunDrop",           "InfMap2EntityCarry", drop)
+    hook.Add("GravGunOnPickedUp",     "InfMap2EntityCarry", function(ply, ent) pickup(ply, ent, "gravgun") end)
+    hook.Add("GravGunOnDropped",      "InfMap2EntityCarry", drop)
+    hook.Add("OnPlayerPhysicsPickup", "InfMap2EntityCarry", function(ply, ent) pickup(ply, ent, "physics") end)
+    hook.Add("OnPlayerPhysicsDrop",   "InfMap2EntityCarry", drop)
+    hook.Add("EntityRemoved",         "InfMap2EntityCarry", function(ent)
+        if not InfMap2.Cache.carries[ent:EntIndex()] then return end
+        drop(InfMap2.Cache.carries[ent:EntIndex()][1])
+    end)
 end
 
 local function ent_SetPos_proper(ent, pos)
@@ -54,8 +64,10 @@ end
 local function update_entity(ent, pos, megapos)
     if not IsValid(ent) then return end
 
-    if ent:IsPlayer() and IsValid(InfMap2.Cache.carries[ent]) then
-        local carry = InfMap2.Cache.carries[ent]
+    if ent:IsPlayer() and InfMap2.Cache.carries[ent:SteamID()] and IsValid(InfMap2.Cache.carries[ent:SteamID()][1]) then
+        local carrydata = InfMap2.Cache.carries[ent:SteamID()]
+        local carry, carrymeth = nil, nil
+        if carrydata then carry, carrymeth = carrydata[1], carrydata[2] end
         local entities = InfMap2.FindAllConnected(carry)
         if carry:IsPlayer() then entities[#entities+1] = carry:GetHands() end
         local ent_pos = ent:INF_GetPos()
@@ -67,6 +79,13 @@ local function update_entity(ent, pos, megapos)
             ent_SetPos_proper(cent, pos + (cent:INF_GetPos() - ent_pos))
             ent_SetVelAng_proper(cent, vel, ang)
             cent.INF_ConstraintMain = ent
+            if carrymeth == "physics" then
+                ent:PickupObject(cent)
+            end
+            if carrymeth == "physgun" then end -- no action needed :)
+            if carrymeth == "gravgun" then
+                -- TODO: simulate +attack2
+            end
         end
     end
 
@@ -112,7 +131,7 @@ function InfMap2.Teleport(ent, newpos)
     local mainpos = ent:INF_GetPos()
     for _, cent in pairs(entities) do
         if ent == cent then continue end
-        cent:ForcePlayerDrop()
+        --cent:ForcePlayerDrop()
         update_entity(cent, pos + (cent:INF_GetPos() - mainpos), megapos)
     end
     update_entity(ent, pos, megapos)
@@ -124,6 +143,7 @@ function InfMap2.Teleport(ent, newpos)
     end
     ent_SetVelAng_proper(ent, mainvel, mainang)
 
+    -- additionally create chunks around current one
     if InfMap2.World.HasTerrain then
        for i=1,#neighbors do
            local pos = megapos + neighbors[i]
@@ -143,8 +163,6 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_t
     if ent:IsPlayerHolding() then continue end -- being held by player
 
     if ent:GetClass() == "inf_crosschunkclone" then continue end -- crosschunk clone, we dont touch those
-    if ent:GetClass() == "predicted_viewmodel" then continue end -- no touchy viewmodels
-    if ent:GetClass() == "physgun_beam" then continue end -- no touchy physgun_beam
 
     local pos, megapos_offset = InfMap2.LocalizePosition(ent:INF_GetPos())
     local megapos = ent:GetMegaPos() + megapos_offset

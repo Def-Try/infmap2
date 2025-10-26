@@ -100,6 +100,7 @@ InfMap2.UselessEntities = InfMap2.UselessEntities or {
 	info_particle_system = true,
 	phys_spring = true,
 	predicted_viewmodel = true,
+    viewmodel = true,
 	env_projectedtexture = true,
 	keyframe_rope = true,
 	hl2mp_ragdoll = true,
