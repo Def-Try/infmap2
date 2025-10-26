@@ -19,28 +19,37 @@ local planes = {
 }
 
 local function generate_filter_function(offset, filter)
+    local world = game.GetWorld()
     if isfunction(filter) then return function(e)
-        if e:GetMegaPos()~= offset then return false end
-        if e:GetClass() == "inf_chunk" then e = game.GetWorld() end
+        if e:GetMegaPos() ~= offset then return false end
+        local klass = e:GetClass()
+        if klass == "inf_chunk" then e = world end
+        if klass == "inf_crosschunkclone" then e = e.INF_ReferenceData.Parent if not e or not e:IsValid() then return false end end
         return filter(e)
     end end
     if istable(filter) then return function(e)
-        if e:GetMegaPos()~= offset then return false end
-        if e:GetClass() == "inf_chunk" then e = game.GetWorld() end
+        if e:GetMegaPos() ~= offset then return false end
+        local klass = e:GetClass()
+        if klass == "inf_chunk" then e = world end
+        if klass == "inf_crosschunkclone" then e = e.INF_ReferenceData.Parent if not e or not e:IsValid() then return false end end
         return not (table.HasValue(filter, e) or table.HasValue(filter, e:GetClass()))
     end end
     if isentity(filter) then return function(e)
-        if e:GetMegaPos()~= offset then return false end
-        if e:GetClass() == "inf_chunk" then e = game.GetWorld() end
+        if e:GetMegaPos() ~= offset then return false end
+        local klass = e:GetClass()
+        if klass == "inf_chunk" then e = world end
+        if klass == "inf_crosschunkclone" then e = e.INF_ReferenceData.Parent if not e or not e:IsValid() then return false end end
         return e ~= filter
     end end
     if isstring(filter) then return function(e)
-        if e:GetMegaPos()~= offset then return false end
-        if e:GetClass() == "inf_chunk" then e = game.GetWorld() end
+        if e:GetMegaPos() ~= offset then return false end
+        local klass = e:GetClass()
+        if klass == "inf_chunk" then e = world end
+        if klass == "inf_crosschunkclone" then e = e.INF_ReferenceData.Parent if not e or not e:IsValid() then return false end end
         return e:GetClass() == filter
     end end
     return function(e)
-        return e:GetMegaPos()== offset
+        return e:GetMegaPos() == offset
     end
 end
 
@@ -191,6 +200,7 @@ local function tracefunc(fake, real, tracedata)
 
     if tracedata.output then
         table.Add(tracedata.output, hit_data)
+        return nil
     end
 
 	return hit_data

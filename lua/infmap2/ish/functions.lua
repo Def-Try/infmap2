@@ -94,12 +94,12 @@ end
 -- filters useless entities (that are not movable between chunks or ignored by player)
 
 InfMap2.UselessEntities = InfMap2.UselessEntities or {
-	-- physgun_beam = true,
+	physgun_beam = true,
 	worldspawn = true,
-	-- gmod_hands = true,
+	gmod_hands = true,
 	info_particle_system = true,
 	phys_spring = true,
-	-- predicted_viewmodel = true,
+	predicted_viewmodel = true,
 	env_projectedtexture = true,
 	keyframe_rope = true,
 	hl2mp_ragdoll = true,

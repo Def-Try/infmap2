@@ -116,11 +116,6 @@ function cam.PopModelMatrix()
 	end
 end
 
-cam.INF_Start3D2D = cam.INF_Start3D2D or cam.Start3D2D
-function cam.Start3D2D(pos, ang, scl)
-	return cam.INF_Start3D2D(localize(pos), ang, scl)
-end
-
 local VECTOR = FindMetaTable("Vector")
 
 VECTOR.INF_ToScreen = VECTOR.INF_ToScreen or VECTOR.ToScreen
