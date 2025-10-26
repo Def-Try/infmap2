@@ -116,7 +116,7 @@ local function tracefunc(fake, real, tracedata)
 
         local newdata = {
             start = endpos + -endplane*InfMap2.ChunkSize + direction, -- in another chunk
-            endpos = tracedata.start + direction * math.max(0, length - mindist - 1),
+            endpos = endpos + -endplane*InfMap2.ChunkSize + direction * math.max(0, length - mindist - 1),
             filter = tracedata.filter, -- we're calling recursively, provide original filter
             mask = tracedata.mask,
             collisiongroup = tracedata.collisiongroup,
@@ -129,6 +129,10 @@ local function tracefunc(fake, real, tracedata)
         }
         newdata.start = InfMap2.UnlocalizePosition(newdata.start, real_start_offset + endplane)
         newdata.endpos = InfMap2.UnlocalizePosition(newdata.endpos, real_start_offset + endplane)
+
+        --debugoverlay.Line(data.start, report.crosschunk.endpos, 0.1, Color(255, 255, 255), true)
+        --debugoverlay.Cross(report.crosschunk.endpos, 50, 0.1, Color(255, 0, 0), true)
+        --debugoverlay.Line(newdata.start, newdata.endpos, 0.1, Color(0, 255, 0), true)
 
         if (newdata.endpos - newdata.INF_RealStartPos):Length() < InfMap2.ChunkSize * 6 then
             hit_data = fake(newdata)
@@ -406,7 +410,47 @@ end
 
 ----- WireMod detours -----
 timer.Simple(0, function() -- delay by one tick because we run before wirelib initialized
-if WireLib and WireLib.clampPos then
-    function WireLib.clampPos(pos) return Vector(pos) end
-end
+    if WireLib and WireLib.clampPos then
+        function WireLib.clampPos(pos) return Vector(pos) end
+    end
+end)
+timer.Simple(0, function()
+    local GM = GM or GAMEMODE or gmod.GetGamemode()
+    function GM:FindUseEntity(ply, ent)
+        if not IsValid(ent) or ent:GetClass() == "inf_chunk" then
+            local traceEnt = util.TraceLine({
+                start = ply:GetShootPos(),
+                endpos = ply:GetShootPos() + ply:GetAimVector() * 72,
+                filter = ply
+            }).Entity
+            if IsValid(traceEnt) then ent = traceEnt end
+        end
+
+        return ent
+    end
+end)
+
+timer.Simple(1, function()
+    -- we want our hooks to run last, so we wait a second before adding them (assuming every other addon adds them after that)
+    hook.Add("AllowPlayerPickup", "INFMAP_InitPickup", function(ply, ent)
+        local pos, megapos = InfMap2.LocalizePosition(ent:GetPos())
+        local localpos = InfMap2.UnlocalizePosition(pos, megapos - ply:GetMegaPos())
+        ent:INF_SetPos(localpos)
+        ent:SetMegaPos(ply:GetMegaPos())
+    end)
+    -- if i somehow make it work later...
+    hook.Add("GravGunPickupAllowed", "INFMAP_InitPickup", function(ply, ent)
+        -- gmod calls this hook every frame... i think 300 units is sane pickup distance /shrug
+        if ply:GetShootPos():DistToSqr(ent:GetPos()) > 90000 then return end
+        local pos, megapos = InfMap2.LocalizePosition(ent:GetPos())
+        local localpos = InfMap2.UnlocalizePosition(pos, megapos - ply:GetMegaPos())
+        ent:INF_SetPos(localpos)
+        ent:SetMegaPos(ply:GetMegaPos())
+    end)
+    hook.Add("PhysgunPickup", "INFMAP_InitPickup", function(ply, ent)
+        local pos, megapos = InfMap2.LocalizePosition(ent:GetPos())
+        local localpos = InfMap2.UnlocalizePosition(pos, megapos - ply:GetMegaPos())
+        ent:INF_SetPos(localpos)
+        ent:SetMegaPos(ply:GetMegaPos())
+    end)
 end)
