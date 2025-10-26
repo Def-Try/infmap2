@@ -28,7 +28,7 @@ function ENT:SetReferenceEntity(ent)
 end
 function ENT:SetReferenceChunk(chunk)
     self.INF_ReferenceData.Chunk = chunk
-    self.INF_ReferenceData.Megapos = self.INF_ReferenceData.Megapos + chunk
+    self.INF_ReferenceData.Megapos = self.INF_ReferenceData.Parent:GetMegaPos() + chunk
     InfMap2.EntityUpdateMegapos(self, self.INF_ReferenceData.Megapos)
 end
 
@@ -94,8 +94,13 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
-    if CLIENT then 
-        self:SetNoDraw(true)
+    if CLIENT then
+        if InfMap2.Debug then
+            self:INF_SetRenderBoundsWS(Vector(-32768, -32768, -32768), Vector(32768, 32768, 32768))
+            self:SetNoDraw(false)
+        else 
+            self:SetNoDraw(true)
+        end
         local phys = self:GetPhysicsObject()
         if phys:IsValid() then
             phys:EnableMotion(false)
@@ -110,23 +115,46 @@ function ENT:Think()
 
     local data = self.INF_ReferenceData
     if not data then 
+        if InfMap2.Debug then print("[INFMAP] CrossChunkClone", self, "- Reference Data is invalid") end
         SafeRemoveEntity(self)
         return
     end
     
     local parent = data.Parent
-    if not IsValid(parent) or data.Megapos ~= parent:GetMegaPos() + data.Chunk then
+    if not IsValid(parent) then
+        if InfMap2.Debug then print("[INFMAP] CrossChunkClone", self, "- Parent is no longer valid") end
+        SafeRemoveEntity(self)
+        return
+    end
+    if data.Megapos ~= parent:GetMegaPos() + data.Chunk then
+        if InfMap2.Debug then print("[INFMAP] CrossChunkClone", self, "- Megapos is wrong") end
         SafeRemoveEntity(self)
         return
     end
 
     self:INF_SetPos(parent:INF_GetPos() - data.Chunk * InfMap2.ChunkSize)
 
-    InfMap2.EntityUpdateMegapos(self, self.INF_ReferenceData.Megapos)
+    InfMap2.EntityUpdateMegapos(self, data.Megapos)
     self:SetAngles(parent:GetAngles())
     
     local phys = self:GetPhysicsObject()
     if phys:IsValid() then phys:EnableMotion(false) end
+    self:NextThink(CurTime())
+    return true
+end
+
+function ENT:DrawTranslucent()
+    if not InfMap2.Debug then return end
+    render.SetColorMaterialIgnoreZ()
+    local mins, maxs = self:GetCollisionBounds()
+    render.DrawWireframeBox(self:GetPos(), self:GetAngles(), mins, maxs, Color(255, 255, 255), false)
+    render.DrawLine(self:GetPos(), EyePos()-Vector(0, 0, 16), Color(255, 255, 255), false)
+    local d2ddata = self:GetPos():ToScreen()
+    if d2ddata.visible then
+        local megapos = self.INF_ReferenceData.Megapos
+        draw.DrawText(string.format("CCC of %s at megapos %d %d %d", self.INF_ReferenceData.Parent, megapos.x, megapos.y, megapos.z), "DermaLarge", d2ddata.x, d2ddata.y, Color(255, 255, 255))
+    end
+    --render.DrawBeam(self:GetPos(), EyePos()-Vector(0, 0, 16), 5, 0, 1, Color(255, 255, 255))
 end
 
 hook.Add("PhysgunPickup", "InfMap2CrossChunkClonePhysgunable", function(ply, ent)

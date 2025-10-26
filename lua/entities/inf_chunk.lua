@@ -61,6 +61,14 @@ function ENT:Think()
         if InfMap2.Debug then print("[INFMAP] Rebuilding Collisions for chunk ", self:GetMegaPos()) end
         self:Initialize()
     end
+    if CLIENT then
+        if InfMap2.Debug then
+            self:INF_SetRenderBoundsWS(Vector(-32768, -32768, -32768), Vector(32768, 32768, 32768))
+            self:SetNoDraw(false)
+        else 
+            self:SetNoDraw(true)
+        end
+    end
 end
 
 function ENT:Draw()

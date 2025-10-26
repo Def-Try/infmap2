@@ -408,7 +408,7 @@ local csent = InfMap2.Cache.CSEnt or ClientsideModel("error.mdl")
 InfMap2.Cache.CSEnt = csent
 
 local pushed = false
-hook.Add("RenderScene", "InfMap2RenderWorld", function()
+hook.Add("PreRender", "InfMap2RenderWorld", function() -- RenderScene
     if pushed then cam.INF_PopModelMatrix() end
     cam.INF_PushModelMatrix(InfMap2.ViewMatrix, false)
     pushed = true

@@ -65,21 +65,27 @@ hook.Add("PostDrawTranslucentRenderables", "InfMap2DebugRender", function(depth,
     endplane = endplane:Angle()
     local s = 512
 
+    render.SetColorMaterial()
+    local clr = Color(0, 127, 255, math.max(0, 255-255*(mindist/1000)))
+    render.DrawBox(endpos+megaoffset, Angle(0, 0, 0),
+        endplane:Right()* s+endplane:Up()* s,
+        endplane:Right()*-s+endplane:Up()*-s, clr)
     render.SetColorMaterialIgnoreZ()
-    local clr = Color(0, TimedSin(0.5, 63, 127, 0), TimedSin(0.5, 127, 255, 0), math.max(0, 255-255*(mindist/1000)))
+    local clr = Color(0, 127, 255, math.max(0, 63-63*(mindist/1000)))
     render.DrawBox(endpos+megaoffset, Angle(0, 0, 0),
         endplane:Right()* s+endplane:Up()* s,
         endplane:Right()*-s+endplane:Up()*-s, clr)
 end)
 
-hook.Add("HUDPaint", "InfMap2DebugRender", function() local function _(c, x, y)
-    if not InfMap2.Debug then return end
-    draw.DrawText("    MAP: "..game.GetMap(),                         "TargetID", x+ScrW()-5, y+5+16*0, c, TEXT_ALIGN_RIGHT)
-    draw.DrawText("    POS: "..tostring(LocalPlayer():GetPos()),      "TargetID", x+ScrW()-5, y+5+16*1, c, TEXT_ALIGN_RIGHT)
-    draw.DrawText("REALPOS: "..tostring(LocalPlayer():INF_GetPos()),  "TargetID", x+ScrW()-5, y+5+16*2, c, TEXT_ALIGN_RIGHT)
-    draw.DrawText("MEGAPOS: "..tostring(LocalPlayer():GetMegaPos()),   "TargetID", x+ScrW()-5, y+5+16*3, c, TEXT_ALIGN_RIGHT)
-    draw.DrawText("    VEL: "..tostring(LocalPlayer():GetVelocity()), "TargetID", x+ScrW()-5, y+5+16*4, c, TEXT_ALIGN_RIGHT)
-
+hook.Add("HUDPaint", "InfMap2DebugRender", function()
+    local function _(c, x, y)
+        if not InfMap2.Debug then return end
+        draw.DrawText("    MAP: "..game.GetMap(),                         "TargetID", x+ScrW()-5, y+5+16*0, c, TEXT_ALIGN_RIGHT)
+        draw.DrawText("    POS: "..tostring(LocalPlayer():GetPos()),      "TargetID", x+ScrW()-5, y+5+16*1, c, TEXT_ALIGN_RIGHT)
+        draw.DrawText("REALPOS: "..tostring(LocalPlayer():INF_GetPos()),  "TargetID", x+ScrW()-5, y+5+16*2, c, TEXT_ALIGN_RIGHT)
+        draw.DrawText("MEGAPOS: "..tostring(LocalPlayer():GetMegaPos()),   "TargetID", x+ScrW()-5, y+5+16*3, c, TEXT_ALIGN_RIGHT)
+        draw.DrawText("    VEL: "..tostring(LocalPlayer():GetVelocity()), "TargetID", x+ScrW()-5, y+5+16*4, c, TEXT_ALIGN_RIGHT)
+    end _(color_black, -1, -1) _(color_black, 1, 1) _(color_black, 1, -1) _(color_black, -1, 1) _(color_white, 0, 0)
     if debug_traceline then
         local len = InfMap2.ChunkSize * 2
         local tracedata = {
@@ -124,4 +130,4 @@ hook.Add("HUDPaint", "InfMap2DebugRender", function() local function _(c, x, y)
             render.DrawWireframeBox(tr.HitPos, Angle(0, 0, 0), mins, maxs, clr, true)
         cam.End3D()
     end
-end _(color_black, -1, -1) _(color_black, 1, 1) _(color_black, 1, -1) _(color_black, -1, 1) _(color_white, 0, 0) end)
+end)

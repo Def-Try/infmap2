@@ -30,7 +30,7 @@ local coro = coroutine.create(function() while true do local succ, err = pcall(f
         local bounding_radius = ent:BoundingRadius()
         if bounding_radius < 10 then continue end -- too small, ignore
 
-        if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize - bounding_radius) then
+        if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize - bounding_radius*2) then
             -- outside of cloning area
             if not ent.INF_Clones then continue end
             for i=1,table.maxn(ent.INF_Clones) do SafeRemoveEntity(ent.INF_Clones[i]) end
@@ -40,7 +40,7 @@ local coro = coroutine.create(function() while true do local succ, err = pcall(f
         
         ent.INF_Clones = ent.INF_Clones or {}
 
-        local aabb_min, aabb_max = ent:WorldSpaceAABB()
+        local aabb_min, aabb_max = ent:INF_WorldSpaceAABB()
 
         for i=1,#neighbors do
             local neighbor = neighbors[i]

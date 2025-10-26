@@ -142,6 +142,8 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_t
     if IsValid(ent.INF_ConstraintMain) and ent.INF_ConstraintMain ~= ent then continue end -- has a "master" constraint entity
     if ent:IsPlayerHolding() then continue end -- being held by player
 
+    if ent:GetClass() == "inf_crosschunkclone" then continue end -- crosschunk clone, we dont touch those
+
     local pos, megapos_offset = InfMap2.LocalizePosition(ent:INF_GetPos())
     local megapos = ent:GetMegaPos() + megapos_offset
 

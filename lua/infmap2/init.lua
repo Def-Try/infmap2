@@ -131,6 +131,7 @@ include("infmap2/ish/space.lua")
 include("infmap2/ish/collision.lua")
 include("infmap2/ish/functions.lua")
 include("infmap2/ish/detours.lua")
+include("infmap2/ish/concommands.lua")
 
 if SERVER then
     AddCSLuaFile("infmap2/icl/world.lua")
