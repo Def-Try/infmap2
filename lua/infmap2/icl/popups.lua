@@ -45,7 +45,7 @@ end)
 local last_farlands_warning_time = -math.huge
 local last_farlands_warning_error = 0
 local last_farlands_warning_factor = 0
-hook.Add("Think", "InfMap2FarlandsWarning", function()
+timer.Create("InfMap2FarlandsErrorCalculator", 1, 0, function()
     local pos = LocalPlayer():GetPos()
     local xerror = estimateErrorMargin(pos.x)
     local yerror = estimateErrorMargin(pos.y)
