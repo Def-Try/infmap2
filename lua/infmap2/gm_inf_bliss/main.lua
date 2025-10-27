@@ -90,11 +90,11 @@ return {
                 x = x / InfMap2.ChunkSize / 2
                 y = y / InfMap2.ChunkSize / 2
                 
-                if (x > -0.5 and x < 0.5) or (y > -0.5 and y < 0.5) then return -15 end
+                if (x > -0.5 and x < 0.5) and (y > -0.5 and y < 0.5) then return -15 end
                 x = x - 3
                 local final = simplex.Noise2D(x / 25, y / 25 + 100000) * 75000
                 final = final / math.max((simplex.Noise2D(x / 100, y / 100) * 15) ^ 3, 1)
-                final = final
+                final = final / 2
                 return final / 2
             end,
             samplesize = 20000 / 3,
@@ -147,7 +147,8 @@ return {
         planets = {
             earth = {
                 height_function = function(x, y)
-                    return simplex.Noise2D(x / 10000, y / 10000) * 1000
+                    local height = simplex.Noise2D(x / 10000, y / 10000) * 1000
+                    return height
                 end,
                 atmosphere = Color(168, 219, 242, 64),
                 clouds = 1,
