@@ -46,20 +46,24 @@ local mtrx = Matrix()
 local function renderoverride_nest(self, flags, a, b, c, d, e)
     if not self.INF_InFrustrum then return end
     mtrx:SetTranslation(self.INF_VisualOffset)
-    cam.PushModelMatrix(mtrx)
+    cam.INF_PushModelMatrix(mtrx)
+    --render.INF_INTERNAL_SetupClippingOffset(self.INF_VisualOffset)
     cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
         self:INF_RenderOverride(flags, a, b, c, d, e)
     cam.End3D()
-    cam.PopModelMatrix()
+    --render.INF_INTERNAL_SetupClippingOffset(nil)
+    cam.INF_PopModelMatrix()
 end
 local function renderoverride_raw(self, flags)
     if not self.INF_InFrustrum then return end
     mtrx:SetTranslation(self.INF_VisualOffset)
-    cam.PushModelMatrix(mtrx)
+    cam.INF_PushModelMatrix(mtrx)
+    --render.INF_INTERNAL_SetupClippingOffset(self.INF_VisualOffset)
     cam.Start3D(INF_EyePos() - self.INF_VisualOffset)
         self:DrawModel(flags)
     cam.End3D()
-    cam.PopModelMatrix()
+    --render.INF_INTERNAL_SetupClippingOffset(nil)
+    cam.INF_PopModelMatrix()
 end
 
 ---Updates entity megaposition, moving it between chunks

@@ -116,6 +116,24 @@ function cam.PopModelMatrix()
 	end
 end
 
+local mtrx = Matrix()
+local offset = nil
+render.INF_PushCustomClipPlane = render.INF_PushCustomClipPlane or render.PushCustomClipPlane
+function render.PushCustomClipPlane(norm, dist)
+	--local top = InfMap2.Cache.CameraMatrixStack[#InfMap2.Cache.CameraMatrixStack]
+	--if not top then top = mtrx else top = top[1] end
+	--top = top * cam.GetModelMatrix()
+	--local trans = top:GetTranslation()
+	--print(offset)
+	local distance = dist + (not offset and 0 or norm:Dot(offset)) - norm:Dot(LocalPlayer():GetMegaPos() * InfMap2.ChunkSize) -- norm:Dot(trans)
+	return render.INF_PushCustomClipPlane(norm, distance)
+end
+
+function render.INF_INTERNAL_SetupClippingOffset(voffset)
+	--print("called", voffset and tostring(voffset) or "nil")
+	offset = voffset
+end
+
 local VECTOR = FindMetaTable("Vector")
 
 VECTOR.INF_ToScreen = VECTOR.INF_ToScreen or VECTOR.ToScreen

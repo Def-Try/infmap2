@@ -134,6 +134,8 @@ local function tracefunc(fake, real, tracedata)
         --debugoverlay.Cross(report.crosschunk.endpos, 50, 0.1, Color(255, 0, 0), true)
         --debugoverlay.Line(newdata.start, newdata.endpos, 0.1, Color(0, 255, 0), true)
 
+        -- max crosstrace 6 chunks
+        -- otherwise we can end up with SOMEONE (*ahem* wiremod *ahem*) tracing two bajillion units far and crashing us
         if (newdata.endpos - newdata.INF_RealStartPos):Length() < InfMap2.ChunkSize * 6 then
             hit_data = fake(newdata)
             hit_data.Fraction = (tracedata.start - hit_data.HitPos):Length() / length
@@ -168,13 +170,14 @@ local function tracefunc(fake, real, tracedata)
         end
     end
 
-    --if hit_data then
-    --    hit_data.HitPos = hit_data.HitPos + hit_data.HitNormal * 20 -- spawning props sometimes clip through
-    --end
-
-    if hit_data and hit_data.Hit then
-        hit_data.Fraction = (tracedata.start - hit_data.HitPos):Length() / length
+    if hit_data then
         hit_data.StartPos = tracedata.start
+        if hit_data.Hit then
+            hit_data.Fraction = (hit_data.StartPos - hit_data.HitPos):Length() / length
+            hit_data.Normal = (hit_data.HitPos - hit_data.StartPos):GetNormalized()
+
+            hit_data.HitPos = hit_data.HitPos + hit_data.HitNormal * 20
+        end
     end
 
     hit_data = hit_data or {
