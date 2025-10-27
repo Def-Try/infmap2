@@ -174,6 +174,7 @@ local function tracefunc(fake, real, tracedata)
 
     if hit_data and hit_data.Hit then
         hit_data.Fraction = (tracedata.start - hit_data.HitPos):Length() / length
+        hit_data.StartPos = tracedata.start
     end
 
     hit_data = hit_data or {
@@ -428,6 +429,8 @@ timer.Simple(0, function() -- delay by one tick because we run before wirelib in
         function WireLib.clampPos(pos) return Vector(pos) end
     end
 end)
+
+----- GarrysMod detours -----
 timer.Simple(0, function()
     local GM = GM or GAMEMODE or gmod.GetGamemode()
     function GM:FindUseEntity(ply, ent)
