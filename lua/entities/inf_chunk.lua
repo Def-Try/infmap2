@@ -90,9 +90,9 @@ function ENT:Draw()
     --if off - LocalPlayer():GetMegaPos() * InfMap2.ChunkSize ~= Vector() then return end
     if ignorez then render.SetColorMaterialIgnoreZ() else render.SetColorMaterial() end
     for i=1,#cmesh,3 do
-        render.DrawLine(cmesh[i+0] + off, cmesh[i+1] + off, color, not ignorez)
-        render.DrawLine(cmesh[i+1] + off, cmesh[i+2] + off, color, not ignorez)
-        render.DrawLine(cmesh[i+0] + off, cmesh[i+2] + off, color, not ignorez)
+        render.DrawLine(cmesh[i+0], cmesh[i+1], color, not ignorez)
+        render.DrawLine(cmesh[i+1], cmesh[i+2], color, not ignorez)
+        render.DrawLine(cmesh[i+0], cmesh[i+2], color, not ignorez)
     end
 end
 
