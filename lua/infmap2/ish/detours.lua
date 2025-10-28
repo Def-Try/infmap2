@@ -313,6 +313,20 @@ function ENTITY:SetParent(parent, attachmentOrBoneId)
     return self:INF_SetParent(parent, attachmentOrBoneId)
 end
 
+ENTITY.INF_GetBoneMatrix = ENTITY.INF_GetBoneMatrix or ENTITY.GetBoneMatrix
+function ENTITY:GetBoneMatrix(boneId)
+    local mtrx = self:INF_GetBoneMatrix(boneId)
+    mtrx:SetTranslation(mtrx:GetTranslation() + self:GetMegaPos() * InfMap2.ChunkSize)
+    return mtrx
+end
+
+ENTITY.INF_GetBonePosition = ENTITY.INF_GetBonePosition or ENTITY.GetBonePosition
+function ENTITY:GetBonePosition(boneId)
+    local pos, ang = self:INF_GetBonePosition(boneId)
+    pos = pos + self:GetMegaPos() * InfMap2.ChunkSize
+    return pos, ang
+end
+
 ----- Vehicle detours -----
 
 -- GetPos, LocalToWorld, WorldToLocal are derived from ENTITY
