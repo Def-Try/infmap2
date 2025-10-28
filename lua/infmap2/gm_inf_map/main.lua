@@ -54,8 +54,8 @@ return {
         terrain = {
             has_terrain = true,
             height_function = function(x, y)
-                x = x / InfMap2.ChunkSize
-                y = y / InfMap2.ChunkSize
+                x = x / 20000
+                y = y / 20000
                 
                 if (x > -0.5 and x < 0.5) or (y > -0.5 and y < 0.5) then return -15 end
                 x = x - 3
@@ -68,7 +68,7 @@ return {
         }
     },
     visual = {
-        renderdistance = 20,
+        renderdistance = 30,
         terrain = {
             material = "infmap2/grasslit", -- "models/wireframe",
             uvscale = 100,
