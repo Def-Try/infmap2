@@ -33,6 +33,9 @@ for x=-1,1 do for y=-1,1 do for z=-1,1 do
     neighbors[#neighbors+1] = Vector(x, y, z)
 end end end
 function InfMap2.CreateChunksAround(megapos)
+    if InfMap2.GeneratedChunks[tostring(megapos)] then return end
+    InfMap2.GeneratedChunks[tostring(megapos)] = InfMap2.CreateWorldChunk(megapos)
+    do return end
     for i=1,#neighbors do
         local pos = megapos + neighbors[i]
         if InfMap2.GeneratedChunks[tostring(pos)] then continue end

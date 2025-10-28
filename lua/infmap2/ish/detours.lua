@@ -176,7 +176,7 @@ local function tracefunc(fake, real, tracedata)
             hit_data.Fraction = (hit_data.StartPos - hit_data.HitPos):Length() / length
             hit_data.Normal = (hit_data.HitPos - hit_data.StartPos):GetNormalized()
 
-            hit_data.HitPos = hit_data.HitPos + hit_data.HitNormal * 20
+            --hit_data.HitPos = hit_data.HitPos + hit_data.HitNormal * 20
         end
     end
 
@@ -316,6 +316,7 @@ end
 ENTITY.INF_GetBoneMatrix = ENTITY.INF_GetBoneMatrix or ENTITY.GetBoneMatrix
 function ENTITY:GetBoneMatrix(boneId)
     local mtrx = self:INF_GetBoneMatrix(boneId)
+    if not mtrx then mtrx = Matrix() end
     mtrx:SetTranslation(mtrx:GetTranslation() + self:GetMegaPos() * InfMap2.ChunkSize)
     return mtrx
 end

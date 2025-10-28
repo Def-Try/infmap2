@@ -151,6 +151,13 @@ end
 
 hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_to_wrap) do
     if not IsValid(ent) then continue end -- ent died
+    if ent:GetPos().z < InfMap2.RemoveHeight then
+        if ent:IsPlayer() then return ent:Kill() end
+        if ent:IsNPC() then return ent:Kill() end
+        if ent:IsNextBot() then return ent:Kill() end
+        ent:Remove()
+        return
+    end
     if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize - 1) then
         ent.INF_ConstraintMain = nil
         continue

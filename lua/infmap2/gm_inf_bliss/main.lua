@@ -92,7 +92,7 @@ return {
                 
                 return simplex.Noise2D(x, y) * 20000
             end,
-            samples = {64, 32, 16, 8, 4},
+            samples = {32, 16, 8, 4},
         }
     },
     visual = {

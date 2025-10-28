@@ -10,10 +10,6 @@ function InfMap2.GeneratePlanetVertexMesh(planetinfo, pos)
     assert(planetinfo.Radius ~= nil, "planetinfo.Radius is not set up")
     assert(planetinfo.SampleSize ~= nil, "planetinfo.SampleSize is not set up")
 
-    if InfMap2.Cache.ChunkMeshes["p"..tostring(pos)] then
-        return table.Copy(InfMap2.Cache.ChunkMeshes["p"..tostring(pos)])
-    end
-
     local heightmap = {}
     local radius = planetinfo.Radius
     local radius_squared = radius * radius
@@ -37,7 +33,6 @@ function InfMap2.GeneratePlanetVertexMesh(planetinfo, pos)
     end
 
     local planet_mesh = {}
-    InfMap2.Cache.ChunkMeshes["p"..tostring(pos)] = planet_mesh
 
     for x = -1, samples do
         for y = -1, samples do
@@ -93,13 +88,9 @@ end
 ---@param pos Vector planet position
 ---@return table<Vector, number, number, Vector> mesh visual mesh
 function InfMap2.GeneratePlanetVisualMesh(planetinfo, pos)
-    if InfMap2.Cache.ChunkMeshes["pv"..tostring(pos)] then
-        return table.Copy(InfMap2.Cache.ChunkMeshes["pv"..tostring(pos)])
-    end
     local pvmesh = InfMap2.GeneratePlanetVertexMesh(planetinfo, pos)
 
     local planet_mesh = {}
-    InfMap2.Cache.ChunkMeshes["pv"..tostring(pos)] = planet_mesh
 
     for i=1,#pvmesh,6 do
         local v0, v1, v2, v3 = pvmesh[i], pvmesh[i+2], pvmesh[i+1], pvmesh[i+4]

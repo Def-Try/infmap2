@@ -289,15 +289,28 @@ function ENTITY:GetMegaPos()
 end
 
 if CLIENT then
+    local queue = {}
     hook.Add("EntityNetworkedVarChanged", "InfMap2EntityMegaposUpdate", function(ent, name, _, val)
         if name ~= "INF_MegaPos" then return end
         if InfMap2.Debug and ent:GetClass() ~= "inf_chunk" then print("[INFMAP] "..tostring(ent).." -> "..tostring(val)) end
+        ent.INF_MegaPos = val
         InfMap2.EntityUpdateMegapos(ent, val)
     end)
     net.Receive("InfMap2_ChangeMegaPos", function()
         ---@class Entity
-        local ent = net.ReadEntity()
-        if not IsValid(ent) then return end
+        local entindex = net.ReadUInt(MAX_EDICT_BITS)
+        local ent = Entity(entindex)
+        if not IsValid(ent) then
+            queue[entindex] = net.ReadVector()
+            return
+        end
         ent.INF_MegaPos = net.ReadVector()
     end)
+    hook.Add("OnEntityCreated", "InfMap2ClientLateArrival", function(ent) timer.Simple(0, function()
+        if not IsValid(ent) then return end
+        local qpos = queue[ent:EntIndex()]
+        if not qpos then return end
+        queue[ent:EntIndex()] = nil
+        ent.INF_MegaPos = qpos
+    end) end)
 end

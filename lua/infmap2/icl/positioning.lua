@@ -2,7 +2,7 @@ local last_megachunk
 
 local maxdist = InfMap2.ChunkSize * InfMap2.Visual.RenderDistance / 2
 local function frustrum(ent)
-    do return true end
+    --do return true end
     if ent:EntIndex() == -1 then return true end
     local mins, maxs = ent:GetRenderBounds()
     local hash = tostring(mins)..tostring(maxs)
@@ -116,7 +116,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos, attempts)
         ent.RenderOverride = ent.INF_RenderOverride
         if not ent.INF_InSkyboxFlag then ent:RemoveEFlags(EFL_IN_SKYBOX) end
         if ent:GetClass() ~= "inf_chunk" and ent.INF_OriginalRenderBounds then
-            ent:INF_SetRenderBounds(unpack(ent.INF_OriginalRenderBounds))
+            ent:INF_SetRenderBounds(ent:GetRenderBounds())
             ent.INF_OriginalRenderBounds = nil
         end
         ent.INF_ValidRenderOverride = nil
@@ -124,8 +124,7 @@ function InfMap2.EntityUpdateMegapos(ent, megapos, attempts)
     end
 
     if ent:GetClass() ~= "inf_chunk" and not ent.INF_OriginalRenderBounds then
-        ent.INF_OriginalRenderBounds = {ent:INF_GetRenderBounds()}
-        ent.INF_RenderBounds = ent.INF_RenderBounds or ent.INF_OriginalRenderBounds
+        ent.INF_RenderBounds = ent.INF_RenderBounds
         ent:INF_SetRenderBoundsWS(-InfMap2.SourceBounds * 2, InfMap2.SourceBounds * 2) -- fucking source
     end
     local visual_offset = Vector(1, 1, 1) * (megaoffset * InfMap2.ChunkSize)

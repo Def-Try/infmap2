@@ -39,6 +39,7 @@ main.space = main.space or {}
 InfMap2.ChunkSize = main.chunksize or 20000
 InfMap2.World.HasTerrain = main.world.terrain.has_terrain or false
 InfMap2.Visual.HasTerrain = InfMap2.World.HasTerrain -- alias
+InfMap2.RemoveHeight = main.removeheight or -100000
 if InfMap2.World.HasTerrain then
     if not main.world.terrain.height_function then
         ErrorNoHalt("InfMap doesn't have height function!")

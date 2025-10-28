@@ -128,10 +128,10 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
     hook.Add("Tick", "InfMap2UpdateCalcViewRelativeOrigin", function()
         relativeorigin = LocalPlayer():EyePos()
     end)
-    hook.Add("CalcView", "InfMap2CalcView", function(ply, pos, angles, fov, znear, zfar)
+    hook.Add("CalcView", "InfMap2CalcView", function(ply, pos, angles, fov, znear, zfar, a, b, c, d, e, f)
         --do return end
         calcviewing = true
-        local view = hook.Run("INF_CalcView", ply, pos + ply:GetMegaPos() * InfMap2.ChunkSize, angles, fov, znear, zfar)
+        local view = hook.Run("INF_CalcView", ply, pos + ply:GetMegaPos() * InfMap2.ChunkSize, angles, fov, znear, zfar, a, b, c, d, e, f)
         calcviewing = false
 
         local view_fallback = {
@@ -245,7 +245,8 @@ hook.Add("PostRender", "InfMap2RenderWorld", function()
     pushed = false
 end)
 
-hook.Add("PostDraw2DSkyBox", "InfMap2RenderWorld", function()
+hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
+    --do return end
     --if depth or skybox or skybox3d then return end
     --do return end
     if not InfMap2.World.HasTerrain then return end
@@ -289,7 +290,7 @@ hook.Add("PostDraw2DSkyBox", "InfMap2RenderWorld", function()
     for i=1,#draw_ do draw_[i]:Draw() end
 end)
 
-hook.Add("ShutDown", "InfMap2RenderWorld", function()
+hook.Add("ShutDown", "InfMap2KillMeshes", function()
     local draw_ = InfMap2.ChunkMeshes.Draw
     for i=1,#draw_ do draw_[i]:Destroy() end
 end)
@@ -314,7 +315,7 @@ if InfMap2.Visual.HasSkybox then
         if not InfMap2.Cache.skyboxmaterial then InfMap2.Cache.skyboxmaterial = Material(InfMap2.Visual.Skybox.Material) end
         InfMap2.Cache.skyboxmaterial:SetFloat("$alpha", 1)
         -- dont draw to z buffer, this is skybox
-        --render.OverrideDepthEnable(true, false)
+        render.OverrideDepthEnable(true, false)
         render.SetMaterial(InfMap2.Cache.skyboxmaterial)
         -- fullbright
         render.ResetModelLighting(2, 2, 2)
@@ -323,10 +324,10 @@ if InfMap2.Visual.HasSkybox then
         local offset = LocalPlayer():GetMegaPos()
         offset[1] = offset[1] % 1000
         offset[2] = offset[2] % 1000
-        --plane_matrix:SetTranslation(offset)
-        --cam.PushModelMatrix(plane_matrix)
-        --big_plane:Draw()
-        --cam.PopModelMatrix()
+        plane_matrix:SetTranslation(offset)
+        cam.PushModelMatrix(plane_matrix)
+        big_plane:Draw()
+        cam.PopModelMatrix()
         render.OverrideDepthEnable(false, false)
     end)
 end
@@ -342,7 +343,6 @@ hook.Add("RenderScreenspaceEffects", "InfMap2UnderTerrain", function()
 end)
 
 local function generate_chunk(chunk, lodlvl, megapos)
-    --print("processing chunk "..megapos.x.."x"..megapos.y.." lodlvl "..lodlvl.." (previously "..chunk.megapos.x.." "..chunk.megapos.y.." lodlvl "..chunk.lodlvl..")")
     if chunk.lodlvl == lodlvl and chunk.megapos == megapos then return end
     chunk.lodlvl = lodlvl
     if IsValid(chunk.mesh) then
@@ -363,15 +363,6 @@ local function generate_chunk(chunk, lodlvl, megapos)
             norm = -(v3 - v2):Cross(v3 - v1)
             norm:Normalize()
             norm:Negate()
-            --[[
-            chunk_mesh[#chunk_mesh + 1] = v0,
-            chunk_mesh[#chunk_mesh + 1] = v2,
-            chunk_mesh[#chunk_mesh + 1] = v1,
-
-            chunk_mesh[#chunk_mesh + 1] = v2,
-            chunk_mesh[#chunk_mesh + 1] = v3,
-            chunk_mesh[#chunk_mesh + 1] = v1,
-            ]]
 
             mesh.Position(v2 + megaoff)
             mesh.Normal(norm)
@@ -417,25 +408,117 @@ local function get_chunk(index, x, y)
     end
     return chunk
 end
+local last_megapos_x, last_megapos_y = 1/0, 1/0
 hook.Add("PreRender", "InfMap2BuildWorldVisual", function()
     local megapos = LocalPlayer():GetMegaPos()
     megapos.z = 0
+    local megapos_x, megapos_y = megapos.x, megapos.y
+
+    if megapos_x == last_megapos_x and megapos_y == last_megapos_y then return end
+
     local index = InfMap2.ChunkMeshes.Index
     local ms = InfMap2.Visual.RenderDistance
-    local rebuilt = 0
+
+    local chunks_to_unload = {}
     for x = -ms, ms do
+        chunks_to_unload[last_megapos_x+x] = {}
         for y = -ms, ms do
-            rebuilt = rebuilt + (process_chunk(get_chunk(index, megapos.x+x, megapos.y+y), megapos, megapos+Vector(x, y)) and 1 or 0)
-            if rebuilt > 2 then break end
+            chunks_to_unload[last_megapos_x+x][megapos_y+y] = true
         end
-        if rebuilt > 2 then break end
     end
-    if rebuilt == 0 then return end
-    table.Empty(InfMap2.ChunkMeshes.Draw)
+
+    local rebuilt = 0
+    local max_rebuild = 2
+    for x = -ms, ms do
+        local tbl = chunks_to_unload[megapos_x+x]
+        for y = -ms, ms do
+            if tbl then
+                tbl[megapos_y+y] = nil
+            end
+            rebuilt = rebuilt + (process_chunk(get_chunk(index, megapos_x+x, megapos_y+y), megapos, megapos+Vector(x, y)) and 1 or 0)
+            if rebuilt > max_rebuild then break end
+        end
+        if rebuilt > max_rebuild then break end
+    end
+    if rebuilt == 0 then
+        last_megapos_x, last_megapos_y = megapos_x, megapos_y
+        return
+    end
     InfMap2.ChunkMeshes.Draw = {}
     for x = -ms, ms do
         for y = -ms, ms do
-            InfMap2.ChunkMeshes.Draw[#InfMap2.ChunkMeshes.Draw+1] = get_chunk(index, x, y).mesh
+            InfMap2.ChunkMeshes.Draw[#InfMap2.ChunkMeshes.Draw+1] = get_chunk(index, megapos_x+x, megapos_y+y).mesh
         end
     end
+
+    for tounload_x, tbly in pairs(chunks_to_unload) do
+        for tounload_y, _ in pairs(tbly) do
+            get_chunk(index, tounload_x, tounload_y).lodlvl = -1
+        end
+    end
+end)
+
+local physbeama = Material("sprites/physbeama")
+local physg_glow1 = Material("sprites/physg_glow1")
+local physg_glow2 = Material("sprites/physg_glow2")
+hook.Add("DrawPhysgunBeam", "InfMap2PhysgunBeam", function(ply, wep, enabled, target, bone, deltaPos)
+    if not enabled then return false end
+    if not IsValid(ply) then return end
+    if not IsValid(wep) then return end
+
+    local hitpos = util.TraceLine(util.GetPlayerTrace(ply, ply:EyeAngles():Forward())).HitPos
+    local grabbed = 0
+	if IsValid(target) then
+		local mt = target:GetBoneMatrix(bone)
+		if target:TranslatePhysBoneToBone(bone) >= 0 then
+			mt = target:GetBoneMatrix(target:TranslatePhysBoneToBone(bone))
+		end
+        grabbed = 1
+		hitpos = LocalToWorld(deltaPos, angle_zero, mt:GetTranslation(), mt:GetAngles())
+	end
+
+	local srcpos = wep:GetAttachment(1).Pos
+	if not ply:ShouldDrawLocalPlayer() then
+        local vm = ply:GetViewModel()
+        if not IsValid(vm) then return end
+        local attach = vm:GetAttachment(1)
+        if not attach then return end
+		srcpos = attach.Pos
+        cam.IgnoreZ(true)
+	end
+
+    local color = ply:GetWeaponColor():ToColor()
+    local drawbeam = GetConVar("physgun_drawbeams"):GetBool()
+
+    local time = CurTime()
+	for i = 1, 4 do
+		local s = math.random() * 8 + 8*grabbed
+		render.SetMaterial(physg_glow1)
+		render.DrawSprite(hitpos, s, s, color)
+
+		s = math.random() * 8 + 8*grabbed
+		render.SetMaterial(physg_glow2)
+		render.DrawSprite(hitpos, s, s, color)
+
+        if drawbeam then
+            render.SetMaterial(physbeama)
+            local ts = CurTime()
+            -- render.DrawBeam(srcpos, hitpos, math.random() * 6 + 2, CurTime(), CurTime()+1, color)
+            local w = math.random() * (2+4*grabbed) + 2
+            local tangent = srcpos + ply:GetAimVector() * hitpos:Distance(srcpos) / 3 * 2
+            render.StartBeam(30)
+            local lastpos = srcpos
+            for i=1,30 do
+                render.AddBeam(lastpos, w, ts+i/30, color)
+                lastpos = math.QuadraticBezier(i/30, srcpos, tangent, hitpos)
+            end
+            render.AddBeam(lastpos, w, ts+1, color)
+            render.EndBeam()
+        end
+	end
+
+	if not ply:ShouldDrawLocalPlayer() then
+        cam.IgnoreZ(false)
+    end
+    return false
 end)
