@@ -32,6 +32,13 @@ local neighbors = {}
 for x=-1,1 do for y=-1,1 do for z=-1,1 do
     neighbors[#neighbors+1] = Vector(x, y, z)
 end end end
+function InfMap2.CreateChunksAround(megapos)
+    for i=1,#neighbors do
+        local pos = megapos + neighbors[i]
+        if InfMap2.GeneratedChunks[tostring(pos)] then continue end
+        InfMap2.GeneratedChunks[tostring(pos)] = InfMap2.CreateWorldChunk(pos)
+    end
+end
 
 local unfilter = {
 	rpg_missile = true,
@@ -48,10 +55,6 @@ hook.Add("OnEntityCreated", "InfMap2EntityCreated", function(ent) timer.Simple(0
     if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." created at megapos "..tostring(megapos)) end
 
     if InfMap2.World.HasTerrain and ent:GetClass() ~= "inf_crosschunkclone" then
-        for i=1,#neighbors do
-            local pos = megapos + neighbors[i]
-            if InfMap2.GeneratedChunks[tostring(pos)] then continue end
-            InfMap2.GeneratedChunks[tostring(pos)] = InfMap2.CreateWorldChunk(pos)
-        end
+        InfMap2.CreateChunksAround(megapos)
     end
 end) end)

@@ -49,14 +49,10 @@ if InfMap2.World.HasTerrain then
         main.visual.terrain.material = "models/wireframe"
     end
     InfMap2.World.Terrain.HeightFunction = main.world.terrain.height_function
-    InfMap2.World.Terrain.SampleSize = main.world.terrain.samplesize or InfMap2.ChunkSize / 3
-    InfMap2.World.GenPerTick = main.world.genpertick or 400
+    InfMap2.World.Terrain.Samples = main.world.terrain.samples or {3}
 
-    InfMap2.Visual.RenderDistance = main.visual.renderdistance or 2
-    InfMap2.Visual.MegachunkSize = main.visual.megachunksize or 30
+    InfMap2.Visual.RenderDistance = main.visual.renderdistance or 20
 
-    InfMap2.Visual.Terrain.PerFaceNormals = main.visual.terrain.perfacenormals or false
-    InfMap2.Visual.Terrain.DoLighting = main.visual.terrain.dolighting or false
     InfMap2.Visual.Terrain.Material = main.visual.terrain.material
     InfMap2.Visual.Terrain.UVScale = main.visual.terrain.uvscale or 100
 end

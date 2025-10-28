@@ -14,12 +14,21 @@ ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 if not InfMap2 then return end
 
 function ENT:Initialize()
+    --if SERVER and not self.INF_Ready then return end
     if CLIENT and not self:GetMegaPos() then return end
     self:INF_SetPos(Vector(0, 0, 0))
     
     --self:SetMegaPos(self:GetMegaPos())
 
-    local chunk_mesh = InfMap2.GenerateChunkVertexMesh(self:GetMegaPos())
+    local starttime = SysTime()
+    local chunk_mesh = InfMap2.GenerateChunkVertexMesh(self:GetMegaPos(), 1)
+    local endtime = SysTime()
+    if InfMap2.Debug then
+        print("[INFMAP] took "..(endtime-starttime).."s to build physics mesh @ LOD 1 (highest) at megapos "..tostring(self:GetMegaPos()))
+    end
+    self.INF_ChunkMesh = chunk_mesh
+    self.INF_MeshMegaPos = self:GetMegaPos()
+    --do return self:PhysicsInitBox(Vector(), Vector()) end
     self:PhysicsDestroy()
     if #chunk_mesh == 0 then -- no vertices, no colliders
         self:PhysicsInitBox(Vector(), Vector())
@@ -52,12 +61,10 @@ function ENT:Initialize()
 
     --self:SetCollisionBoundsWS(Vector(-InfMap2.ChunkSize, -InfMap2.ChunkSize, -InfMap2.ChunkSize),
     --                          Vector( InfMap2.ChunkSize,  InfMap2.ChunkSize,  InfMap2.ChunkSize))
-
-    self.INF_ChunkMesh = chunk_mesh
 end
 
 function ENT:Think()
-    if not IsValid(self:GetPhysicsObject()) and self:GetMegaPos() then
+    if not IsValid(self:GetPhysicsObject()) and self:GetMegaPos() or self.INF_MeshMegaPos ~= self:GetMegaPos() then
         if InfMap2.Debug then print("[INFMAP] Rebuilding Collisions for chunk ", self:GetMegaPos()) end
         self:Initialize()
     end
@@ -72,11 +79,7 @@ function ENT:Think()
 end
 
 function ENT:Draw()
-    -- do return end
-    local megamegapos = self:GetMegaPos() / InfMap2.Visual.MegachunkSize
-    megamegapos.z = 0
-    megamegapos.x = math.Round(megamegapos.x)
-    megamegapos.y = math.Round(megamegapos.y)
+    do return end
     if not InfMap2.Debug then return end
     if not self.INF_ChunkMesh then return end
     local cmesh = self.INF_ChunkMesh
@@ -84,16 +87,18 @@ function ENT:Draw()
     --color.r = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self:GetMegaPos()), 0, 1, 0)) * 255
     --color.g = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self:GetMegaPos()), 0, 1, 1)) * 255
     --color.b = math.Round(util.SharedRandom("INF_ChunkMeshDraw_"..tostring(self:GetMegaPos()), 0, 1, 2)) * 255
-    local ignorez = false
 
     local off = self:GetMegaPos() * InfMap2.ChunkSize
+    --local off = vector_origin
     --if off - LocalPlayer():GetMegaPos() * InfMap2.ChunkSize ~= Vector() then return end
-    if ignorez then render.SetColorMaterialIgnoreZ() else render.SetColorMaterial() end
-    for i=1,#cmesh,3 do
-        render.DrawLine(cmesh[i+0], cmesh[i+1], color, not ignorez)
-        render.DrawLine(cmesh[i+1], cmesh[i+2], color, not ignorez)
-        render.DrawLine(cmesh[i+0], cmesh[i+2], color, not ignorez)
+    render.SetMaterial(Material("models/wireframe"))
+    local v0, v1, v2, v3
+    mesh.Begin(MATERIAL_QUADS, #cmesh / 6)
+    for i=1,#cmesh,6 do
+        v0, v1, v2, v3 = cmesh[i+0], cmesh[i+2], cmesh[i+1], cmesh[i+4]
+        mesh.Quad(v2 + off, v3 + off, v1 + off, v0 + off)
     end
+    mesh.End()
 end
 
 hook.Add("PhysgunPickup", "InfMap2ChunkPhysgunable", function(ply, ent)
