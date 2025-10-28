@@ -100,8 +100,6 @@ return {
         terrain = {
             material = "infmap2/grasslit", -- "models/wireframe",
             uvscale = 100,
-            perfacenormals = true,
-            dolighting = false,
         },
         clouds = {
             has_clouds = true,
