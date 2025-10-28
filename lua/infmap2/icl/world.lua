@@ -342,6 +342,7 @@ hook.Add("RenderScreenspaceEffects", "InfMap2UnderTerrain", function()
 end)
 
 local function generate_chunk(chunk, lodlvl, megapos)
+    --print("processing chunk "..megapos.x.."x"..megapos.y.." lodlvl "..lodlvl.." (previously "..chunk.megapos.x.." "..chunk.megapos.y.." lodlvl "..chunk.lodlvl..")")
     if chunk.lodlvl == lodlvl and chunk.megapos == megapos then return end
     chunk.lodlvl = lodlvl
     if IsValid(chunk.mesh) then
@@ -349,7 +350,7 @@ local function generate_chunk(chunk, lodlvl, megapos)
     end
     chunk.megapos = megapos
     chunk.mesh = Mesh()
-    local mesh_ = InfMap2.GenerateChunkVertexMesh(megapos, lodlvl)
+    local mesh_ = InfMap2.GenerateChunkVertexMesh(megapos, lodlvl, false)
     if #mesh_ / 6 > 8192 then
         error("Too many tris! ("..(#mesh_ / 6).." > 8192)! Decrease samples count!")
     end
@@ -418,12 +419,13 @@ local function get_chunk(index, x, y)
 end
 hook.Add("PreRender", "InfMap2BuildWorldVisual", function()
     local megapos = LocalPlayer():GetMegaPos()
+    megapos.z = 0
     local index = InfMap2.ChunkMeshes.Index
     local ms = InfMap2.Visual.RenderDistance
     local rebuilt = 0
     for x = -ms, ms do
         for y = -ms, ms do
-            rebuilt = rebuilt + (process_chunk(get_chunk(index, x, y), megapos, megapos+Vector(x, y)) and 1 or 0)
+            rebuilt = rebuilt + (process_chunk(get_chunk(index, megapos.x+x, megapos.y+y), megapos, megapos+Vector(x, y)) and 1 or 0)
             if rebuilt > 2 then break end
         end
         if rebuilt > 2 then break end

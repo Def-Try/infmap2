@@ -57,7 +57,7 @@ function InfMap2.GetTerrainHeightAt(x, y)
     return height
 end
 
-function InfMap2.GenerateChunkVertexMesh(megapos, lodlevel)
+function InfMap2.GenerateChunkVertexMesh(megapos, lodlevel, limit_height)
     assert(InfMap2.World.HasTerrain, "InfMap2 does not use a generator")
     assert(InfMap2.World.Terrain.HeightFunction ~= nil, "InfMap2.World.Terrain.HeightFunction is not set up")
     assert(InfMap2.ChunkSize ~= nil, "InfMap2.ChunkSize is not set up")
@@ -99,7 +99,8 @@ function InfMap2.GenerateChunkVertexMesh(megapos, lodlevel)
             local v1 = Vector((x - samples/2 + 1) * sample_size, (y - samples/2)     * sample_size, heightmap[x + 1][y    ])
             local v2 = Vector((x - samples/2)     * sample_size, (y - samples/2 + 1) * sample_size, heightmap[x    ][y + 1])
             local v3 = Vector((x - samples/2 + 1) * sample_size, (y - samples/2 + 1) * sample_size, heightmap[x + 1][y + 1])
-            if (v0.z < -half_chunk_size or v0.z > half_chunk_size) and
+            if limit_height and
+               (v0.z < -half_chunk_size or v0.z > half_chunk_size) and
                (v1.z < -half_chunk_size or v1.z > half_chunk_size) and
                (v2.z < -half_chunk_size or v2.z > half_chunk_size) and
                (v3.z < -half_chunk_size or v0.z > half_chunk_size) then continue end

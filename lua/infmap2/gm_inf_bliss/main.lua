@@ -87,10 +87,10 @@ return {
         terrain = {
             has_terrain = true,
             height_function = function(x, y)
-                x = x / InfMap2.ChunkSize / 2
-                y = y / InfMap2.ChunkSize / 2
+                x = x / InfMap2.ChunkSize / 20
+                y = y / InfMap2.ChunkSize / 20
                 
-                return simplex.Noise2D(x, y) * 2000
+                return simplex.Noise2D(x, y) * 20000
             end,
             samples = {64, 32, 16, 8, 4},
         }
