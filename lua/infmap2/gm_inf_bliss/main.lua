@@ -87,12 +87,24 @@ return {
         terrain = {
             has_terrain = true,
             height_function = function(x, y)
-                x = x / InfMap2.ChunkSize / 20
-                y = y / InfMap2.ChunkSize / 20
+                x = x / 20000
+                y = y / 20000
+
+                if (x*x + y*y) <= 0.25 then return -15 end
+                x, y = x / 6, y / 6
+                local height
+                local layer1 = simplex.Noise2D(x + 0.5, y) * 10000
+                local layer2 = simplex.Noise3D(x + 0.5, y,  0) * 5000
+                local layer3 = simplex.Noise3D(x + 0.5, y, 10) * 2500
+                local layer4 = simplex.Noise3D(x + 0.5, y, 100) * 1250
+                height = layer1 + layer2 + layer3 + layer4
+                if (x*x + y*y) <= 0.5 then
+                    return Lerp(((x*x + y*y) - 0.25) / 0.25, -15, height)
+                end
                 
-                return simplex.Noise2D(x, y) * 20000
+                return height
             end,
-            samples = {32, 16, 8, 4},
+            samples = {16, 8, 4},
         }
     },
     visual = {
