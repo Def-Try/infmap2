@@ -90,22 +90,15 @@ return {
                 x = x / InfMap2.ChunkSize / 2
                 y = y / InfMap2.ChunkSize / 2
                 
-                if (x > -0.5 and x < 0.5) and (y > -0.5 and y < 0.5) then return -15 end
-                x = x - 3
-                local final = simplex.Noise2D(x / 25, y / 25 + 100000) * 75000
-                final = final / math.max((simplex.Noise2D(x / 100, y / 100) * 15) ^ 3, 1)
-                final = final / 2
-                return final / 2
+                return simplex.Noise2D(x, y) * 2000
             end,
-            samplesize = 20000 / 3,
-        },
-        genpertick = 400,
+            samples = {64, 32, 16, 8, 4},
+        }
     },
     visual = {
-        renderdistance = 2,
-        megachunksize = 30,
+        renderdistance = 20,
         terrain = {
-            material = "infmap2/grasslit",
+            material = "infmap2/grasslit", -- "models/wireframe",
             uvscale = 100,
             perfacenormals = true,
             dolighting = false,
@@ -136,7 +129,7 @@ return {
             has_skybox = true,
             material = "infmap2/grasslit",
             size = 2000000000,
-            uvscale = 1000000,
+            uvscale = 2000000000 * 100,
             height = -100000
         }
     },

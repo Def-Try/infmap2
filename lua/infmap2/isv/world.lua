@@ -42,7 +42,7 @@ hook.Add("PlayerSpawnedVehicle", "InfMap2SpawnVehicleCorrect", function(ply, ent
     timer.Simple(0, function() if not IsValid(ent) then return end InfMap2.EntityUpdateMegapos(ent, ply:GetMegaPos()) end)
 end)
 ]]
-timer.Create("InfMap2RemoveUnusedChunks", 5, 0, function()
+timer.Create("InfMap2RemoveUnusedChunks", 60, 0, function()
     local chunks_to_remove = {}
     for megapos, chunkent in pairs(InfMap2.GeneratedChunks) do
         chunks_to_remove[#chunks_to_remove+1] = {Vector(megapos), chunkent}
@@ -82,8 +82,10 @@ timer.Create("InfMap2SuffocatePlayers", 1, 0, function()
     end
 end)
 hook.Add("PlayerTick", "InfMap2FreezePlayers", function(ply)
+    do return end
     local pos = ply:GetPos()
-    if pos.z >= InfMap2.GetTerrainHeightAt(pos.x, pos.y) then
+    --print(pos.z, InfMap2.GetTerrainHeightAt(pos.x, pos.y)-50)
+    if pos.z >= InfMap2.GetTerrainHeightAt(pos.x, pos.y)-50 then
         if not ply.INF_UnderTerrain then return end
         ply:SetMoveType(MOVETYPE_WALK)
         ply.INF_UnderTerrain = nil

@@ -1,6 +1,6 @@
 local last_megachunk
 
-local maxdist = InfMap2.ChunkSize * InfMap2.Visual.MegachunkSize / 2
+local maxdist = InfMap2.ChunkSize * InfMap2.Visual.RenderDistance / 2
 local function frustrum(ent)
     do return true end
     if ent:EntIndex() == -1 then return true end
@@ -101,33 +101,6 @@ function InfMap2.EntityUpdateMegapos(ent, megapos, attempts)
             InfMap2.EntityUpdateMegapos(ent2, ent2:GetMegaPos())
         end
 
-        local _, megachunk = InfMap2.LocalizePosition(megapos, InfMap2.Visual.MegachunkSize)
-
-        if InfMap2.World.HasTerrain and (not last_megachunk or (megachunk - (last_megachunk or megachunk)):LengthSqr() > 0) then
-            if InfMap2.Debug then print("[INFMAP] Update Megachunks") end
-            local megamegapos = ent:GetMegaPos() / InfMap2.Visual.MegachunkSize
-            megamegapos.z = 0
-            megamegapos.x = math.Round(megamegapos.x)
-            megamegapos.y = math.Round(megamegapos.y)
-            local dist = InfMap2.Visual.RenderDistance
-    
-            local used = {}
-
-            for x=-dist,dist,1 do
-                for y=-dist,dist,1 do
-                    local pos = megamegapos + Vector(x, y, 0)
-                    used[tostring(pos)] = true
-                    if InfMap2.GeneratedChunks[tostring(pos)] then continue end
-                    InfMap2.CreateWorldMegaChunk(pos)
-                end
-            end
-
-            for pos in pairs(InfMap2.GeneratedChunks) do
-                if used[pos] then continue end
-                InfMap2.RemoveWorldMegaChunk(Vector(pos))
-            end
-        end
-        last_megachunk = megachunk
         return
     end
 

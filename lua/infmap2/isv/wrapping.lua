@@ -145,11 +145,7 @@ function InfMap2.Teleport(ent, newpos)
 
     -- additionally create chunks around current one
     if InfMap2.World.HasTerrain then
-       for i=1,#neighbors do
-           local pos = megapos + neighbors[i]
-           if InfMap2.GeneratedChunks[tostring(pos)] then continue end
-           InfMap2.GeneratedChunks[tostring(pos)] = InfMap2.CreateWorldChunk(pos)
-       end
+        InfMap2.CreateChunksAround(megapos)
     end
 end
 
