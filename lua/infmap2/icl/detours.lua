@@ -74,6 +74,38 @@ function ENTITY:GetRenderBounds()
 	return self:INF_GetRenderBounds()
 end
 
+ENTITY.INF_EnableMatrix = ENTITY.INF_EnableMatrix or ENTITY.EnableMatrix
+function ENTITY:EnableMatrix(mtype, mtrx)
+    if mtype ~= "RenderMultiply" then return self:INF_EnableMatrix(mtype, mtrx) end
+    if not self:INF_IsEngineEntity() then return self:INF_EnableMatrix(mtype, mtrx) end 
+    if not mtrx then return self:INF_EnableMatrix(mtype, mtrx) end
+    if not self.INF_VisualOffset then return self:INF_EnableMatrix(mtype, mtrx) end
+    self.INF_CurrentMatrixMultiply = mtrx
+    local mat = Matrix(mtrx)
+    mat:SetTranslation(mat:GetTranslation() + self.INF_VisualOffset)
+    return self:INF_EnableMatrix(mtype, mat)
+end
+
+ENTITY.INF_DisableMatrix = ENTITY.INF_DisableMatrix or ENTITY.DisableMatrix
+function ENTITY:DisableMatrix(mtype)
+    if mtype ~= "RenderMultiply" then return self:INF_EnableMatrix(mtype, mtrx) end
+    if not self:INF_IsEngineEntity() then return self:INF_EnableMatrix(mtype, mtrx) end 
+    self.INF_CurrentMatrixMultiply = nil
+    if not self.INF_VisualOffset then return self:INF_DisableMatrix(mtype) end
+    local mat = Matrix(mtrx)
+    mat:SetTranslation(self.INF_VisualOffset)
+    return self:INF_EnableMatrix(mtype, mat)
+end
+
+function ENTITY:INF_IsEngineEntity()
+    if not IsValid(self) then error("Tried to use NULL entity!") end
+    local klass = self:GetClass()
+    if klass == "prop_physics" then return true end
+    if klass == "prop_dynamic" then return true end
+	-- TODO: more entities or automatic detection?
+    return false
+end
+
 INF_EyePos = INF_EyePos or EyePos
 function EyePos()
 	return InfMap2.UnlocalizePosition(INF_EyePos(), LocalPlayer():GetMegaPos())

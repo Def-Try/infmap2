@@ -119,7 +119,13 @@ function InfMap2.EntityUpdateMegapos(ent, megapos, attempts)
             ent:INF_SetRenderBounds(ent:GetRenderBounds())
             ent.INF_OriginalRenderBounds = nil
         end
+        ent.INF_VisualOffset = nil
         ent.INF_ValidRenderOverride = nil
+        if ent:INF_IsEngineEntity() then
+            if ent.INF_CurrentMatrixMultiply then ent:EnableMatrix("RenderMultiply", ent.INF_CurrentMatrixMultiply)
+            else ent:DisableMatrix("RenderMultiply")
+            end
+        end
         return
     end
 
@@ -128,15 +134,23 @@ function InfMap2.EntityUpdateMegapos(ent, megapos, attempts)
         ent:INF_SetRenderBoundsWS(-InfMap2.SourceBounds * 2, InfMap2.SourceBounds * 2) -- fucking source
     end
     local visual_offset = Vector(1, 1, 1) * (megaoffset * InfMap2.ChunkSize)
+    ent.INF_VisualOffset = visual_offset
+    ent.INF_InSkyboxFlag = ent:IsEFlagSet(EFL_IN_SKYBOX)
+    ent:AddEFlags(EFL_IN_SKYBOX)
+
+    if ent:INF_IsEngineEntity() then
+        if ent:INF_IsEngineEntity() then
+            if ent.INF_CurrentMatrixMultiply then ent:EnableMatrix("RenderMultiply", ent.INF_CurrentMatrixMultiply)
+            else ent:DisableMatrix("RenderMultiply")
+            end
+        end
+        return
+    end
 
     if ent.INF_ValidRenderOverride == nil then
         ent.INF_RenderOverride = ent.RenderOverride
         ent.INF_ValidRenderOverride = ent.RenderOverride and true or false
     end
-    ent.INF_InSkyboxFlag = ent:IsEFlagSet(EFL_IN_SKYBOX)
-    ent:AddEFlags(EFL_IN_SKYBOX)
-
-    ent.INF_VisualOffset = visual_offset
 
     if ent.INF_ValidRenderOverride then
         ent.RenderOverride = renderoverride_nest
