@@ -53,7 +53,7 @@ timer.Create("InfMap2RemoveUnusedChunks", 60, 0, function()
         local chunks_to_remove2 = table.Copy(chunks_to_remove)
         local removed = 0
         for _, chunkd in ipairs(chunks_to_remove2) do
-            if InfMap2.ChebyshevDistance(ent:GetMegaPos(), chunkd[1]) > 1 then continue end
+            if InfMap2.ChebyshevDistance(ent:GetMegaPos(), chunkd[1]) > 2 then continue end
             table.remove(chunks_to_remove, _ - removed)
             removed = removed + 1
         end
