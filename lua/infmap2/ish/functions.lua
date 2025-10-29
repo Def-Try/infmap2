@@ -273,29 +273,33 @@ end
 -- MEGAPOS STUFF
 
 function ENTITY:SetMegaPos(vec)
+    if self.INF_MegaPos == vec then return end
     self.INF_MegaPos = Vector(vec)
-    if not IsValid(self) then return end
-    if not SERVER then return end
     self:SetNW2Vector("INF_MegaPos", vec)
-    net.Start("InfMap2_ChangeMegaPos")
-        net.WriteEntity(self)
-        net.WriteVector(vec)
-    net.Broadcast()
+    --if not IsValid(self) then return end
+    --if not SERVER then return end
+    --net.Start("InfMap2_ChangeMegaPos")
+    --    net.WriteEntity(self)
+    --    net.WriteVector(vec)
+    --net.Broadcast()
 end
 
 function ENTITY:GetMegaPos()
-    if not IsValid(self) then return Vector(self.INF_MegaPos) end
-    return Vector(self.INF_MegaPos) or self:GetNW2Vector("INF_MegaPos", Vector())
+    --if not IsValid(self) then return Vector(self.INF_MegaPos) end
+    return self:GetNW2Vector("INF_MegaPos", nil)
+    --return self:GetNW2Vector("INF_MegaPos", Vector())
 end
 
 if CLIENT then
     local queue = {}
-    hook.Add("EntityNetworkedVarChanged", "InfMap2EntityMegaposUpdate", function(ent, name, _, val)
+    hook.Add("EntityNetworkedVarChanged", "InfMap2EntityMegaposUpdate", function(ent, name, prev, val)
         if name ~= "INF_MegaPos" then return end
+        if prev == val then return end
         if InfMap2.Debug and ent:GetClass() ~= "inf_chunk" then print("[INFMAP] "..tostring(ent).." -> "..tostring(val)) end
-        ent.INF_MegaPos = val
+        ent:SetMegaPos(val)
         InfMap2.EntityUpdateMegapos(ent, val)
     end)
+    --[[
     net.Receive("InfMap2_ChangeMegaPos", function()
         ---@class Entity
         local entindex = net.ReadUInt(MAX_EDICT_BITS)
@@ -313,4 +317,5 @@ if CLIENT then
         queue[ent:EntIndex()] = nil
         ent.INF_MegaPos = qpos
     end) end)
+    --]]
 end

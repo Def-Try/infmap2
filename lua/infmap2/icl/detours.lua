@@ -99,6 +99,7 @@ end
 
 function ENTITY:INF_IsEngineEntity()
     if not IsValid(self) then error("Tried to use NULL entity!") end
+	do return not self.Type end
     local klass = self:GetClass()
     if klass == "prop_physics" then return true end
     if klass == "prop_dynamic" then return true end

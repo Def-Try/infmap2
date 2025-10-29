@@ -70,18 +70,24 @@ end
 ---@param ent Entity
 ---@param megapos Vector
 ---@param attempts number?
-function InfMap2.EntityUpdateMegapos(ent, megapos, attempts)
+function InfMap2.EntityUpdateMegapos(ent, megapos, attempts, reason, critical)
     if InfMap2.UselessEntitiesFilter(ent) then return end
     
     local mins, maxs = ent:INF_GetRenderBounds()
-    if mins == maxs and mins == vector_origin and (attempts or 0) < 3 then
+    local lp = LocalPlayer()
+    local failing = false
+    if not failing and (mins == maxs and mins == vector_origin) then failing, critical, reason = true, false, "invalid renderbounds" end
+    if not failing and (not IsValid(lp)) then failing, critical, reason = true, true, "localplayer invalid" end
+    if failing and (attempts or 0) < (critical and 10 or 3) then
         timer.Simple(0, function()
-            InfMap2.EntityUpdateMegapos(ent, megapos, (attempts or 0) + 1)
+            InfMap2.EntityUpdateMegapos(ent, megapos, (attempts or 0) + 1, reason, critical)
         end)
         return
     end
-    if mins == maxs and mins == vector_origin and (attempts or 0) >= 3 then
-        if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." did not get valid renderbounds!") end
+    
+    if mins == maxs and mins == vector_origin and (attempts or 0) >= (critical and 10 or 3) then
+        if InfMap2.Debug then print("[INFMAP] Entity "..tostring(ent).." megapos change failed: "..reason) end
+        if critical then return end
     end
 
     -- make luals happy
@@ -92,7 +98,6 @@ function InfMap2.EntityUpdateMegapos(ent, megapos, attempts)
 
     if ent:IsWorld() then return end
 
-    local lp = LocalPlayer()
 
     if ent == lp then
         for _, ent2 in ents.Iterator() do

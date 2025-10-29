@@ -1,6 +1,5 @@
 AddCSLuaFile()
 
-
 local infmap_debug = function(_, _, val) InfMap2.Debug = tonumber(val) == 1 end
 if SERVER then
     CreateConVar("infmap_debug_sv", "0", FCVAR_NONE, "", 0, 1)

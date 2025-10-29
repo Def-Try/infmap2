@@ -311,24 +311,26 @@ if InfMap2.Visual.HasSkybox then
     })
     local plane_matrix = Matrix()
 
-    hook.Add("PreDrawOpaqueRenderables", "InfMap2TerrainSkybox", function() -- draw skybox
+    hook.Add("PostDraw2DSkyBox", "InfMap2TerrainSkybox", function() -- draw skybox
         if not InfMap2.Cache.skyboxmaterial then InfMap2.Cache.skyboxmaterial = Material(InfMap2.Visual.Skybox.Material) end
-        InfMap2.Cache.skyboxmaterial:SetFloat("$alpha", 1)
-        -- dont draw to z buffer, this is skybox
-        render.OverrideDepthEnable(true, false)
-        render.SetMaterial(InfMap2.Cache.skyboxmaterial)
-        -- fullbright
-        render.ResetModelLighting(2, 2, 2)
-        render.SetLocalModelLights()
+        --cam.Start3D(vector_origin)
+            InfMap2.Cache.skyboxmaterial:SetFloat("$alpha", 1)
+            -- dont draw to z buffer, this is skybox
+            render.OverrideDepthEnable(true, false)
+            render.SetMaterial(InfMap2.Cache.skyboxmaterial)
+            -- fullbright
+            render.ResetModelLighting(2, 2, 2)
+            render.SetLocalModelLights()
 
-        local offset = LocalPlayer():GetMegaPos()
-        offset[1] = offset[1] % 1000
-        offset[2] = offset[2] % 1000
-        plane_matrix:SetTranslation(offset)
-        cam.PushModelMatrix(plane_matrix)
-        big_plane:Draw()
-        cam.PopModelMatrix()
-        render.OverrideDepthEnable(false, false)
+            local offset = LocalPlayer():GetMegaPos()
+            offset[1] = offset[1] % 1000
+            offset[2] = offset[2] % 1000
+            plane_matrix:SetTranslation(offset)
+            cam.PushModelMatrix(plane_matrix)
+            big_plane:Draw()
+            cam.PopModelMatrix()
+            render.OverrideDepthEnable(false, false)
+        --cam.End3D()
     end)
 end
 
