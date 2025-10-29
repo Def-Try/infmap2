@@ -174,3 +174,11 @@ hook.Add("PreDrawTranslucentRenderables", "InfMap2FrustrumCalc", function()
         ent.INF_InFrustrum = frustrum(ent)
     end
 end)
+
+hook.Add("PreDrawHUD", "InfMap2Correct3D2DOnVGUI", function()
+    mtrx:SetTranslation(LocalPlayer():GetMegaPos() * InfMap2.ChunkSize)
+    cam.INF_PushModelMatrix(mtrx)
+end)
+hook.Add("PostRenderVGUI", "InfMap2Correct3D2DOnVGUI", function()
+    cam.INF_PopModelMatrix()
+end)

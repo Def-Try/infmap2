@@ -149,6 +149,16 @@ function cam.PopModelMatrix()
 	end
 end
 
+cam.INF_Start3D2D = cam.INF_Start3D2D or cam.Start3D2D
+function cam.Start3D2D(pos, ang, scale)
+	do return cam.INF_Start3D2D(pos, ang, scale) end -- FIGURE OUT WHY IT BREAKS!!!
+	local localpos, megapos = InfMap2.LocalizePosition(pos)
+	local realpos = InfMap2.UnlocalizePosition(localpos, megapos - LocalPlayer():GetMegaPos())
+	--debug.Trace()
+	--print(realpos)
+	return cam.INF_Start3D2D(realpos, ang, scale)
+end
+
 local mtrx = Matrix()
 local offset = nil
 render.INF_PushCustomClipPlane = render.INF_PushCustomClipPlane or render.PushCustomClipPlane
