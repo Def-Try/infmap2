@@ -8,7 +8,7 @@ if CLIENT then include("infmap2/icl/popups.lua") end
 --if InfMap2.Debug == nil then InfMap2.Debug = true end
 if InfMap2.Debug == nil then InfMap2.Debug = false end
 
-InfMap2.Version = "0.3b"
+InfMap2.Version = "0.31b"
 
 InfMap2.MaxVelocity = 13503.95 * 20 -- mach 20 in hammer units
 InfMap2.SourceBounds = Vector(2^14, 2^14, 2^14)
