@@ -123,51 +123,38 @@ if InfMap2.Space.HasSpace then
     end
 end
 
-include("infmap2/ish/world.lua")
-include("infmap2/ish/space.lua")
-include("infmap2/ish/collision.lua")
-include("infmap2/ish/functions.lua")
-include("infmap2/ish/detours.lua")
-include("infmap2/ish/concommands.lua")
 
+local shared_files, _ = file.Find("infmap2/ish/*", "LUA")
+local client_files, _ = file.Find("infmap2/icl/*", "LUA")
+local server_files, _ = file.Find("infmap2/isv/*", "LUA")
+for _, file_ in ipairs(shared_files) do
+    print("[INFMAP2] Loading shared file `"..file_.."`")
+    AddCSLuaFile("infmap2/ish/"..file_)
+    include("infmap2/ish/"..file_)
+end
+for _, file_ in ipairs(client_files) do
+    if CLIENT then
+        print("[INFMAP2] Loading client file `"..file_.."`")
+        include("infmap2/icl/"..file_)
+    end
+    if SERVER then
+        print("[INFMAP2] Adding client file `"..file_.."`")
+        AddCSLuaFile("infmap2/icl/"..file_)
+    end
+end
 if SERVER then
-    AddCSLuaFile("infmap2/icl/world.lua")
-    AddCSLuaFile("infmap2/icl/clouds.lua")
-    AddCSLuaFile("infmap2/icl/space.lua")
-    AddCSLuaFile("infmap2/icl/fog.lua")
-    AddCSLuaFile("infmap2/icl/positioning.lua")
-    AddCSLuaFile("infmap2/icl/detours.lua")
-    AddCSLuaFile("infmap2/icl/debug.lua")
-    AddCSLuaFile("infmap2/icl/sound.lua")
-    AddCSLuaFile("infmap2/icl/misc.lua")
-
-    include("infmap2/isv/world.lua")
-    include("infmap2/isv/space.lua")
-    include("infmap2/isv/positioning.lua")
-    include("infmap2/isv/detours.lua")
-    include("infmap2/isv/wrapping.lua")
-    include("infmap2/isv/crosschunkcollision.lua")
-    include("infmap2/isv/concommands.lua")
-    include("infmap2/isv/sound.lua")
+    for _, file_ in ipairs(server_files) do 
+        print("[INFMAP2] Loading server file `"..file_.."`")
+        include("infmap2/isv/"..file_)
+    end
 end
 
-if CLIENT then
-    include("infmap2/icl/world.lua")
-    include("infmap2/icl/clouds.lua")
-    include("infmap2/icl/space.lua")
-    include("infmap2/icl/fog.lua")
-    include("infmap2/icl/positioning.lua")
-    include("infmap2/icl/detours.lua")
-    include("infmap2/icl/sound.lua")
-    include("infmap2/icl/misc.lua")
-end
 resource.AddFile("infmap2/space/sky.vmt")
 
 hook.Add("InitPostEntity", "InfMap2Init", function() timer.Simple(0, function()
     RunConsoleCommand("sv_maxvelocity", InfMap2.MaxVelocity)
     if CLIENT then
         LocalPlayer():ConCommand("cl_drawspawneffect 0")
-        include("infmap2/icl/debug.lua")
         InfMap2.EntityUpdateMegapos(LocalPlayer(), Vector())
     end
 end) end)
@@ -178,3 +165,5 @@ hook.Add("PlayerSpawn", "InfMap2ResetSpawnPos", function(ply)
     end
     ply:SetPos(Vector())
 end)
+
+print("[INFMAP2] Initialisations complete!")

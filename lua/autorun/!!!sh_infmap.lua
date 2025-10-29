@@ -3,4 +3,5 @@ AddCSLuaFile()
 
 InfMap2 = InfMap2 or { Cache = {} }
 
+AddCSLuaFile("infmap2/init.lua")
 include("infmap2/init.lua")
