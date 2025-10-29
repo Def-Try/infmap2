@@ -51,6 +51,34 @@ local ents_blocked = {
     worldspawn=true
 }
 
+function ENT:DrawTerrain(drawpos, mesh_, checkpos, color)
+    for i=1,#mesh_,6 do
+        if checkpos and
+           not InfMap2.PositionInChunkSpace(mesh_[i  ]) and
+           not InfMap2.PositionInChunkSpace(mesh_[i+1]) and
+           not InfMap2.PositionInChunkSpace(mesh_[i+4]) and
+           not InfMap2.PositionInChunkSpace(mesh_[i+2]) then continue end
+        render.DrawQuad(drawpos + mesh_[i+2] / ratio,
+                        drawpos + mesh_[i] / ratio,
+                        drawpos + mesh_[i+1] / ratio,
+                        drawpos + mesh_[i+4] / ratio,
+                        color)
+    end
+    if self:GetCullTerrain() then return end
+    for i=1,#mesh_,6 do
+        if checkpos and
+           not InfMap2.PositionInChunkSpace(mesh_[i  ]) and
+           not InfMap2.PositionInChunkSpace(mesh_[i+1]) and
+           not InfMap2.PositionInChunkSpace(mesh_[i+4]) and
+           not InfMap2.PositionInChunkSpace(mesh_[i+2]) then continue end
+        render.DrawQuad(drawpos + mesh_[i+2] / ratio,
+                        drawpos + mesh_[i+4] / ratio,
+                        drawpos + mesh_[i+1] / ratio,
+                        drawpos + mesh_[i] / ratio,
+                        color)
+    end
+end
+
 local wireframe = Material("models/wireframe")
 function ENT:DrawChunk(drawpos, megapos, chunkent, angle, color, entstodraw)
     drawpos.z = drawpos.z + self:GetOffsetY()
@@ -69,12 +97,13 @@ function ENT:DrawChunk(drawpos, megapos, chunkent, angle, color, entstodraw)
 	cam.End3D2D()
     drawpos.z = drawpos.z - minichunk_half.z - 2
 
+    local c, r, color
     for _, ent in ipairs(entstodraw) do
         if not ent:IsPlayer() and (ents_blocked[ent:GetClass()] or ent:EntIndex() == -1 or IsValid(ent:GetParent())) then continue end
         angle:RotateAroundAxis(angle:Right(), ent:EntIndex() * 10)
-        local c = math.random(157, 177)
-        local r = 0.5 * scale
-        local color = Color(c,c,c)
+        c = math.random(157, 177)
+        r = 0.5 * scale
+        color = Color(c,c,c)
         local drawpos2 = drawpos + ent:INF_GetPos() / ratio
         if ent:IsPlayer() then color.r = color.r + 78 r = r + 0.7 * scale end
         render.DrawWireframeSphere(drawpos2, r, 4, 4, color, true)
@@ -91,6 +120,15 @@ function ENT:DrawChunk(drawpos, megapos, chunkent, angle, color, entstodraw)
             cam.Start3D2D(drawpos2, angle, 0.05 * scale)
                 draw.SimpleText(ent:Name(), "DermaLarge", 0, 0, color, TEXT_ALIGN_CENTER)
             cam.End3D2D()
+        elseif ent:GetClass() == "inf_planet" then
+            c = math.random(200, 255)
+            color = Color(c, c, c)
+            local e = (RealTime()*2+ent:EntIndex()*5) % 8
+            render.DrawWireframeSphere(drawpos, ent.INF_PlanetData.Radius / ratio * scale, 8 + e, 8 + e, color)
+            if ent.INF_PlanetMesh then
+                render.SetMaterial(wireframe)
+                self:DrawTerrain(drawpos, ent.INF_PlanetMesh, false, color)
+            end
         else
             drawpos2.z = drawpos2.z + r*2
             cam.Start3D2D(drawpos2, angle, 0.05 * scale)
@@ -104,36 +142,16 @@ function ENT:DrawChunk(drawpos, megapos, chunkent, angle, color, entstodraw)
         end
         angle:RotateAroundAxis(angle:Right(), -ent:EntIndex() * 10)
     end
+    c = math.random(200, 255)
+    color = Color(c,c,c)
 
     if not chunkent then return end
     if not chunkent.INF_ChunkMesh then return end
 
     if not self:GetDrawTerrain() then return end
     render.SetMaterial(wireframe)
-    local chunkmesh = chunkent.INF_ChunkMesh
-    for i=1,#chunkmesh,6 do
-        if not InfMap2.PositionInChunkSpace(chunkmesh[i  ]) and
-           not InfMap2.PositionInChunkSpace(chunkmesh[i+1]) and
-           not InfMap2.PositionInChunkSpace(chunkmesh[i+4]) and
-           not InfMap2.PositionInChunkSpace(chunkmesh[i+2]) then continue end
-        render.DrawQuad(drawpos + chunkmesh[i+2] / ratio,
-                        drawpos + chunkmesh[i] / ratio,
-                        drawpos + chunkmesh[i+1] / ratio,
-                        drawpos + chunkmesh[i+4] / ratio,
-                        color)
-    end
-    if self:GetCullTerrain() then return end
-    for i=1,#chunkmesh,6 do
-        if not InfMap2.PositionInChunkSpace(chunkmesh[i  ]) and
-           not InfMap2.PositionInChunkSpace(chunkmesh[i+1]) and
-           not InfMap2.PositionInChunkSpace(chunkmesh[i+4]) and
-           not InfMap2.PositionInChunkSpace(chunkmesh[i+2]) then continue end
-        render.DrawQuad(drawpos + chunkmesh[i+2] / ratio,
-                        drawpos + chunkmesh[i+4] / ratio,
-                        drawpos + chunkmesh[i+1] / ratio,
-                        drawpos + chunkmesh[i] / ratio,
-                        color)
-    end
+    
+    self:DrawTerrain(drawpos, chunkent.INF_ChunkMesh, true, color)
 end
 
 local color_red   = Color(255, 0, 0)
