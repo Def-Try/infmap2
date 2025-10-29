@@ -267,11 +267,11 @@ hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
         InfMap2.Cache.CSEnt = csent
         csent:SetNoDraw(true)
     end
+    csent:SetNoDraw(true)
     
-    local megaoffset = LocalPlayer():GetMegaPos() * InfMap2.ChunkSize
     render.OverrideColorWriteEnable(true, false)
     render.OverrideDepthEnable(true, false)
-    csent:INF_SetPos(vector_origin) -- (megaoffset)
+    csent:INF_SetPos(vector_origin)
     csent:SetAngles(EyeAngles())
     csent:SetupBones()
 
@@ -280,7 +280,6 @@ hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
 
     csent:SetModel("models/shadertest/envballs.mdl")
     csent:DrawModel()
-
     render.OverrideDepthEnable(false, false)
     render.OverrideColorWriteEnable(false, false)
 
