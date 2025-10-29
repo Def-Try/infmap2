@@ -420,26 +420,14 @@ hook.Add("PreRender", "InfMap2BuildWorldVisual", function()
     local index = InfMap2.ChunkMeshes.Index
     local ms = InfMap2.Visual.RenderDistance
 
-    local chunks_to_unload = {}
-    for x = -ms, ms do
-        chunks_to_unload[last_megapos_x+x] = {}
-        for y = -ms, ms do
-            chunks_to_unload[last_megapos_x+x][megapos_y+y] = true
-        end
-    end
-
     local rebuilt = 0
-    local max_rebuild = 2
+    local max_rebuild = InfMap2.ConVars.vis_rebuildperframe:GetInt()
     for x = -ms, ms do
-        local tbl = chunks_to_unload[megapos_x+x]
         for y = -ms, ms do
-            if tbl then
-                tbl[megapos_y+y] = nil
-            end
             rebuilt = rebuilt + (process_chunk(get_chunk(index, megapos_x+x, megapos_y+y), megapos, megapos+Vector(x, y)) and 1 or 0)
-            if rebuilt > max_rebuild then break end
+            if rebuilt >= max_rebuild then break end
         end
-        if rebuilt > max_rebuild then break end
+        if rebuilt >= max_rebuild then break end
     end
     if rebuilt == 0 then
         last_megapos_x, last_megapos_y = megapos_x, megapos_y
@@ -449,12 +437,6 @@ hook.Add("PreRender", "InfMap2BuildWorldVisual", function()
     for x = -ms, ms do
         for y = -ms, ms do
             InfMap2.ChunkMeshes.Draw[#InfMap2.ChunkMeshes.Draw+1] = get_chunk(index, megapos_x+x, megapos_y+y).mesh
-        end
-    end
-
-    for tounload_x, tbly in pairs(chunks_to_unload) do
-        for tounload_y, _ in pairs(tbly) do
-            get_chunk(index, tounload_x, tounload_y).lodlvl = -1
         end
     end
 end)

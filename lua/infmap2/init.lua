@@ -53,9 +53,11 @@ if InfMap2.World.HasTerrain then
     InfMap2.World.Terrain.Samples = main.world.terrain.samples or {3}
 
     InfMap2.Visual.RenderDistance = main.visual.renderdistance or 20
+    InfMap2.Visual.RealRenderDistance = InfMap2.Visual.RenderDistance
 
     InfMap2.Visual.Terrain.Material = main.visual.terrain.material
     InfMap2.Visual.Terrain.UVScale = main.visual.terrain.uvscale or 100
+    InfMap2.World.Terrain.LODLevels = table.Copy(InfMap2.World.Terrain.Samples)
 end
 
 InfMap2.Visual.HasClouds = main.visual.clouds.has_clouds or false
@@ -165,5 +167,13 @@ hook.Add("PlayerSpawn", "InfMap2ResetSpawnPos", function(ply)
     end
     ply:SetPos(Vector())
 end)
+
+--[[
+if CLIENT then
+    if InfMap2.ConVars.vis_chunklods_tbl then
+        InfMap2.World.Terrain.LODLevels = {InfMap2.World.Terrain.Samples[1], unpack(InfMap2.ConVars.vis_chunklods_tbl)}
+    end
+end
+--]]
 
 print("[INFMAP2] Initialisations complete!")

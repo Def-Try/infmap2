@@ -70,7 +70,7 @@ function InfMap2.GenerateChunkVertexMesh(megapos, lodlevel, limit_height)
     local heightmap = {}
     local chunk_size = InfMap2.ChunkSize
     local half_chunk_size = chunk_size / 2
-    local sample_size = chunk_size / InfMap2.World.Terrain.Samples[math.max(1, math.min(lodlevel, #InfMap2.World.Terrain.Samples))]
+    local sample_size = chunk_size / InfMap2.World.Terrain.LODLevels[math.max(1, math.min(lodlevel, #InfMap2.World.Terrain.LODLevels))]
 
     local x_offset = megapos.x * chunk_size
     local y_offset = megapos.y * chunk_size
