@@ -26,7 +26,7 @@ end, "infmap_debug")
 local infmap_show_ents = function(ply, _, args)
     local function format_gmodent(ent)
         if not IsValid(ent) then return "GMOD NULL ENTITY" end
-        megapos = ent:GetMegaPos()
+        local megapos = ent:GetMegaPos()
         return string.format("GMOD %s EIdx=%d Megapos=(%d %d %d)", ent:GetClass(), ent:EntIndex(), megapos.x, megapos.y, megapos.z)
     end
     for _, ent in ipairs(ents.GetAll()) do

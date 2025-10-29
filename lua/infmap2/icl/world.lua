@@ -128,10 +128,10 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
     hook.Add("Tick", "InfMap2UpdateCalcViewRelativeOrigin", function()
         relativeorigin = LocalPlayer():EyePos()
     end)
-    hook.Add("CalcView", "InfMap2CalcView", function(ply, pos, angles, fov, znear, zfar, a, b, c, d, e, f)
+    hook.Add("CalcView", "InfMap2CalcView", function(ply, pos, angles, fov, znear, zfar)
         --do return end
         calcviewing = true
-        local view = hook.Run("INF_CalcView", ply, pos + ply:GetMegaPos() * InfMap2.ChunkSize, angles, fov, znear, zfar, a, b, c, d, e, f)
+        local view = hook.Run("INF_CalcView", ply, pos + ply:GetMegaPos() * InfMap2.ChunkSize, angles, fov, znear, zfar)
         calcviewing = false
 
         local view_fallback = {

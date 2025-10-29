@@ -88,11 +88,11 @@ end
 
 ENTITY.INF_DisableMatrix = ENTITY.INF_DisableMatrix or ENTITY.DisableMatrix
 function ENTITY:DisableMatrix(mtype)
-    if mtype ~= "RenderMultiply" then return self:INF_EnableMatrix(mtype, mtrx) end
-    if not self:INF_IsEngineEntity() then return self:INF_EnableMatrix(mtype, mtrx) end 
+    if mtype ~= "RenderMultiply" then return self:INF_DisableMatrix(mtype) end
+    if not self:INF_IsEngineEntity() then return self:INF_DisableMatrix(mtype) end 
     self.INF_CurrentMatrixMultiply = nil
     if not self.INF_VisualOffset then return self:INF_DisableMatrix(mtype) end
-    local mat = Matrix(mtrx)
+    local mat = Matrix()
     mat:SetTranslation(self.INF_VisualOffset)
     return self:INF_EnableMatrix(mtype, mat)
 end

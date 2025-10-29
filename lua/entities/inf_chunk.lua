@@ -79,7 +79,7 @@ function ENT:Think()
 end
 
 function ENT:Draw()
-    do return end
+    --do return end
     if not InfMap2.Debug then return end
     if not self.INF_ChunkMesh then return end
     local cmesh = self.INF_ChunkMesh
@@ -93,12 +93,14 @@ function ENT:Draw()
     --if off - LocalPlayer():GetMegaPos() * InfMap2.ChunkSize ~= Vector() then return end
     render.SetMaterial(Material("models/wireframe"))
     local v0, v1, v2, v3
+    cam.IgnoreZ(true)
     mesh.Begin(MATERIAL_QUADS, #cmesh / 6)
     for i=1,#cmesh,6 do
         v0, v1, v2, v3 = cmesh[i+0], cmesh[i+2], cmesh[i+1], cmesh[i+4]
-        mesh.Quad(v2 + off, v3 + off, v1 + off, v0 + off)
+        mesh.Quad(v2 + off, v3 + off, v1 + off, v0 + off, color_white)
     end
     mesh.End()
+    cam.IgnoreZ(false)
 end
 
 hook.Add("PhysgunPickup", "InfMap2ChunkPhysgunable", function(ply, ent)
