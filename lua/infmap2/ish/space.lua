@@ -8,12 +8,12 @@ function InfMap2.GeneratePlanetVertexMesh(planetinfo, pos)
     assert(InfMap2.Space.HasSpace, "InfMap2 does not use a space generator")
     assert(planetinfo.HeightFunction ~= nil, "planetinfo.HeightFunction is not set up")
     assert(planetinfo.Radius ~= nil, "planetinfo.Radius is not set up")
-    assert(planetinfo.SampleSize ~= nil, "planetinfo.SampleSize is not set up")
+    assert(planetinfo.Samples ~= nil, "planetinfo.Samples is not set up")
 
     local heightmap = {}
     local radius = planetinfo.Radius
     local radius_squared = radius * radius
-    local sample_size = planetinfo.SampleSize
+    local sample_size = (radius*2) / planetinfo.Samples
 
     local x_offset = pos.x
     local y_offset = pos.y

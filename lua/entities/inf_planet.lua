@@ -18,24 +18,48 @@ local atmosphere = Material("infmap2/space/atmosphere")
 function ENT:Initialize(ready)
     if not ready then return end
     if not self.INF_PlanetData then return end
+    self.INF_PlanetMesh = InfMap2.GeneratePlanetVertexMesh(self.INF_PlanetData, self:GetPos())
     if CLIENT then
-        self.INF_PlanetVisMesh = InfMap2.GeneratePlanetVisualMesh(self.INF_PlanetData, self:GetPos())
+        if #self.INF_PlanetMesh / 6 > 8192 then
+            error("Too many tris! ("..(#self.INF_PlanetMesh / 6).." > 8192)! Decrease samples count! Planet: "..(self.INF_PlanetData.Name or "<no name>"))
+        end
         self.INF_RenderMesh = Mesh()
         self.INF_RenderMatrix = Matrix()
         self.INF_RenderMatrix:SetTranslation(self:GetPos())
-        mesh.Begin(self.INF_RenderMesh, MATERIAL_TRIANGLES, math.min(#self.INF_PlanetVisMesh / 3, 2^13))
-        for _, tri in ipairs(self.INF_PlanetVisMesh) do
-            mesh.Position(tri[1])
-            mesh.TexCoord(0, tri[2], tri[3])
-            mesh.Normal(tri[4])
-            mesh.UserData(1, 1, 1, 1)
+        mesh.Begin(self.INF_RenderMesh, MATERIAL_QUADS, math.min(#self.INF_PlanetMesh / 6, 8192))
+        local mesh_ = self.INF_PlanetMesh
+        local uvs = self.INF_PlanetData.UVScale
+        local v0, v1, v2, v3, norm
+        for i=1, #mesh_, 6 do
+            v0, v1, v2, v3 = mesh_[i+0], mesh_[i+2], mesh_[i+1], mesh_[i+4]
+            norm = -(v3 - v2):Cross(v3 - v1)
+            norm:Normalize()
+            norm:Negate()
+
+            mesh.Position(v2)
+            mesh.Normal(norm)
+            mesh.TexCoord(0, uvs, 0) mesh.Color(255, 255, 255, 255)
+            mesh.AdvanceVertex()
+
+            mesh.Position(v3)
+            mesh.Normal(norm)
+            mesh.TexCoord(0, uvs, uvs) mesh.Color(255, 255, 255, 255)
+            mesh.AdvanceVertex()
+
+            mesh.Position(v1)
+            mesh.Normal(norm)
+            mesh.TexCoord(0, 0, uvs) mesh.Color(255, 255, 255, 255) 
+            mesh.AdvanceVertex()
+
+            mesh.Position(v0)
+            mesh.Normal(norm)
+            mesh.TexCoord(0, 0, 0) mesh.Color(255, 255, 255, 255)
             mesh.AdvanceVertex()
         end
         mesh.End()
         self:SetRenderBounds(-Vector(1, 1, 1) * self.INF_PlanetData.Radius * 2, Vector(1, 1, 1) * self.INF_PlanetData.Radius * 2)
     end
 
-    self.INF_PlanetMesh = InfMap2.GeneratePlanetVertexMesh(self.INF_PlanetData, self:GetPos())
     self:PhysicsDestroy()
     self:PhysicsFromMesh(self.INF_PlanetMesh)
 

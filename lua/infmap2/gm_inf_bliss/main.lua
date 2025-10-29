@@ -159,7 +159,7 @@ return {
                     inside = "infmap2/grasslit",
                 },
                 radius = 5000,
-                samplesize = 500,
+                samples = 64,
                 uvscale = 10,
             }
         }

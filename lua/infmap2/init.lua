@@ -111,7 +111,7 @@ if InfMap2.Space.HasSpace then
         end
         idata.Clouds = data.clouds
         idata.Radius = data.radius or 5000
-        idata.SampleSize = data.samplesize or idata.Radius / 10
+        idata.Samples = data.samples or (idata.Radius * 2) / 10
         idata.UVScale = data.uvscale or 10
         idata.MaterialOverrides = {}
         for n, material in pairs(data.material_overrides) do
