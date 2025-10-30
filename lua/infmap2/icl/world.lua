@@ -341,7 +341,7 @@ hook.Add("RenderScreenspaceEffects", "InfMap2UnderTerrain", function()
 end)
 
 local function generate_chunk(chunk, lodlvl, megapos)
-    if chunk.lodlvl == lodlvl and chunk.megapos == megapos then return end
+    if chunk.lodlvl == lodlvl then return end
     chunk.lodlvl = lodlvl
     if IsValid(chunk.mesh) then
         chunk.mesh:Destroy()
@@ -386,15 +386,16 @@ local function generate_chunk(chunk, lodlvl, megapos)
 end
 local function process_chunk(chunk, plypos, megapos)
     local diff = plypos - megapos
-    local dist = math.max(math.abs(diff.x), math.abs(diff.y), math.abs(plypos.z))
+    local lodlvl = math.max(math.abs(diff.x), math.abs(diff.y), math.abs(plypos.z))
     local chunk_megapos = chunk.megapos
     local rebuild = false
     if not rebuild and chunk_megapos == nil then rebuild = true end
-    if not rebuild and chunk_megapos.x ~= megapos.x then rebuild = true end
-    if not rebuild and chunk_megapos.y ~= megapos.y then rebuild = true end
-    if not rebuild and chunk_megapos.z ~= megapos.z then rebuild = true end
+    if not rebuild and lodlvl ~= chunk.lodlvl then rebuild = true end
+    --if not rebuild and chunk_megapos.x ~= megapos.x then rebuild = true end
+    --if not rebuild and chunk_megapos.y ~= megapos.y then rebuild = true end
+    --if not rebuild and chunk_megapos.z ~= megapos.z then rebuild = true end
     if not rebuild then return false end
-    generate_chunk(chunk, dist, megapos)
+    generate_chunk(chunk, lodlvl, megapos)
     return true
 end
 local function get_chunk(index, x, y)
@@ -413,6 +414,7 @@ hook.Add("PreRender", "InfMap2BuildWorldVisual", function()
     local megapos_x, megapos_y = megapos.x, megapos.y
 
     if megapos_x == last_megapos_x and megapos_y == last_megapos_y then return end
+    --print(megapos_x, megapos_y, "    ", last_megapos_x, last_megapos_y)
 
     local index = InfMap2.ChunkMeshes.Index
     local ms = InfMap2.Visual.RenderDistance
@@ -446,7 +448,7 @@ hook.Add("DrawPhysgunBeam", "InfMap2PhysgunBeam", function(ply, wep, enabled, ta
     if not IsValid(ply) then return end
     if not IsValid(wep) then return end
 
-    local hitpos = util.TraceLine(util.GetPlayerTrace(ply, ply:EyeAngles():Forward())).HitPos
+    local hitpos = util.TraceLine(util.GetPlayerTrace(ply, ply:GetAimVector())).HitPos
     local grabbed = 0
 	if IsValid(target) then
 		local mt = target:GetBoneMatrix(bone)
