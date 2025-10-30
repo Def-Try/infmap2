@@ -52,20 +52,20 @@ end
 ---@return Vector megapos
 function InfMap2.LocalizePosition(pos, size)
     local size = size or InfMap2.ChunkSize
+    local half_size = size / 2
+    local inv_size = 1 / size 
     local offset = Vector(
-        floor((pos.x + (size / 2)) / size),
-        floor((pos.y + (size / 2)) / size),
-        floor((pos.z + (size / 2)) / size)
+        floor((pos[1] + half_size) * inv_size),
+        floor((pos[2] + half_size) * inv_size),
+        floor((pos[3] + half_size) * inv_size)
     )
-    local halfsizevec = Vector(1, 1, 1) * (size / 2)
+    local localpos = Vector(pos)
 
-    pos = pos + halfsizevec
-    pos.x = pos.x % size
-    pos.y = pos.y % size
-    pos.z = pos.z % size
-    pos = pos - halfsizevec
+    localpos[1] = (localpos[1] + half_size) % size - half_size
+    localpos[2] = (localpos[2] + half_size) % size - half_size
+    localpos[3] = (localpos[3] + half_size) % size - half_size
     
-    return pos, offset
+    return localpos, offset
 end
 
 ---Delocalizes position
@@ -74,7 +74,10 @@ end
 ---@param size number?
 ---@return Vector
 function InfMap2.UnlocalizePosition(localpos, megapos, size)
-    return (megapos or Vector()) * (size or InfMap2.ChunkSize) + localpos
+    local vec = Vector(megapos)
+    vec:Mul(size or InfMap2.ChunkSize)
+    vec:Add(localpos)
+    return vec
 end
 
 ---Checks AABB intersection
