@@ -124,7 +124,7 @@ function ENT:DrawChunk(drawpos, megapos, chunkent, angle, color, entstodraw)
             c = math.random(200, 255)
             color = Color(c, c, c)
             local e = (RealTime()*2+ent:EntIndex()*5) % 8
-            render.DrawWireframeSphere(drawpos, ent.INF_PlanetData.Radius / ratio * scale, 8 + e, 8 + e, color)
+            render.DrawWireframeSphere(drawpos, ent.INF_PlanetData.Radius / ratio, 8 + e, 8 + e, color)
             if ent.INF_PlanetMesh then
                 render.SetMaterial(wireframe)
                 self:DrawTerrain(drawpos, ent.INF_PlanetMesh, false, color)
@@ -189,6 +189,7 @@ function ENT:DrawTranslucent(flags)
     local i = 0
     for _,ent in ents.Iterator() do
         if ent:GetClass() == "inf_chunk" then chunkents[tostring(ent:GetMegaPos())] = ent continue end
+        if ent:GetClass() == "inf_crosschunkclone" then continue end
         if not exists[tostring(ent:GetMegaPos())] then
             i = i + 1
             chunks[ent:GetMegaPos()] = i
