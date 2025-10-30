@@ -101,7 +101,7 @@ return {
                 
                 return height
             end,
-            samples = {16, 8, 4},
+            samples = {16, 12, 8, 4},
         }
     },
     visual = {
