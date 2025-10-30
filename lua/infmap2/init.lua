@@ -2,13 +2,11 @@ AddCSLuaFile()
 
 InfMap2.EnableDevBanner = true
 
-AddCSLuaFile("infmap2/icl/popups.lua")
-if CLIENT then include("infmap2/icl/popups.lua") end
-
 --if InfMap2.Debug == nil then InfMap2.Debug = true end
 if InfMap2.Debug == nil then InfMap2.Debug = false end
 
 InfMap2.Version = "0.32b"
+print("[INFMAP2] Running InfMap2 version "..InfMap2.Version)
 
 InfMap2.MaxVelocity = 13503.95 * 20 -- mach 20 in hammer units
 InfMap2.SourceBounds = Vector(2^14, 2^14, 2^14)
@@ -22,12 +20,15 @@ InfMap2.Visual.Fog = {}
 InfMap2.Visual.Skybox = {}
 InfMap2.Space = {}
 
-local main = include("infmap2/"..game.GetMap().."/main.lua")
+local mapfile = "infmap2/"..game.GetMap().."/main.lua"
+print("[INFMAP2] Loading map file `"..mapfile.."`")
+local main = include(mapfile)
 if not main then
     ErrorNoHalt("InfMap2 main file did not return infmap data. Falling back to gm_inf_bliss")
+    print("[INFMAP2] Loading fallback map file. Check above for errors!")
     main = include("infmap2/gm_inf_bliss/main.lua")
 else
-    AddCSLuaFile("infmap2/"..game.GetMap().."/main.lua")
+    AddCSLuaFile(mapfile)
 end
 main.world = main.world or {}
 main.world.terrain = main.world.terrain or {}
