@@ -26,6 +26,8 @@ local main = include("infmap2/"..game.GetMap().."/main.lua")
 if not main then
     ErrorNoHalt("InfMap2 main file did not return infmap data. Falling back to gm_inf_bliss")
     main = include("infmap2/gm_inf_bliss/main.lua")
+else
+    AddCSLuaFile("infmap2/"..game.GetMap().."/main.lua")
 end
 main.world = main.world or {}
 main.world.terrain = main.world.terrain or {}
