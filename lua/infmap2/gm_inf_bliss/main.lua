@@ -128,9 +128,9 @@ return {
         fog = {
             has_fog = true,
             color = Color(180, 190, 200),
-            fogstart = 500000,
-            fogend = 1000000,
-            maxdensity = 0.5
+            fogstart = 150000,
+            fogend = 200000,
+            maxdensity = 1
         },
         skybox = {
             has_skybox = true,

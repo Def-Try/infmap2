@@ -80,8 +80,8 @@ if InfMap2.Visual.HasClouds then
     InfMap2.Visual.Clouds.Speed = main.visual.clouds.speed or 0
 end
 
-InfMap2.Visual.HasFog = main.visual.fog.has_fog or false
-if InfMap2.Visual.HasFog then
+InfMap2.Visual.Fog.HasFog = main.visual.fog.has_fog or false
+if InfMap2.Visual.Fog.HasFog then
     InfMap2.Visual.Fog.Color = main.visual.fog.color or color_white
     InfMap2.Visual.Fog.Start = main.visual.fog.fogstart or 500000
     InfMap2.Visual.Fog.End = main.visual.fog.fogend or 1000000
