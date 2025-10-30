@@ -467,8 +467,24 @@ hook.Add("PreRender", "InfMap2BuildWorldVisual", function()
     InfMap2.ChunkMeshes.Draw = {}
     for x = -ms, ms do
         for y = -ms, ms do
-            InfMap2.ChunkMeshes.Draw[#InfMap2.ChunkMeshes.Draw+1] = get_chunk(index, megapos_x+x, megapos_y+y).mesh
+            local chunk = get_chunk(index, megapos_x+x, megapos_y+y)
+            InfMap2.ChunkMeshes.Draw[#InfMap2.ChunkMeshes.Draw+1] = chunk.mesh
         end
+    end
+end)
+timer.Create("InfMap2ClearUnusedChunkMeshes", 60, 0, function()
+    local megapos = LocalPlayer():GetMegaPos()
+    megapos.z = 0
+    local megapos_x, megapos_y = megapos.x, megapos.y
+
+    local index = InfMap2.ChunkMeshes.Index
+    local ms = InfMap2.Visual.RenderDistance
+    for xy, chunk in pairs(index) do
+        local xy_tbl = xy:Split("x")
+        local x, y = tonumber(xy_tbl[1]) - megapos_x, tonumber(xy_tbl[2]) - megapos_y
+        if (x >= -ms or x <= ms) and (y >= -ms or y <= ms) then continue end
+        chunk.mesh:Destroy()
+        index[xy] = nil
     end
 end)
 
