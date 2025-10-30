@@ -419,14 +419,46 @@ hook.Add("PreRender", "InfMap2BuildWorldVisual", function()
     local index = InfMap2.ChunkMeshes.Index
     local ms = InfMap2.Visual.RenderDistance
 
+    local current_x, current_y = 0, 0
+    local dx, dy = 1, 0
+    local segment_length = 1
+    local steps_in_segment = 0
+    local turns = 0
     local rebuilt = 0
     local max_rebuild = InfMap2.ConVars.vis_rebuildperframe:GetInt()
-    for x = -ms, ms do
-        for y = -ms, ms do
-            rebuilt = rebuilt + (process_chunk(get_chunk(index, megapos_x+x, megapos_y+y), megapos, megapos+Vector(x, y)) and 1 or 0)
-            if rebuilt >= max_rebuild then break end
+    while true do
+        rebuilt = rebuilt + (process_chunk(get_chunk(index, megapos_x + current_x, megapos_y + current_y), megapos, megapos + Vector(current_x, current_y)) and 1 or 0)
+
+        if rebuilt >= max_rebuild then
+            break
         end
-        if rebuilt >= max_rebuild then break end
+
+        if math.abs(current_x) > ms or math.abs(current_y) > ms then
+            break
+        end
+
+        current_x = current_x + dx
+        current_y = current_y + dy
+        steps_in_segment = steps_in_segment + 1
+
+        if steps_in_segment == segment_length then
+            steps_in_segment = 0
+
+            if dx == 1 and dy == 0 then
+                dx, dy = 0, 1
+            elseif dx == 0 and dy == 1 then
+                dx, dy = -1, 0
+            elseif dx == -1 and dy == 0 then
+                dx, dy = 0, -1
+            elseif dx == 0 and dy == -1 then
+                dx, dy = 1, 0
+            end
+
+            turns = turns + 1
+            if turns % 2 == 0 then
+                segment_length = segment_length + 1
+            end
+        end
     end
     if rebuilt == 0 then
         last_megapos_x, last_megapos_y = megapos_x, megapos_y
