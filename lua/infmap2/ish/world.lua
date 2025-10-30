@@ -1,6 +1,6 @@
 AddCSLuaFile()
 
-InfMap2.Cache.TerrainHeightCache = {}
+InfMap2.Cache.TerrainHeightCache = setmetatable({}, {__mode = "kv"})
 InfMap2.Cache.OriginChunkCache = nil
 
 ---Gets proper terrain height (according to SampleSize) at a position
@@ -8,52 +8,48 @@ InfMap2.Cache.OriginChunkCache = nil
 ---@param y number
 ---@return number
 function InfMap2.GetTerrainHeightAt(x, y)
-    if InfMap2.Cache.TerrainHeightCache[x.." "..y] then 
-        return InfMap2.Cache.TerrainHeightCache[x.." "..y]
-    end
-
     local localpos, megapos = InfMap2.LocalizePosition(Vector(x, y, 0))
 
     local full_chunk_size = InfMap2.ChunkSize
-    local half_chunk_size = full_chunk_size / 2  -- Use full_chunk_size / 2 here
-    local sample_size = full_chunk_size / InfMap2.World.Terrain.Samples[1]
-    local chunk_resolution = (full_chunk_size / sample_size) -- This is the number of samples per full chunk side
-    local half_chunk_resolution = half_chunk_size / sample_size
+    local samples = InfMap2.World.Terrain.Samples[1]
+    local sample_size = full_chunk_size / samples
     local height_function = InfMap2.World.Terrain.HeightFunction
 
-    -- Convert world coordinates to chunk coordinates
-    local chunkX = megapos.x
-    local chunkY = megapos.y
+    local sample_x = math.floor(x / sample_size) * sample_size
+    local sample_y = math.floor(y / sample_size) * sample_size
 
-    -- Calculate local coordinates within the chunk (-1 to 1)
-    local localX = localpos.x / sample_size
-    local localY = localpos.y / sample_size
+    local v0, v1, v2, v3 = {sample_x, sample_y}, {sample_x + sample_size, sample_y},
+                           {sample_x, sample_y + sample_size}, {sample_x + sample_size, sample_y + sample_size}
+    v0[3] = height_function(v0[1] * 2, v0[2] * 2)
+    v1[3] = height_function(v1[1] * 2, v1[2] * 2)
+    v2[3] = height_function(v2[1] * 2, v2[2] * 2)
+    v3[3] = height_function(v3[1] * 2, v3[2] * 2)
 
-    local cellX = math.Round(localX * (chunk_resolution - 1) / 2) * 2
-    local cellY = math.Round(localY * (chunk_resolution - 1) / 2) * 2
+    
+    local local_x, local_y = (x - sample_x) / sample_size, (y - sample_y) / sample_size
+    local tri = (local_x + local_y) > 1 and true or false
+    local height 
 
-    local center = Vector(cellX, cellY, 0) * (sample_size / 2) +
-    Vector(chunkX, chunkY, 0) * full_chunk_size
-    local v0 = center + Vector( 1, -1, 0) * sample_size / 2
-    v0.z = height_function(v0.x * 2, v0.y * 2)
-    local v1 = center + Vector(-1,  1, 0) * sample_size / 2
-    v1.z = height_function(v1.x * 2, v1.y * 2)
-    local v2 = center + Vector( 1,  1, 0) * sample_size / 2
-    v2.z = height_function(v2.x * 2, v2.y * 2)
-    local v3 = center + Vector(-1, -1, 0) * sample_size / 2
-    v3.z = height_function(v3.x * 2, v3.y * 2)
-
-    local cellLocalX = localX * (chunk_resolution - 1) - cellX
-    local cellLocalY = localY * (chunk_resolution - 1) - cellY
-
-    local height
-    if cellLocalX + cellLocalY < 0 then
-        height = v3.z + (v0.z - v3.z) * ((cellLocalX + 1) / 2) + (v1.z - v3.z) * ((cellLocalY + 1) / 2)
+    if tri then
+        -- we are in triangle out of v3, v2, v1
+        height = (1 - local_y) * v1[3] + (1 - local_x) * v2[3] + (local_x + local_y - 1) * v3[3]
     else
-        height = v2.z + (v1.z - v2.z) * (1 - ((cellLocalX + 1) / 2)) + (v0.z - v2.z) * (1 - ((cellLocalY + 1) / 2))
+        -- we are in triangle out of v0, v1, v2
+        height = (1 - local_x - local_y) * v0[3] + local_x * v1[3] + local_y * v2[3]
+    end
+    
+    if InfMap2.Debug and CLIENT then
+        local vv0, vv1, vv2, vv3 = Vector(unpack(v0)), Vector(unpack(v1)), Vector(unpack(v2)), Vector(unpack(v3))
+        render.SetMaterial(Material("models/wireframe"))
+        render.DrawQuad(vv1, vv0, vv2, vv3)
+        render.DrawWireframeSphere(vv0, 10, 8, 8, Color(255, 0, 0), false)
+        render.DrawWireframeSphere(vv1, 10, 8, 8, Color(0, 255, 0), false)
+        render.DrawWireframeSphere(vv2, 10, 8, 8, Color(0, 0, 255), false)
+        render.DrawWireframeSphere(vv3, 10, 8, 8, Color(0, 0, 0), false)
+        local vh = Vector(local_x * sample_size + sample_x, local_y * sample_size + sample_y, height)
+        render.DrawWireframeSphere(vh, 15, 8, 8, tri and Color(0, 255, 0) or Color(0, 0, 255), false)
     end
 
-    InfMap2.Cache.TerrainHeightCache[x.." "..y] = height
     return height
 end
 

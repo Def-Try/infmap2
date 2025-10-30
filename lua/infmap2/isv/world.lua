@@ -82,10 +82,10 @@ timer.Create("InfMap2SuffocatePlayers", 1, 0, function()
     end
 end)
 hook.Add("PlayerTick", "InfMap2FreezePlayers", function(ply)
-    do return end
+    --do return end
     local pos = ply:GetPos()
     --print(pos.z, InfMap2.GetTerrainHeightAt(pos.x, pos.y)-50)
-    if pos.z >= InfMap2.GetTerrainHeightAt(pos.x, pos.y)-50 then
+    if pos.z >= InfMap2.GetTerrainHeightAt(pos.x, pos.y)-10 then
         if not ply.INF_UnderTerrain then return end
         ply:SetMoveType(MOVETYPE_WALK)
         ply.INF_UnderTerrain = nil

@@ -331,7 +331,6 @@ if InfMap2.Visual.HasSkybox then
 end
 
 hook.Add("RenderScreenspaceEffects", "InfMap2UnderTerrain", function()
-    do return end
     local pos = LocalPlayer():EyePos()
     if pos.z >= InfMap2.GetTerrainHeightAt(pos.x, pos.y) then
         return

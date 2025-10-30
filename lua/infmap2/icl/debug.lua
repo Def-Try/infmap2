@@ -30,18 +30,11 @@ local function find_closest_plane(startpos)
 end
 
 hook.Add("PostDrawTranslucentRenderables", "InfMap2DebugRender", function(depth, skybox, skybox3d)
+    local pos = LocalPlayer():GetPos()
     if depth or skybox or skybox3d then return end
     if not InfMap2.Debug then return end
 
     local megaoffset = ((LocalPlayer():GetMegaPos() or Vector()) * InfMap2.ChunkSize)
-
-    --[[
-    for _,neighbor in ipairs(neighbors) do
-        render.DrawWireframeBox(megaoffset+neighbor*InfMap2.ChunkSize, Angle(0, 0, 0),
-                                -InfMap2.ChunkSize/2*Vector(1,1,1), InfMap2.ChunkSize/2*Vector(1,1,1),
-                                Color(255, 0, 0), false)
-    end
-    ]]
 
     render.DrawWireframeSphere(megaoffset, 10, 10, 10, Color(255, 0, 0), false)
     render.DrawWireframeBox(Vector(), Angle(0, 0, 0),
