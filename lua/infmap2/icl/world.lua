@@ -246,9 +246,6 @@ hook.Add("PostRender", "InfMap2RenderWorld", function()
 end)
 
 hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
-    --do return end
-    --if depth or skybox or skybox3d then return end
-    --do return end
     if not InfMap2.World.HasTerrain then return end
     if not InfMap2.Cache.material then
         InfMap2.Cache.material = Material(InfMap2.Visual.Terrain.Material)

@@ -149,13 +149,51 @@ function cam.PopModelMatrix()
 	end
 end
 
+InfMap2.Cache.Start3DStack = {}
+cam.INF_Start = cam.INF_Start or cam.Start
+function cam.Start(camdata)
+	if camdata.type ~= "3D" then return cam.INF_Start(camdata) end
+	if not camdata.origin then
+		camdata.origin = EyePos()
+	end
+	local _, megapos = InfMap2.LocalizePosition(camdata.origin)
+	InfMap2.Cache.Start3DStack[#InfMap2.Cache.Start3DStack+1] = megapos
+	return cam.INF_Start(camdata)
+end
+function cam.INF_Start3D(pos, ang, fov, x, y, w, h, znear, zfar)
+	local tab = {}
+
+	tab.type = "3D"
+	tab.origin = pos
+	tab.angles = ang
+	if fov != nil then tab.fov = fov end
+	if x != nil && y != nil && w != nil && h != nil then
+		tab.x			= x
+		tab.y			= y
+		tab.w			= w
+		tab.h			= h
+		tab.aspect		= w / h
+	end
+	if znear != nil && zfar != nil then
+		tab.znear	= znear
+		tab.zfar	= zfar
+	end
+	return cam.INF_Start(tab)
+end
+cam.INF_End3D = cam.INF_End3D or cam.End3D
+function cam.End3D()
+	InfMap2.Cache.Start3DStack[#InfMap2.Cache.Start3DStack] = nil
+	return cam.INF_End3D()
+end
+hook.Add("PreRender", "InfMap2ClearStart3DStack", function()
+	InfMap2.Cache.Start3DStack = {}
+end)
+
 cam.INF_Start3D2D = cam.INF_Start3D2D or cam.Start3D2D
 function cam.Start3D2D(pos, ang, scale)
-	do return cam.INF_Start3D2D(pos, ang, scale) end -- FIGURE OUT WHY IT BREAKS!!!
 	local localpos, megapos = InfMap2.LocalizePosition(pos)
-	local realpos = InfMap2.UnlocalizePosition(localpos, megapos - LocalPlayer():GetMegaPos())
-	--debug.Trace()
-	--print(realpos)
+	local mpos = (InfMap2.Cache.Start3DStack[#InfMap2.Cache.Start3DStack] or (megapos - LocalPlayer():GetMegaPos()))
+	local realpos = InfMap2.UnlocalizePosition(localpos, mpos)
 	return cam.INF_Start3D2D(realpos, ang, scale)
 end
 
