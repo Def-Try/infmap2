@@ -2,6 +2,7 @@ screenspace_general
 {
 	$pixshader "infmap2grass_ps30"
 	$vertexshader "infmap2grass_vs30"
+	$basetexture "infmap2/shaders/volume.vtf"
 	$cull 0
 	$depthtest 1
 	$vertexcolor 1

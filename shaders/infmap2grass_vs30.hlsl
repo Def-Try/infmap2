@@ -1,6 +1,8 @@
 #include "common_vs_fxc.h"
 #include "simplex.h"
 
+sampler3D BASETEXTURE : register(s0);
+
 struct VS_INPUT {
 	float4 vPos      : POSITION;
 	float4 vTexCoord : TEXCOORD0;
@@ -17,6 +19,8 @@ struct VS_OUTPUT {
 	float4 color    : COLOR0;
 };
 
+float random(float2 p){return cos(dot(p,float2(23.14069263277926,2.665144142690225)))*12345.6789 % 1;}
+
 VS_OUTPUT main(VS_INPUT vert) {
 	float3 world_pos;
 	float3 world_normal;
@@ -31,18 +35,23 @@ VS_OUTPUT main(VS_INPUT vert) {
 	float bladex = vert.vTangent0[1] + offx;
 	float bladey = vert.vTangent0[2] + offy;
 	float vertmul = vert.vTangent0[0];
+	
+	world_pos.x += random(float2(bladex, bladey+1000)) * 10;
+	world_pos.y += random(float2(bladex+1000, bladey)) * 10;
 
-	float base_move_x = snoise(float2(curtime + bladex, 0));
-	float base_move_y = snoise(float2(curtime + bladey, 1000));
-	float burst_move_x = max(0.0, snoise(float2((curtime * 10 + bladex) * 0.1, 5000)) * 25 + 25 - 40) / 10;
-	float burst_move_y = max(0.0, snoise(float2((curtime * 10 + bladey) * 0.1, 6000)) * 25 + 25 - 40) / 10;
+	//float base_move_x = snoise(float2(curtime + bladex * 0.02, 0));
+	float base_move_y = snoise(float2(curtime + bladey * 0.02, 1000));
+	//float burst_move_x = 0; // max(0.0, snoise(float2((curtime * 10 + bladex) * 0.1, 5000)) * 25 + 25 - 40) / 10;
+	float burst_move_y = max(0.0, snoise(float2((curtime * 10 + bladey * 0.1) * 0.1, 6000)) * 25 + 25 - 40) / 10;
 
-	float total_move_x = base_move_x * 3 + burst_move_x * 16;
-	float total_move_y = base_move_y * 3 + burst_move_y * 16;
+	//float total_move_x = base_move_x * 3 - burst_move_x * 16;
+	//float total_move_y = base_move_y * 3 - burst_move_y * 16;
+	float total_move_x = 0; // base_move_x * 5;
+	float total_move_y = base_move_y * -5 + burst_move_y * -16;
 
-	world_pos.z += vertmul * (25.0 - total_move_x - total_move_y);
-	world_pos.x += total_move_x * vertmul;
-	world_pos.y += total_move_y * vertmul;
+	float3 worldpos_deviation = normalize(float3(total_move_x, total_move_y, 25.0)) * 25.0;
+
+	world_pos += vertmul * worldpos_deviation;
 
 	float deviationx = plyx - world_pos.x;
 	float deviationy = plyy - world_pos.y;
@@ -62,6 +71,8 @@ VS_OUTPUT main(VS_INPUT vert) {
 	output.normal = world_normal;
 	output.color = vert.vColor;
 	output.color.w *= dist;
+	//output.color.y = bladey / 1250;
+	//output.color.z = 0;
 
 	return output;
 };
