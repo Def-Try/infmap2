@@ -131,6 +131,7 @@ end
 
 local shared_files, _ = file.Find("infmap2/ish/*", "LUA")
 local client_files, _ = file.Find("infmap2/icl/*", "LUA")
+local client_shader_files, _ = file.Find("infmap2/icl/shaders/*", "LUA")
 local server_files, _ = file.Find("infmap2/isv/*", "LUA")
 for _, file_ in ipairs(shared_files) do
     print("[INFMAP2] Loading shared file `"..file_.."`")
@@ -145,6 +146,12 @@ for _, file_ in ipairs(client_files) do
     if SERVER then
         print("[INFMAP2] Adding client file `"..file_.."`")
         AddCSLuaFile("infmap2/icl/"..file_)
+    end
+end
+for _, file_ in ipairs(client_shader_files) do
+    if SERVER then
+        print("[INFMAP2] Adding client file `"..file_.."`")
+        AddCSLuaFile("infmap2/icl/shaders/"..file_)
     end
 end
 if SERVER then

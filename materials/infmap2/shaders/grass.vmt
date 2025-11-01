@@ -1,0 +1,11 @@
+screenspace_general
+{
+	$pixshader "infmap2grass_ps30"
+	$vertexshader "infmap2grass_vs30"
+	$cull 0
+	$depthtest 1
+	$vertexcolor 1
+	$model 1
+	$softwareskin 1
+	$vertexnormal 1
+}

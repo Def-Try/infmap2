@@ -107,7 +107,7 @@ return {
     visual = {
         renderdistance = 20,
         terrain = {
-            material = "infmap2/grasslit", -- "models/wireframe",
+            material = "infmap2/grassplain", -- "models/wireframe",
             uvscale = 100,
         },
         clouds = {
