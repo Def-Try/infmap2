@@ -18,6 +18,9 @@ if "%char7%" == "3" (
 	ShaderCompile.exe /O 3 -ver 20b -shaderpath "%cd%" ./%1
 )
 
+REM Check error level (exit code)
+
+REM this actually means "if %ERRORLEVEL% >= 1", but windows being windows thinks the former is invalid syntax
 if ERRORLEVEL 1 (
     rmdir /s /q "./shaders"
     echo Error while compiling: examine output above
@@ -27,3 +30,4 @@ if ERRORLEVEL 1 (
 
 xcopy /e /y /q "./shaders/fxc" "./fxc"
 rmdir /s /q "./shaders"
+exit 0
