@@ -70,7 +70,7 @@ VS_OUTPUT main(VS_INPUT vert) {
 	output.pos = world_pos;
 	output.normal = world_normal;
 	output.color = vert.vColor;
-	output.color.w *= dist;
+	output.color.w *= min(dist * 4.0, 1.0);
 	//output.color.y = bladey / 1250;
 	//output.color.z = 0;
 
