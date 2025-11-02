@@ -44,10 +44,12 @@ float bayer(float2 coord)
 float4 main(PS_INPUT frag) : COLOR {
 	float3 final_color = float3(1.0, 1.0, 1.0);
 
+	// apply some basic lighting
 	final_color *= max(dot(frag.normal, SUN_DIR), 0.0);
-	// final_color += AMBIENT_COLOR;
+	final_color += AMBIENT_COLOR;
 	final_color *= frag.color.xyz;
 
+	// bayer dithering
 	if (frag.color.w < bayer(frag.coord) / 1.01) {
 		discard;
 	}
