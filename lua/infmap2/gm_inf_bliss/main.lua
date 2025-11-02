@@ -74,6 +74,9 @@ else
         if ent:GetNWBool("INF_Bliss_SpawnPlatform") then return false end
     end)
 end
+hook.Add("PlayerSpawn", "InfMap2BlissResetSpawnPos", function(ply)
+    ply:SetPos(Vector(0, 0, 10))
+end)
 
 resource.AddSingleFile("materials/infmap2/grasslit.vmt")
 resource.AddSingleFile("materials/infmap2/grassunlit.vmt")
@@ -87,17 +90,17 @@ return {
                 x = x / 20000
                 y = y / 20000
 
-                -- if (x*x + y*y) <= 0.25 then return -15 end
+                if (x*x + y*y) <= 0.25 then return -15 end
                 x, y = x / 6, y / 6
                 local height
-                local layer1 = simplex.Noise2D(x + 0.5, y) * 10000
-                local layer2 = simplex.Noise3D(x + 0.5, y,  0) * 5000
-                local layer3 = simplex.Noise3D(x + 0.5, y, 10) * 2500
+                local layer1 = simplex.Noise2D(x + 0.5, y)      * 10000
+                local layer2 = simplex.Noise3D(x + 0.5, y,   0) * 5000
+                local layer3 = simplex.Noise3D(x + 0.5, y,  10) * 2500
                 local layer4 = simplex.Noise3D(x + 0.5, y, 100) * 1250
                 height = layer1 + layer2 + layer3 + layer4
-                -- if (x*x + y*y) <= 0.5 then
-                --     return Lerp(((x*x + y*y) - 0.25) / 0.25, -15, height)
-                -- end
+                if (x*x + y*y) <= 0.5 then
+                    return Lerp(((x*x + y*y) - 0.25) / 0.25, -15, height)
+                end
                 
                 return height
             end,
@@ -107,7 +110,7 @@ return {
     visual = {
         renderdistance = 20,
         terrain = {
-            material = "infmap2/grassplain", -- "models/wireframe",
+            material = "infmap2/grassplain",
             uvscale = 100,
         },
         clouds = {
@@ -138,6 +141,15 @@ return {
             size = 2000000000,
             uvscale = 2000000000 * 100,
             height = -100000
+        },
+        shaders = {
+            grass = {
+                enabled = true,
+                colors = {
+                    top = Color(134, 200, 0),
+                    bottom = Color(77, 96, 0)
+                }
+            }
         }
     },
     space = {
@@ -160,9 +172,5 @@ return {
                 uvscale = 10,
             }
         }
-    },
-
-    spawner = function(ply)
-        ply:SetPos(Vector(0, 0, 10))
-    end
+    }
 }
