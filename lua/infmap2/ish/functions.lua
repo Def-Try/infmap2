@@ -270,6 +270,7 @@ end
 --==== NETWORK STUFF ====--
 
 local ENTITY = FindMetaTable("Entity")
+if not ENTITY then return end
 if SERVER then
     util.AddNetworkString("InfMap2_ChangeMegaPos")
 end

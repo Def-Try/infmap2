@@ -1,5 +1,7 @@
 local ENTITY = FindMetaTable("Entity")
 local CLUALOCOMOTION = FindMetaTable("CLuaLocomotion")
+if not ENTITY then return end
+if not CLUALOCOMOTION then return end
 
 ----- Entity detours -----
 

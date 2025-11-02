@@ -6,6 +6,12 @@ local PHYSOBJ = FindMetaTable("PhysObj")
 local PLAYER = FindMetaTable("Player")
 local NEXTBOT = FindMetaTable("NextBot")
 local CTAKEDAMAGEINFO = FindMetaTable("CTakeDamageInfo")
+if not ENTITY then return end
+if not VEHICLE then return end
+if not PHYSOBJ then return end
+if not PLAYER then return end
+if not NEXTBOT then return end
+if not CTAKEDAMAGEINFO then return end
 
 util.INF_TraceLine = util.INF_TraceLine or util.TraceLine
 util.INF_TraceHull = util.INF_TraceHull or util.TraceHull

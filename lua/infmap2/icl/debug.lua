@@ -88,8 +88,9 @@ hook.Add("HUDPaint", "InfMap2DebugRender", function()
             --INF_DoNotHandleEntities=true
         }
         local traceresult = util.TraceLine(tracedata)
+        if not traceresult then error("no traceresult!") end
 
-        draw.DrawText(traceresult.Entity, "DermaLarge", ScrW()/2, ScrH()/2 - 48, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+        draw.DrawText(tostring(traceresult.Entity), "DermaLarge", ScrW()/2, ScrH()/2 - 48, Color(255, 255, 255), TEXT_ALIGN_CENTER)
         draw.DrawText(math.Round((traceresult.Fraction) * len, 2) .. " units away", "DermaLarge", ScrW()/2, ScrH()/2 + 12, Color(255, 255, 255), TEXT_ALIGN_CENTER)
         draw.DrawText("at "..tostring(traceresult.HitPos).." megapos "..tostring(traceresult.Entity:GetMegaPos() or "<UNK>"), "DermaLarge", ScrW()/2, ScrH()/2 + 36, Color(255, 255, 255), TEXT_ALIGN_CENTER)
         cam.Start3D()
@@ -109,6 +110,7 @@ hook.Add("HUDPaint", "InfMap2DebugRender", function()
         }
 
         local tr = util.TraceHull(tracedata)
+        if not tr then error("no traceresult") end
 
         cam.Start3D()
             render.DrawLine(tr.HitPos, tracedata.endpos, color_white, true)

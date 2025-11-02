@@ -98,6 +98,7 @@ function shader.RenderMesh(vert, posv, half_sample_size)
     cam.PushModelMatrix(shader.TransformMatrix)
     render.SetMaterial(shader.Material)
     render.OverrideDepthEnable(true, true)
+        ---@diagnostic disable-next-line: undefined-global
         render.CullMode(MATERIAL_CULLMODE_NONE)
         shader.Mesh:Draw()
         render.CullMode(MATERIAL_CULLMODE_CCW)
