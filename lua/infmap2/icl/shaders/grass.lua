@@ -117,11 +117,7 @@ function shader.RenderChunkGrass(chunkvert, plyposv, localposv, half_sample_size
     shader.RenderMesh(vert, posv, localposv, half_sample_size)
 end
 function shader.Render()
-	render.DrawLine(Vector(), Vector(110, 0, 0), Color(255, 0, 0, 255), true)
-	render.DrawLine(Vector(), Vector(0, 110, 0), Color(0, 255, 0, 255), true)
-	render.DrawLine(Vector(), Vector(0, 0, 110), Color(0, 0, 255, 255), true)
-
-    local pos = EyePos()
+	local pos = EyePos()
     local lpos = INF_EyePos()
     local posv = {pos[1], pos[2], pos[3]}
     local localposv = {lpos[1], lpos[2], lpos[3]}
