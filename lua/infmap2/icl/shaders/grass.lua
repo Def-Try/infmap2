@@ -35,21 +35,21 @@ function shader.Init()
 
             local norm = (edge1:Cross(edge2)):GetNormalized()
 
-            mesh.Position(x*s + (math.random() * 5), y*s + (math.random() * 5), 0)
+            mesh.Position(x*s + (math.random() * 20), y*s + (math.random() * 20), 0)
             mesh.UserData(0, x, y, blades_sqrt)
             mesh.TexCoord(0, 0, 0)
             mesh.Color(77, 96, 0, 255)
             mesh.Normal(norm)
             mesh.AdvanceVertex()
 
-            mesh.Position(x*s+s + (math.random() * 5), y*s + (math.random() * 5), 0)
+            mesh.Position(x*s+s + (math.random() * 20), y*s + (math.random() * 20), 0)
             mesh.UserData(0, x, y, blades_sqrt)
             mesh.TexCoord(0, 0, 0)
             mesh.Color(77, 96, 0, 255)
             mesh.Normal(norm)
             mesh.AdvanceVertex()
 
-            mesh.Position(x*s+s*0.5 + (math.random() * 5), y*s + (math.random() * 5), 0)
+            mesh.Position(x*s+s*0.5 + (math.random() * 20), y*s + (math.random() * 20), 0)
             mesh.UserData(1, x, y, blades_sqrt)
             mesh.TexCoord(0, 0, 0)
             mesh.Color(134, 200, 0, 255)
@@ -84,7 +84,7 @@ function shader.RenderMesh(vert, posv, localposv, half_sample_size)
     --do return end
 
     -- pass data into shader
-    shader.TransformMatrix:SetTranslation(Vector(vert[1], vert[2], -14.9))
+    shader.TransformMatrix:SetTranslation(Vector(vert[1], vert[2], 0))
     render.SuppressEngineLighting(true)
     render.SetModelLighting(0, vert[1] / (half_sample_size) * blades_sqrt, vert[2] / (half_sample_size) * blades_sqrt, CurTime() * 0.3)
     render.SetModelLighting(1, localposv[1], localposv[2], v00)
