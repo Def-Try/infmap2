@@ -19,3 +19,4 @@ include("infmap2/init.lua")
 --   your endevours have brought you to...
 InfMap2.Gilb()
 InfMap2.Caleb()
+-- don't ask... it's a local meme in my community i guess
