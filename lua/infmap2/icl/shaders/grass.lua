@@ -37,21 +37,21 @@ function shader.Init()
             local norm = (edge1:Cross(edge2)):GetNormalized()
 
             mesh.Position(x*s + (math.random() * 5), y*s + (math.random() * 5), 0)
-            mesh.UserData(0, x, y, 0)
+            mesh.UserData(0, x, y, blades_sqrt)
             mesh.TexCoord(0, 0, 0)
             mesh.Color(77, 96, 0, 255)
             mesh.Normal(norm)
             mesh.AdvanceVertex()
 
             mesh.Position(x*s+s + (math.random() * 5), y*s + (math.random() * 5), 0)
-            mesh.UserData(0, x, y, 0)
+            mesh.UserData(0, x, y, blades_sqrt)
             mesh.TexCoord(0, 0, 0)
             mesh.Color(77, 96, 0, 255)
             mesh.Normal(norm)
             mesh.AdvanceVertex()
 
             mesh.Position(x*s+s*0.5 + (math.random() * 5), y*s + (math.random() * 5), 0)
-            mesh.UserData(1, x, y, 0)
+            mesh.UserData(1, x, y, blades_sqrt)
             mesh.TexCoord(0, 0, 0)
             mesh.Color(134, 200, 0, 255)
             mesh.Normal(norm)
@@ -73,11 +73,24 @@ function shader.Think()
     shader.TransformMatrix:SetTranslation(pos)
 end
 function shader.RenderMesh(vert, posv, half_sample_size)
+
+    local v00 = InfMap2.GetTerrainHeightAt(vert[1], vert[2])
+    local v01 = InfMap2.GetTerrainHeightAt(vert[1], vert[2]+half_sample_size)
+    local v10 = InfMap2.GetTerrainHeightAt(vert[1]+half_sample_size, vert[2])
+    local v11 = InfMap2.GetTerrainHeightAt(vert[1]+half_sample_size, vert[2]+half_sample_size)
+    --render.DrawWireframeSphere(Vector(vert[1], vert[2], v00), 10, 8, 8, Color(0, 0, 0), false)
+    --render.DrawWireframeSphere(Vector(vert[1], vert[2]+half_sample_size, v01), 10, 8, 8, Color(0, 255, 0), false)
+    --render.DrawWireframeSphere(Vector(vert[1]+half_sample_size, vert[2], v10), 10, 8, 8, Color(255, 0, 0), false)
+    --render.DrawWireframeSphere(Vector(vert[1]+half_sample_size, vert[2]+half_sample_size, v11), 10, 8, 8, Color(255, 255, 0), false)
+
+    --do return end
+
     -- pass data into shader
     shader.TransformMatrix:SetTranslation(Vector(vert[1], vert[2], -14.9))
     render.SuppressEngineLighting(true)
     render.SetModelLighting(0, vert[1] / (half_sample_size) * blades_sqrt, vert[2] / (half_sample_size) * blades_sqrt, CurTime() * 0.3)
-    render.SetModelLighting(1, posv[1], posv[2], 0)
+    render.SetModelLighting(1, posv[1], posv[2], v00)
+    render.SetModelLighting(2, v01, v10, v11)
     shader.DummyModel:DrawModel()
     render.SuppressEngineLighting(false)
 
@@ -90,6 +103,8 @@ function shader.RenderMesh(vert, posv, half_sample_size)
         render.CullMode(MATERIAL_CULLMODE_CCW)
     render.OverrideDepthEnable(false, false)
     cam.PopModelMatrix()
+
+    --do error(1) end
 end
 function shader.RenderChunkGrass(chunkvert, plyposv, half_sample_size, sample_size)
     local vert = {chunkvert[1], chunkvert[2]}

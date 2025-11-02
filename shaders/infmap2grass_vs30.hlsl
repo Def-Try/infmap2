@@ -32,16 +32,30 @@ VS_OUTPUT main(VS_INPUT vert) {
 	float plyx = cAmbientCubeX[1].x;
 	float plyy = cAmbientCubeX[1].y;
 
-	float bladex = vert.vTangent0[1] + offx;
-	float bladey = vert.vTangent0[2] + offy;
+	float v00 = cAmbientCubeX[1].z;
+	float v01 = cAmbientCubeY[0].y;
+	float v10 = cAmbientCubeY[0].x;
+	float v11 = cAmbientCubeY[0].z;
+
+	float truex = vert.vTangent0[1];
+	float truey = vert.vTangent0[2];
+	float blades_sqrt = vert.vTangent0[3];
+	float bladex = truex + offx;
+	float bladey = truey + offy;
 	float vertmul = vert.vTangent0[0];
+	truex = truex / blades_sqrt;
+	truey = truey / blades_sqrt;
+
+	float tri0 = ((truex + truey) > 1) ? 1 : 0;
+
+	float height = 0;
+	height += tri0 * ((1 - truey) * v01 + (1 - truex) * v10 + (truex + truey - 1) * v11);
+	height += (1 - tri0) * ((1 - truex - truey) * v00 + truex * v01 + truey * v10);
 	
 	world_pos.x += random(float2(bladex, bladey+1000)) * 10;
 	world_pos.y += random(float2(bladex+1000, bladey)) * 10;
 
-	//float base_move_x = snoise(float2(curtime + bladex * 0.02, 0));
 	float base_move_y = snoise(float2(curtime + bladey * 0.02, 1000));
-	//float burst_move_x = 0; // max(0.0, snoise(float2((curtime * 10 + bladex) * 0.1, 5000)) * 25 + 25 - 40) / 10;
 	float burst_move_y = max(0.0, snoise(float2((curtime * 10 + bladey * 0.1) * 0.1, 6000)) * 25 + 25 - 40) / 10;
 
 	//float total_move_x = base_move_x * 3 - burst_move_x * 16;
@@ -60,6 +74,8 @@ VS_OUTPUT main(VS_INPUT vert) {
 	dist = 1 - dist;
 	dist = dist * dist * dist;
 
+	world_pos.z += height;
+
 	// Takes our world space coordinate and projects it onto the screen
 	float4 proj_pos = mul(float4(world_pos, 1), cViewProj);
 
@@ -70,6 +86,10 @@ VS_OUTPUT main(VS_INPUT vert) {
 	output.pos = world_pos;
 	output.normal = world_normal;
 	output.color = vert.vColor;
+	//output.color.x = truex;
+	//output.color.y = truey;
+	//output.color.z = 0;
+	//output.color.w = 1;
 	output.color.w *= min(dist * 4.0, 1.0);
 	//output.color.y = bladey / 1250;
 	//output.color.z = 0;

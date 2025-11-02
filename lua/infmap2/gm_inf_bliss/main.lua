@@ -87,7 +87,7 @@ return {
                 x = x / 20000
                 y = y / 20000
 
-                if (x*x + y*y) <= 0.25 then return -15 end
+                //if (x*x + y*y) <= 0.25 then return -15 end
                 x, y = x / 6, y / 6
                 local height
                 local layer1 = simplex.Noise2D(x + 0.5, y) * 10000
@@ -95,9 +95,9 @@ return {
                 local layer3 = simplex.Noise3D(x + 0.5, y, 10) * 2500
                 local layer4 = simplex.Noise3D(x + 0.5, y, 100) * 1250
                 height = layer1 + layer2 + layer3 + layer4
-                if (x*x + y*y) <= 0.5 then
-                    return Lerp(((x*x + y*y) - 0.25) / 0.25, -15, height)
-                end
+                //if (x*x + y*y) <= 0.5 then
+                //    return Lerp(((x*x + y*y) - 0.25) / 0.25, -15, height)
+                //end
                 
                 return height
             end,
