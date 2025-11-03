@@ -78,8 +78,8 @@ hook.Add("PlayerSpawn", "InfMap2BlissResetSpawnPos", function(ply)
     ply:SetPos(Vector(0, 0, 10))
 end)
 
-resource.AddSingleFile("materials/infmap2/grasslit.vmt")
-resource.AddSingleFile("materials/infmap2/grassunlit.vmt")
+resource.AddSingleFile("materials/infmap2/grassplain.vmt")
+resource.AddSingleFile("materials/infmap2/grassplain.vtf")
 
 return {
     chunksize = 20000, -- leaves 12768 units for contraptions and fast passing entities
