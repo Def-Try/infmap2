@@ -38,10 +38,12 @@ else
         if ent:GetNWBool("INF_Flat_SpawnPlatform") then return false end
     end)
 end
+hook.Add("PlayerSpawn", "InfMap2FlatResetSpawnPos", function(ply)
+    ply:SetPos(Vector(0, 0, 10))
+end)
 
 resource.AddSingleFile("materials/infmap2/grasslit.vmt")
 
-local noise2d = simplex.Noise2D
 return {
     chunksize = 20000, -- leaves 12768 units for contraptions and fast passing entities
     world = {
@@ -88,9 +90,5 @@ return {
             uvscale = 2000000000 * 100,
             height = -100000
         }
-    },
-
-    spawner = function(ply)
-        ply:SetPos(Vector(0, 0, 10))
-    end
+    }
 }

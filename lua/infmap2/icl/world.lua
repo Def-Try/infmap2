@@ -20,21 +20,6 @@ end
 function InfMap2.BuildMeshObjects(mesh_)
     local meshes = {Mesh()}
 
-    local light = {}
-    light.sun = util.GetSunInfo() or {direction=-vector_up, obstruction=0}
-    local skypaint = ents.FindByClass("edit_sky")[1] or ents.FindByClass("env_skypaint")[1]
-    local sunpaint = ents.FindByClass("edit_sun")[1] or ents.FindByClass("env_sun")[1]
-    if IsValid(sunpaint) then
-        light.sun.color = sunpaint:GetSunColor()
-    else
-        light.sun.color = Vector(1, 1, 1)
-    end
-    if IsValid(skypaint) then
-        light.ambient = skypaint:GetTopColor() * 0.1 + skypaint:GetDuskColor() * 0.1
-    else
-        light.ambient = render.GetAmbientLightColor()
-    end
-
     local count = #mesh_
 
     mesh.Begin(meshes[#meshes], MATERIAL_TRIANGLES, math.min(10922, count / 3))
@@ -44,17 +29,7 @@ function InfMap2.BuildMeshObjects(mesh_)
         
         mesh.Normal(-vtx[4] --[[@as Vector]])
         mesh.UserData(1, 1, 1, 1)
-        if InfMap2.Visual.Terrain.DoLighting then
-            local sunlight = math.max(0, vtx[4]:Dot(-light.sun.direction)) * (1-light.sun.obstruction)
-            mesh.Color(
-                math.min(1, light.ambient[1] + light.sun.color[1] * sunlight) * 255,
-                math.min(1, light.ambient[2] + light.sun.color[2] * sunlight) * 255,
-                math.min(1, light.ambient[3] + light.sun.color[3] * sunlight) * 255,
-                255
-            )
-        else
-            mesh.Color(255, 255, 255, 255)
-        end
+        mesh.Color(255, 255, 255, 255)
         mesh.AdvanceVertex()
         count = count - 1
         if _ % 32766 == 0 then
@@ -224,6 +199,7 @@ hook.Add("Think", "InfMap2FixF***ingCalcView", function()
     end
 end)
 
+---@type CSEnt
 local csent = InfMap2.Cache.CSEnt or ClientsideModel("error.mdl")
 InfMap2.Cache.CSEnt = csent
 
@@ -260,7 +236,9 @@ hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
 
     -- unfuck_lighting, thanks gwater 2 !
     if not IsValid(csent) then
-        csent = ClientsideModel("error.mdl")
+        local csentt = ClientsideModel("error.mdl")
+        if not csentt then error() end
+        csent = csentt
         InfMap2.Cache.CSEnt = csent
         csent:SetNoDraw(true)
     end
@@ -354,9 +332,11 @@ local function generate_chunk(chunk, lodlvl, megapos)
     local megaoff = megapos * InfMap2.ChunkSize
     local uvs = InfMap2.Visual.Terrain.UVScale
     mesh.Begin(chunk.mesh, MATERIAL_QUADS, #mesh_ / 6)
+        ---@type Vector
         local v0, v1, v2, v3, norm
         for i=1, #mesh_, 6 do
             v0, v1, v2, v3 = mesh_[i+0], mesh_[i+2], mesh_[i+1], mesh_[i+4]
+            ---@type Vector
             norm = -(v3 - v2):Cross(v3 - v1)
             norm:Normalize()
             norm:Negate()

@@ -3,13 +3,7 @@ AddCSLuaFile()
 InfMap2.Cache.TerrainHeightCache = setmetatable({}, {__mode = "kv"})
 InfMap2.Cache.OriginChunkCache = nil
 
----Gets proper terrain height (according to SampleSize) at a position
----@param x number
----@param y number
----@return number
-function InfMap2.GetTerrainHeightAt(x, y)
-    local localpos, megapos = InfMap2.LocalizePosition(Vector(x, y, 0))
-
+function InfMap2.GetTerrainSample(x, y)
     local full_chunk_size = InfMap2.ChunkSize
     local samples = InfMap2.World.Terrain.Samples[1]
     local sample_size = full_chunk_size / samples
@@ -24,8 +18,23 @@ function InfMap2.GetTerrainHeightAt(x, y)
     v1[3] = height_function(v1[1] * 2, v1[2] * 2)
     v2[3] = height_function(v2[1] * 2, v2[2] * 2)
     v3[3] = height_function(v3[1] * 2, v3[2] * 2)
+    return v0, v1, v2, v3
+end
 
-    
+---Gets proper terrain height (according to SampleSize) at a position
+---@param x number
+---@param y number
+---@return number
+function InfMap2.GetTerrainHeightAt(x, y)
+    local full_chunk_size = InfMap2.ChunkSize
+    local samples = InfMap2.World.Terrain.Samples[1]
+    local sample_size = full_chunk_size / samples
+
+    local sample_x = math.floor(x / sample_size) * sample_size
+    local sample_y = math.floor(y / sample_size) * sample_size
+
+    local v0, v1, v2, v3 = InfMap2.GetTerrainSample(x, y)
+
     local local_x, local_y = (x - sample_x) / sample_size, (y - sample_y) / sample_size
     local tri = (local_x + local_y) > 1 and true or false
     local height 

@@ -42,13 +42,16 @@ function render.Model(settings, csent)
 end
 --]]
 
+
 render.INF_RenderView = render.INF_RenderView or render.RenderView
 function render.RenderView(view)
 	view.origin = localize(view.origin)
 	return render.INF_RenderView(view)
 end
 
+---@class Entity
 local ENTITY = FindMetaTable("Entity")
+if ENTITY == nil then return end
 ENTITY.INF_SetRenderBoundsWS = ENTITY.INF_SetRenderBoundsWS or ENTITY.SetRenderBoundsWS
 function ENTITY:SetRenderBoundsWS(mins, maxs)
 	if self:GetMegaPos() == vector_origin then -- LocalPlayer():GetMegaPos() then
@@ -99,12 +102,8 @@ end
 
 function ENTITY:INF_IsEngineEntity()
     if not IsValid(self) then error("Tried to use NULL entity!") end
-	do return not self.Type end
-    local klass = self:GetClass()
-    if klass == "prop_physics" then return true end
-    if klass == "prop_dynamic" then return true end
-	-- TODO: more entities or automatic detection?
-    return false
+	---@diagnostic disable-next-line undefined-field
+	return self.Type == nil
 end
 
 INF_EyePos = INF_EyePos or EyePos
@@ -166,15 +165,15 @@ function cam.INF_Start3D(pos, ang, fov, x, y, w, h, znear, zfar)
 	tab.type = "3D"
 	tab.origin = pos
 	tab.angles = ang
-	if fov != nil then tab.fov = fov end
-	if x != nil && y != nil && w != nil && h != nil then
+	if fov ~= nil then tab.fov = fov end
+	if x ~= nil and y ~= nil and w ~= nil and h ~= nil then
 		tab.x			= x
 		tab.y			= y
 		tab.w			= w
 		tab.h			= h
 		tab.aspect		= w / h
 	end
-	if znear != nil && zfar != nil then
+	if znear ~= nil and zfar ~= nil then
 		tab.znear	= znear
 		tab.zfar	= zfar
 	end
@@ -206,7 +205,9 @@ function render.PushCustomClipPlane(norm, dist)
 	--top = top * cam.GetModelMatrix()
 	--local trans = top:GetTranslation()
 	--print(offset)
-	local distance = dist + (not offset and 0 or norm:Dot(offset)) - norm:Dot(LocalPlayer():GetMegaPos() * InfMap2.ChunkSize) -- norm:Dot(trans)
+	local dot = 0
+	if offset then dot = norm:Dot(offset) end
+	local distance = dist + dot - norm:Dot(LocalPlayer():GetMegaPos() * InfMap2.ChunkSize) -- norm:Dot(trans)
 	return render.INF_PushCustomClipPlane(norm, distance)
 end
 
@@ -216,7 +217,7 @@ function render.INF_INTERNAL_SetupClippingOffset(voffset)
 end
 
 local VECTOR = FindMetaTable("Vector")
-
+if not VECTOR then return end
 VECTOR.INF_ToScreen = VECTOR.INF_ToScreen or VECTOR.ToScreen
 function VECTOR:ToScreen()
 	return VECTOR.INF_ToScreen(localize(self))

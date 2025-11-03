@@ -66,8 +66,7 @@ local function update_entity(ent, pos, megapos)
 
     if ent:IsPlayer() and InfMap2.Cache.carries[ent:SteamID()] and IsValid(InfMap2.Cache.carries[ent:SteamID()][1]) then
         local carrydata = InfMap2.Cache.carries[ent:SteamID()]
-        local carry, carrymeth = nil, nil
-        if carrydata then carry, carrymeth = carrydata[1], carrydata[2] end
+        local carry, carrymeth = carrydata[1], carrydata[2]
         local entities = InfMap2.FindAllConnected(carry)
         if carry:IsPlayer() then entities[#entities+1] = carry:GetHands() end
         local ent_pos = ent:INF_GetPos()

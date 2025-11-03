@@ -38,8 +38,6 @@ InfMap2.Visual.RenderDistance = 1
 
 ---Chunk size.
 InfMap2.ChunkSize = 20000
----Megachunk size.
-InfMap2.Visual.MegachunkSize = 10
 
 --Source bounds
 InfMap2.SourceBounds = Vector(2^14, 2^14, 2^14)

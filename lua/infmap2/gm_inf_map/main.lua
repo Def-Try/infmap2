@@ -41,6 +41,9 @@ else
         if ent:GetNWBool("INF_InfMap_SpawnPlatform") then return false end
     end)
 end
+hook.Add("PlayerSpawn", "InfMap2InfMapResetSpawnPos", function(ply)
+    ply:SetPos(Vector(0, 0, 10))
+end)
 
 resource.AddSingleFile("materials/infmap2/grasslit.vmt")
 
@@ -99,9 +102,5 @@ return {
             uvscale = 2000000000 * 100,
             height = -100000
         }
-    },
-
-    spawner = function(ply)
-        ply:SetPos(Vector(0, 0, 10))
-    end
+    }
 }
