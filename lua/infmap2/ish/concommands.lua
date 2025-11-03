@@ -48,3 +48,33 @@ local infmap_show_ents = function(ply, _, args)
 end
 if SERVER then concommand.Add("infmap_show_ents_sv", infmap_show_ents) end
 if CLIENT then concommand.Add("infmap_show_ents_cl", infmap_show_ents) end
+
+if CLIENT then
+    concommand.Add("infmap_reload_cl", function()
+        InfMap2.Gilb()
+        InfMap2.Caleb()
+        local render_idx = InfMap2.ChunkMeshes.Index
+        for xy, chunk in pairs(render_idx) do
+            if chunk.mesh then chunk.mesh:Destroy() end
+            render_idx[xy] = nil
+        end
+    end, nil, nil, {FCVAR_UNREGISTERED, FCVAR_SERVER_CAN_EXECUTE})
+end
+if SERVER then
+    concommand.Add("infmap_reload_sv", function()
+        InfMap2.Gilb()
+        InfMap2.Caleb()
+        for pos, ent in pairs(InfMap2.GeneratedChunks) do
+            local megapos = Vector(pos)
+            ent:Remove()
+            InfMap2.GeneratedChunks[pos] = InfMap2.CreateWorldChunk(megapos)
+        end
+    end, nil, nil, {FCVAR_UNREGISTERED, FCVAR_SERVER_CAN_EXECUTE})
+
+    concommand.Add("infmap_reload", function()
+        for _, ply in ipairs(player.GetAll()) do
+            ply:ConCommand("infmap_reload_cl")
+        end
+        RunConsoleCommand("infmap_reload_sv")
+    end)
+end
