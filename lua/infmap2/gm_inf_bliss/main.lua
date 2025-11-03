@@ -148,6 +148,11 @@ return {
                 colors = {
                     top = Color(134, 200, 0),
                     bottom = Color(77, 96, 0)
+                },
+                length = 25,
+                wind = {
+                    base = 5,
+                    burst = 50,
                 }
             }
         }

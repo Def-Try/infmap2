@@ -19,6 +19,9 @@ InfMap2.Visual.Clouds = {}
 InfMap2.Visual.Fog = {}
 InfMap2.Visual.Skybox = {}
 InfMap2.Space = {}
+if CLIENT then
+    InfMap2.Visual.Shaders = {}
+end
 
 function InfMap2.Gilb()
     local mapfile = "infmap2/"..game.GetMap().."/main.lua"
@@ -39,6 +42,7 @@ function InfMap2.Gilb()
     main.visual.fog = main.visual.fog or {}
     main.visual.skybox = main.visual.skybox or {}
     main.space = main.space or {}
+    main.shaders = main.shaders or {}
 
     InfMap2.ChunkSize = main.chunksize or 20000
     InfMap2.World.HasTerrain = main.world.terrain.has_terrain or false
@@ -126,6 +130,27 @@ function InfMap2.Gilb()
             idata.MaterialOverrides["outside"] = idata.MaterialOverrides["outside"] or Material("infmap2/planets/"..name.."_outside")
             idata.MaterialOverrides["inside"] = idata.MaterialOverrides["inside"] or Material("infmap2/planets/"..name.."_inside")
             idata.MaterialOverrides["clouds"] = idata.MaterialOverrides["clouds"] or Material("infmap2/planets/"..name.."_clouds")
+        end
+    end
+
+    if CLIENT then
+        if not main.visual.shaders then
+            InfMap2.Visual.Shaders.Enabled = false
+        else
+            InfMap2.Visual.Shaders.Enabled = true
+            if main.visual.shaders.grass and main.visual.shaders.grass.enabled then
+                InfMap2.Visual.Shaders.Grass = {
+                    Colors = {
+                        Top = main.visual.shaders.grass.colors.top or Color(255, 255, 255),
+                        Bottom = main.visual.shaders.grass.colors.bottom or Color(0, 0, 0)
+                    },
+                    Length = main.visual.shaders.grass.length or 25,
+                    Wind = {
+                        Base = main.visual.shaders.grass.wind.base or 5,
+                        Burst = main.visual.shaders.grass.wind.burst or 15
+                    }
+                }
+            end
         end
     end
 end

@@ -23,6 +23,13 @@ function shader.Init()
     local sample_size = math.abs(v0[1] - v1[1]) / 2
     local s = sample_size / blades_sqrt
     shader.Scale = s
+
+    local top_rgb = InfMap2.Visual.Shaders.Grass.Colors.Top
+    local bot_rgb = InfMap2.Visual.Shaders.Grass.Colors.Bottom
+    local wind_base = InfMap2.Visual.Shaders.Grass.Wind.Base
+    local wind_burst = InfMap2.Visual.Shaders.Grass.Wind.Burst
+    local length = InfMap2.Visual.Shaders.Grass.Length
+
     -- now vertices for grass leafs
     for x=0,blades_sqrt-1 do
         for y=0,blades_sqrt-1 do
@@ -37,22 +44,22 @@ function shader.Init()
 
             mesh.Position(x*s + (math.random() * 20), y*s + (math.random() * 20), 0)
             mesh.UserData(0, x, y, blades_sqrt)
-            mesh.TexCoord(0, 0, 0)
-            mesh.Color(77, 96, 0, 255)
+            mesh.TexCoord(0, wind_base, wind_burst)
+            mesh.Color(bot_rgb.r, bot_rgb.g, bot_rgb.b, 255)
             mesh.Normal(norm)
             mesh.AdvanceVertex()
 
             mesh.Position(x*s+s + (math.random() * 20), y*s + (math.random() * 20), 0)
             mesh.UserData(0, x, y, blades_sqrt)
-            mesh.TexCoord(0, 0, 0)
-            mesh.Color(77, 96, 0, 255)
+            mesh.TexCoord(0, wind_base, wind_burst)
+            mesh.Color(bot_rgb.r, bot_rgb.g, bot_rgb.b, 255)
             mesh.Normal(norm)
             mesh.AdvanceVertex()
 
-            mesh.Position(x*s+s*0.5 + (math.random() * 20), y*s + (math.random() * 20), 0)
+            mesh.Position(x*s+s*0.5 + (math.random() * 20), y*s + (math.random() * 20), length)
             mesh.UserData(1, x, y, blades_sqrt)
-            mesh.TexCoord(0, 0, 0)
-            mesh.Color(134, 200, 0, 255)
+            mesh.TexCoord(0, wind_base, wind_burst)
+            mesh.Color(top_rgb.r, top_rgb.g, top_rgb.b, 255)
             mesh.Normal(norm)
             mesh.AdvanceVertex()
         end

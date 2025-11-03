@@ -28,7 +28,7 @@ VS_OUTPUT main(VS_INPUT vert) {
 	float3 world_normal;
 	SkinPositionAndNormal(0, vert.vPos, vert.vNormal, 0, 0, world_pos, world_normal);
 
-	// first we get dynamic info that we got passed from lua
+	// get dynamic info that we got passed from lua
 	float offx = cAmbientCubeX[0].x;    // offset x. for fadeout and wind
 	float offy = cAmbientCubeX[0].y;    // offset y. for fadeout and wind
 	float curtime = cAmbientCubeX[0].z; // curtime.  for wind
@@ -54,6 +54,13 @@ VS_OUTPUT main(VS_INPUT vert) {
 	// truex/y no longer used for their original values, make then fractions instead of positions on grid
 	truex = truex / blades_sqrt;
 	truey = truey / blades_sqrt;
+	// grass length determined by moving vertex
+	float length = world_pos.z;
+	world_pos.z -= length;
+	// wind info
+	float base_strength  = vert.vTexCoord[0];
+	float burst_strength = vert.vTexCoord[1];
+
 
 	// calculate triangle heights for terrain now
 	// code adapted from infmap2/ish/world.sh :: InfMap2.GetTerrainHeightAt
@@ -78,8 +85,8 @@ VS_OUTPUT main(VS_INPUT vert) {
 
 	// apply wind
 	// multiply by negative so it looks correct (otherwise blades bend in the direction that "wind" "comes from", instead of away)
-	float total_move_y = base_move_y * -5 + burst_move_y * -16;
-	float3 worldpos_deviation = normalize(float3(0, total_move_y, 25.0)) * 25.0;
+	float total_move_y = base_move_y * -base_strength + burst_move_y * -burst_strength;
+	float3 worldpos_deviation = normalize(float3(0, total_move_y, length)) * length;
 	world_pos += vertmul * worldpos_deviation;
 	// ^^^ might seem dumb to calculate all that and then multiply by zero, but we're on gpu so we should minimise branching to maximise performance
 
@@ -92,7 +99,7 @@ VS_OUTPUT main(VS_INPUT vert) {
 	dist = dist * dist * dist;
 
 	// finally apply terrain height to every vertex
-	world_pos.z += height;
+	world_pos += height;
 
 	// project vertex onto screen
 	float4 proj_pos = mul(float4(world_pos, 1), cViewProj);
