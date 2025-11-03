@@ -56,7 +56,7 @@ VS_OUTPUT main(VS_INPUT vert) {
 	truey = truey / blades_sqrt;
 	// grass length determined by moving vertex
 	float length = world_pos.z;
-	world_pos.z -= length;
+	world_pos.z = 0;
 	// wind info
 	float base_strength  = vert.vTexCoord[0];
 	float burst_strength = vert.vTexCoord[1];
@@ -99,7 +99,7 @@ VS_OUTPUT main(VS_INPUT vert) {
 	dist = dist * dist * dist;
 
 	// finally apply terrain height to every vertex
-	world_pos += height;
+	world_pos.z += height;
 
 	// project vertex onto screen
 	float4 proj_pos = mul(float4(world_pos, 1), cViewProj);
