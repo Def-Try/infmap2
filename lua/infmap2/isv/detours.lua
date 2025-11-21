@@ -13,13 +13,21 @@ function ENTITY:SetEntity(str, ent)
     self:INF_SetEntity(str, ent)
 end
 
+ENTITY.INF_SetPhysConstraintObjects = ENTITY.INF_SetPhysConstraintObjects or ENTITY.SetPhysConstraintObjects
+function ENTITY:SetPhysConstraintObjects(pent1, pent2)
+    if InfMap2.Constraints.IsConstraint(self) then
+        InfMap2.Constraints.SetPhysConstraintObjects(self, pent1:GetEntity(), pent2:GetEntity())
+    end
+    return self:INF_SetPhysConstraintObjects(pent1, pent2)
+end
+
 local function unfuck_keyvalue(self, value)
     if not self:GetKeyValues()[value] then return end
     self:SetKeyValue(value, tostring(InfMap2.UnlocalizePosition(Vector(self:GetKeyValues()[value]), -self:GetMegaPos()--[[@as Vector]])))
 end
 ENTITY.INF_Spawn = ENTITY.INF_Spawn or ENTITY.Spawn
 function ENTITY:Spawn()
-    if IsValid(self) and (self:IsConstraint() or self:GetClass() == "phys_spring" or self:GetClass() == "keyframe_rope") then -- elastic isnt considered a constraint..?
+    if IsValid(self) and InfMap2.Constraints.IsConstraint(self) then -- elastic isnt considered a constraint..?
         unfuck_keyvalue(self, "attachpoint")
         unfuck_keyvalue(self, "springaxis")
         unfuck_keyvalue(self, "slideaxis")
@@ -30,8 +38,32 @@ function ENTITY:Spawn()
             unfuck_keyvalue(self, "EndOffset") 
         end
         self:SetPos(self:INF_GetPos())
+        InfMap2.Constraints.SpawnCallback(self)
     end
     return self:INF_Spawn()
+end
+ENTITY.INF_Remove = ENTITY.INF_Remove or ENTITY.Remove
+function ENTITY:Remove()
+    local cback
+    if IsValid(self) and InfMap2.Constraints.IsConstraint(self) then
+        cback = InfMap2.Constraints.RemoveCallback(self)
+    else
+        InfMap2.Constraints.RemoveCallbackNonconstraint(self)
+    end
+    local reta, retb, retc, retd, rete, retf = self:INF_Remove()
+    if cback then cback() end
+    return reta, retb, retc, retd, rete, retf
+end
+ENTITY.INF_SetParent = ENTITY.INF_SetParent or ENTITY.SetParent
+function ENTITY:SetParent(ent, bonen)
+    if IsValid(self) and not InfMap2.Constraints.IsConstraint(self) then
+        if IsValid(ent) then
+            InfMap2.Constraints.AddEntityToContraptionForEntity(ent, self)
+        else
+            InfMap2.Constraints.RemoveEntityFromContraptionForEntity(ent, ent)
+        end
+    end
+    return self:INF_SetParent(ent, bonen)
 end
 
 ----- CLuaLocomotion detours -----
