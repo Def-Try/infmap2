@@ -77,7 +77,7 @@ local function find_chunk_hit_plane(direction, startpos)
     return mindist, endpos, endplane
 end
 
-local function tracefunc(fake, real, tracedata)
+local function tracefunc(fake, real, tracedata, a, b, c, d, e, f)
     tracedata.INF_TraceInfo = tracedata.INF_TraceInfo or {}
     local direction = (tracedata.endpos - tracedata.start):GetNormalized()
     local length = math.min((tracedata.start - tracedata.endpos):Length(),
@@ -143,7 +143,7 @@ local function tracefunc(fake, real, tracedata)
         -- max crosstrace 6 chunks
         -- otherwise we can end up with SOMEONE (*ahem* wiremod *ahem*) tracing two bajillion units far and crashing us
         if (newdata.endpos - newdata.INF_RealStartPos):Length() < InfMap2.ChunkSize * 6 then
-            hit_data = fake(newdata)
+            hit_data = fake(newdata, a, b, c, d, e, f)
             hit_data.Fraction = (tracedata.start - hit_data.HitPos):Length() / length
             report.crosschunk.hit_data = hit_data
             report.crosschunk.dist = (tracedata.start - hit_data.HitPos):Length()
@@ -151,7 +151,7 @@ local function tracefunc(fake, real, tracedata)
     end
     report.real = {}
 
-    local hit_data2 = real(data)
+    local hit_data2 = real(data, a, b, c, d, e, f)
     if hit_data2.Hit and (not hit_data or hit_data2.Fraction <= hit_data.Fraction) then
         hit_data = hit_data2
         hit_data.HitPos = InfMap2.UnlocalizePosition(hit_data.HitPos, real_start_offset)
@@ -222,8 +222,8 @@ end
 
 local function generate_trace_function(real)
     local func
-    func = function(tracedata)
-        return tracefunc(func, real, tracedata)
+    func = function(tracedata, a, b, c, d, e, f)
+        return tracefunc(func, real, tracedata, a, b, c, d, e, f)
     end
     return func
 end
