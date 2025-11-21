@@ -28,9 +28,10 @@ function InfMap2.Gilb()
     print("[INFMAP2] Loading map file `"..mapfile.."`")
     local main = include(mapfile)
     if not main then
-        ErrorNoHalt("InfMap2 main file did not return infmap data. Falling back to gm_inf_bliss")
+        ErrorNoHalt("InfMap2 main file did not return infmap data. Falling back to gm_inf_flat!")
         print("[INFMAP2] Loading fallback map file. Check above for errors!")
-        main = include("infmap2/gm_inf_bliss/main.lua")
+        AddCSLuaFile("infmap2/gm_inf_flat/main.lua")
+        main = include("infmap2/gm_inf_flat/main.lua")
     else
         AddCSLuaFile(mapfile)
     end
