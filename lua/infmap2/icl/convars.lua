@@ -59,3 +59,10 @@ if InfMap2.World.HasTerrain then
     InfMap2.ConVars.vis_renderdistance:SetString("0")
     InfMap2.ConVars.vis_renderdistance:SetString(temp)
 end
+
+CreateClientConVar("infmap_vis_hidewipnotice", "0", false, false, "Whether to hide the WIP notice. Doesn't save.", 0, 1)
+cvars.RemoveChangeCallback("infmap_vis_hidewipnotice", "infmap_vis_hidewipnotice")
+cvars.AddChangeCallback("infmap_vis_hidewipnotice", function(_, old, new)
+    local num = tonumber(new)
+    InfMap2.EnableDevBanner = not tobool(num)
+end, "infmap_vis_hidewipnotice")
