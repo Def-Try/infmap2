@@ -1,17 +1,17 @@
 InfMap2.Constraints = InfMap2.Constraints or {}
 InfMap2.Constraints.Contraptions = InfMap2.Constraints.Contraptions or {}
 InfMap2.Constraints.PrimaryEntities = InfMap2.Constraints.PrimaryEntities or {}
-
-local phys_constraint_objects_queue = {}
+InfMap2.Constraints.PhysConstraintObjects = InfMap2.Constraints.PhysConstraintObjects or {}
 function InfMap2.Constraints.SetPhysConstraintObjects(ent, pc1, pc2)
-    phys_constraint_objects_queue[ent] = {pc1, pc2}
+    InfMap2.Constraints.PhysConstraintObjects[ent] = {pc1, pc2}
 end
 function InfMap2.Constraints.GetPhysConstraintObjects(ent, pop)
-    local objs = phys_constraint_objects_queue[ent]
+    local objs = InfMap2.Constraints.PhysConstraintObjects[ent]
     if pop then
-        phys_constraint_objects_queue[ent] = nil
+        InfMap2.Constraints.PhysConstraintObjects[ent] = nil
     end
-    return objs or {nil, nil}
+    if objs then return objs[1], objs[2] end
+    return nil, nil
 end
 function InfMap2.Constraints.IsConstraint(ent)
     return (ent:IsConstraint() or ent:GetClass() == "phys_spring" or ent:GetClass() == "keyframe_rope")
@@ -20,7 +20,7 @@ end
 ---should be called when a constraint entity is about to be spawned
 ---@param ent Entity
 function InfMap2.Constraints.SpawnCallback(ent)
-    local ent1, ent2 = unpack(InfMap2.Constraints.GetPhysConstraintObjects(ent, false))
+    local ent1, ent2 = InfMap2.Constraints.GetPhysConstraintObjects(ent, false)
     local contraption_1 = InfMap2.Constraints.FindContraptionOfEntity(ent1, false)
     local contraption_2 = InfMap2.Constraints.FindContraptionOfEntity(ent2, false)
     if not contraption_1 and not contraption_2 then
@@ -38,7 +38,7 @@ end
 ---should return a function that will be called after calling Remove
 ---@param ent Entity
 function InfMap2.Constraints.RemoveCallback(ent)
-    local ent1, ent2 = unpack(InfMap2.Constraints.GetPhysConstraintObjects(ent, false))
+    local ent1, ent2 = InfMap2.Constraints.GetPhysConstraintObjects(ent, false)
     -- TODO: make it more efficientt!!!
     InfMap2.Constraints.DestroyContraptionForEntity(ent1)
     return function()
