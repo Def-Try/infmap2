@@ -91,7 +91,7 @@ function shader.RenderMesh(vert, posv, localposv, half_sample_size)
     --do return end
 
     -- pass data into shader
-    shader.TransformMatrix:SetTranslation(Vector(vert[1], vert[2], 0))
+    shader.TransformMatrix:SetTranslation(Vector(vert[1], vert[2], -(posv[3] - localposv[3])))
     render.SuppressEngineLighting(true)
     render.SetModelLighting(0, vert[1] / (half_sample_size) * blades_sqrt, vert[2] / (half_sample_size) * blades_sqrt, CurTime() * 0.3)
     render.SetModelLighting(1, localposv[1], localposv[2], v00)
@@ -114,7 +114,7 @@ function shader.RenderMesh(vert, posv, localposv, half_sample_size)
 end
 function shader.RenderChunkGrass(chunkvert, plyposv, localposv, half_sample_size)
     local vert = {chunkvert[1], chunkvert[2]}
-    local posv = {plyposv[1], plyposv[2]}
+    local posv = {plyposv[1], plyposv[2], plyposv[3]}
     shader.RenderMesh(vert, posv, localposv, half_sample_size)
     vert[1] = vert[1] + half_sample_size
     shader.RenderMesh(vert, posv, localposv, half_sample_size)
