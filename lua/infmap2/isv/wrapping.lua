@@ -108,7 +108,8 @@ timer.Create("InfMap2WorldWrapping", 0.1, 0, function()
         if ent:GetVelocity() == vector_origin then continue end -- no velocity, no possible reason to teleport
         if IsValid(ent:GetParent()) then continue end -- parent is valid, teleport is handled by it
         if ent:IsPlayer() and not ent:Alive() then continue end -- player is dead, don't teleport
-        if not InfMap2.IsMainContraptionEntity(ent) then continue end -- not main contraption entity, teleporting *will* break stuff
+        --if not InfMap2.IsMainContraptionEntity(ent) then continue end -- not main contraption entity, teleporting *will* break stuff
+        if not InfMap2.Constraints.IsMainContraptionEntity(ent) then continue end
         ents_to_wrap[#ents_to_wrap+1] = ent
     end
 end)
@@ -116,7 +117,7 @@ end)
 function InfMap2.Teleport(ent, newpos)
     -- we need to do three passes over entities to teleport them properly
     local pos, megapos = InfMap2.LocalizePosition(newpos)
-    local entities = InfMap2.FindAllConnected(ent)
+    local entities = InfMap2.Constraints.FindContraptionOfEntity(ent) or {ent} -- InfMap2.FindAllConnected(ent)
     -- first: collect entities velocities and angles
     local mainvel, mainang = ent:GetVelocity(), ent:GetAngles()
     local velocities, angles = {}, {}
@@ -158,11 +159,12 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_t
         return
     end
     if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize - 1) then
-        ent.INF_ConstraintMain = nil
+    --    ent.INF_ConstraintMain = nil
         continue
     end -- still in chunk, just clear constraint main
-    if IsValid(ent.INF_ConstraintMain) and ent.INF_ConstraintMain ~= ent then continue end -- has a "master" constraint entity
-    if ent:IsPlayerHolding() then continue end -- being held by player
+    --if IsValid(ent.INF_ConstraintMain) and ent.INF_ConstraintMain ~= ent then continue end -- has a "master" constraint entity
+    if not InfMap2.Constraints.IsMainContraptionEntity(ent) then continue end
+    if InfMap2.Constraints.ContraptionHeldByPlayer(ent) then continue end -- being held by player
 
     if ent:GetClass() == "inf_crosschunkclone" then continue end -- crosschunk clone, we dont touch those
 

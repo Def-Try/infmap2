@@ -66,6 +66,11 @@ function ENTITY:SetRenderBounds(mins, maxs, add)
 		self:INF_SetRenderBounds(mins, maxs, add)
 	end
 	add = add or vector_origin
+	if isnumber(add) then
+		---@type number
+		add = add
+		add = Vector(add, add, add)
+	end
 	self.INF_RenderBounds = {mins - add, maxs + add}
 end
 

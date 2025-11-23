@@ -42,7 +42,7 @@ function InfMap2.Constraints.RemoveCallback(ent)
     -- TODO: make it more efficientt!!!
     InfMap2.Constraints.DestroyContraptionForEntity(ent1)
     return function()
-        hook.GetTable()["EntityRemoved"]["Constraint Library - ConstraintRemoved"](ent) -- update constraint lib stuff
+        hook.GetTable()["EntityRemoved"]["Constraint Library - ConstraintRemoved"](ent) -- update constraint lib stuff (used by InfMap2.GetAllConnected in InfMap2.Constraints.TryCreateContraptionFromEntities)
         InfMap2.Constraints.TryCreateContraptionFromEntities(ent1)
         InfMap2.Constraints.TryCreateContraptionFromEntities(ent2)
     end
@@ -139,3 +139,23 @@ function InfMap2.Constraints.MergeContraptionsOfEntities(ent_primary, ent_merge)
     end
     return true
 end
+function InfMap2.Constraints.IsMainContraptionEntity(ent)
+    local contraption = InfMap2.Constraints.FindContraptionOfEntity(ent)
+    if not contraption then return true end
+    if contraption[1] == ent then return true end
+    return false
+end
+function InfMap2.Constraints.ContraptionHeldByPlayer(ent)
+    local contraption = InfMap2.Constraints.FindContraptionOfEntity(ent)
+    if not contraption then return ent:IsPlayerHolding() end
+    for _,e in pairs(contraption) do
+        if e:IsPlayerHolding() then return true end
+    end
+    return false
+end
+
+timer.Create("InfMap2ClearNULLContraptions", 5, 0, function()
+    for e, _ in pairs(InfMap2.Constraints.Contraptions) do
+        if not IsValid(e) then InfMap2.Constraints.Contraptions[e] = nil end
+    end
+end)
