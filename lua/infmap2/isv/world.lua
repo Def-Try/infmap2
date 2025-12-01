@@ -82,6 +82,7 @@ timer.Create("InfMap2SuffocatePlayers", 1, 0, function()
     end
 end)
 hook.Add("PlayerTick", "InfMap2FreezePlayers", function(ply)
+    if not InfMap2.World.HasTerrain then return end
     ---@class Player
     ply = ply
     --do return end

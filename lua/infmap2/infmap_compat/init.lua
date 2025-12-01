@@ -68,6 +68,7 @@ InfMap.prop_update_chunk = function(ent, chunk) return InfMap2.EntityUpdateMegap
 InfMap.ezcoord = function(chunk) return chunk[1] .. "," .. chunk[2] .. "," .. chunk[3] end
 InfMap.megachunk_size = 10
 InfMap.chunk_size = 10000
+InfMap.source_bounds = Vector(1, 1, 1) * math.pow(2, 14)
 
 ---@diagnostic disable: undefined-field, need-check-nil, inject-field
 local ENTITY = FindMetaTable("Entity")
@@ -119,7 +120,7 @@ InfMap2.Visual.HasTerrain = InfMap2.World.HasTerrain
 InfMap2.RemoveHeight = -(1/0) -- infmap1 doesn't remove any ents
 if InfMap2.World.HasTerrain then
     InfMap2.World.Terrain.HeightFunction = function(x, y) return InfMap.height_function(x / InfMap2.ChunkSize / 2, y / InfMap2.ChunkSize / 2) end
-    InfMap2.World.Terrain.Samples = {InfMap.chunk_resolution}
+    InfMap2.World.Terrain.Samples = {InfMap.chunk_resolution or 3}
 
     InfMap2.Visual.RenderDistance = (InfMap.megachunk_size or 10) * (InfMap.render_distance or 2) * 2
     InfMap2.Visual.RealRenderDistance = InfMap2.Visual.RenderDistance

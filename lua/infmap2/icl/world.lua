@@ -310,6 +310,7 @@ if InfMap2.Visual.HasSkybox then
 end
 
 hook.Add("RenderScreenspaceEffects", "InfMap2UnderTerrain", function()
+    if not InfMap2.World.HasTerrain then return end
     local pos = LocalPlayer():EyePos()
     if pos.z >= InfMap2.GetTerrainHeightAt(pos.x, pos.y) then
         return
@@ -389,6 +390,7 @@ local function get_chunk(index, x, y)
 end
 local last_megapos_x, last_megapos_y = 1/0, 1/0
 hook.Add("PreRender", "InfMap2BuildWorldVisual", function()
+    if not InfMap2.World.HasTerrain then return end
     local megapos = LocalPlayer():GetMegaPos()
     megapos.z = 0
     local megapos_x, megapos_y = megapos.x, megapos.y

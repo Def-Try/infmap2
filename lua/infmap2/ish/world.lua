@@ -26,6 +26,7 @@ end
 ---@param y number
 ---@return number
 function InfMap2.GetTerrainHeightAt(x, y)
+    if not InfMap2.World.HasTerrain then error("InfMap2 doesn't have terrain") end
     local full_chunk_size = InfMap2.ChunkSize
     local samples = InfMap2.World.Terrain.Samples[1]
     local sample_size = full_chunk_size / samples
