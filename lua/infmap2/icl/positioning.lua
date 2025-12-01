@@ -122,11 +122,10 @@ function InfMap2.EntityUpdateMegapos(ent, megapos, attempts, reason, critical)
 
     local megaoffset = megapos - lp:GetMegaPos()
 
-    if megaoffset == vector_origin then -- ent:GetClass() == "gmod_hands" or ent:GetClass() == "viewmodel" or 
+    if megaoffset == vector_origin then
         ent.RenderOverride = ent.INF_RenderOverride
         ent.INF_VisualOffset = nil
         ent.INF_ValidRenderOverride = nil
-        --if not ent.INF_InSkyboxFlag then ent:RemoveEFlags(EFL_IN_SKYBOX) end
         if ent:GetClass() ~= "inf_chunk" then
             ent:INF_SetRenderBounds(ent:GetRenderBounds())
         end
@@ -138,26 +137,12 @@ function InfMap2.EntityUpdateMegapos(ent, megapos, attempts, reason, critical)
         end
         return
     end
-
-    if ent:GetClass() ~= "inf_chunk" then
-        --ent.INF_RenderBounds = ent.INF_RenderBounds
-        --ent:INF_SetRenderBoundsWS(-InfMap2.SourceBounds, InfMap2.SourceBounds) -- fucking source
-    end
     local visual_offset = Vector(1, 1, 1) * (megaoffset * InfMap2.ChunkSize)
     ent.INF_VisualOffset = visual_offset
-    --ent.INF_InSkyboxFlag = ent:IsEFlagSet(EFL_IN_SKYBOX)
-    --ent:AddEFlags(EFL_IN_SKYBOX)
-
-    if false and ent:INF_IsEngineEntity() then
-        if ent.INF_CurrentMatrixMultiply then ent:EnableMatrix("RenderMultiply", ent.INF_CurrentMatrixMultiply)
-        else ent:DisableMatrix("RenderMultiply")
-        end
-        return
-    end
 
     if ent.INF_ValidRenderOverride == nil then
         ent.INF_RenderOverride = ent.RenderOverride
-        ent.INF_ValidRenderOverride = ent.RenderOverride and true or false
+        ent.INF_ValidRenderOverride = ent.INF_RenderOverride and true or false
     end
 
     if ent.INF_ValidRenderOverride then

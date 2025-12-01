@@ -509,7 +509,7 @@ hook.Add("DrawPhysgunBeam", "InfMap2PhysgunBeam", function(ply, wep, enabled, ta
 		s = math.random() * 8 + 8*grabbed
 		render.SetMaterial(physg_glow2)
 		render.DrawSprite(hitpos, s, s, color)
-
+        
         if drawbeam then
             render.SetMaterial(physbeama)
             local ts = CurTime()

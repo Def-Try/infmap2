@@ -334,6 +334,19 @@ function ENTITY:GetBonePosition(boneId)
     return pos, ang
 end
 
+ENTITY.INF_GetAttachment = ENTITY.INF_GetAttachment or ENTITY.GetAttachment
+function ENTITY:GetAttachment(num)
+    local attach = self:INF_GetAttachment(num)
+    if attach and attach.Pos then
+        local mpos = self:GetMegaPos()
+        if self:GetClass() == 'viewmodel' then
+            mpos = LocalPlayer():GetMegaPos()
+        end
+        attach.Pos = InfMap2.UnlocalizePosition(attach.Pos, mpos)
+    end
+    return attach
+end
+
 ----- Vehicle detours -----
 
 -- GetPos, LocalToWorld, WorldToLocal are derived from ENTITY
