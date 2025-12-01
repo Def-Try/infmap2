@@ -172,5 +172,5 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_t
     local start = SysTime()
     InfMap2.Teleport(ent, ent:GetPos())
     local endd = SysTime()
-    print("teleporting entity "..tostring(ent).." took "..((endd-start)*1000).."ms")
+    if InfMap2.Debug then print("[INFMAP] Teleporting entity "..tostring(ent).." took "..((endd-start)*1000).."ms") end
 end end)

@@ -1,5 +1,9 @@
 InfMap2.Shaders = {}
 
+if not system.IsWindows() then
+    return ErrorNoHalt("Shaders are not supported on systems other than windows (yet?). Sorry!")
+end
+
 if InfMap2.Visual.Shaders.Grass then
     print("[INFMAP2] Initialising grass shader!")
     include("infmap2/icl/shaders/grass.lua")

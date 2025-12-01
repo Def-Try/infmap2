@@ -164,13 +164,21 @@ hook.Add("PreDrawTranslucentRenderables", "InfMap2FrustrumCalc", function()
 end)
 
 hook.Add("PostDrawTranslucentRenderables", "InfMap2RenderOOCEntities", function()
+    --do return end
     InfMap2.RenderingEntitiesOOC = true
+    
+    local mr, mg, mb = render.GetColorModulation()
+    --print("-------------------------------------")
     for _, ent in ents.Iterator() do
         if ent:GetNoDraw() then continue end
         if not ent.INF_VisualOffset then continue end
+        if ent:GetClass():sub(1, 6) == "class " then continue end
+        --print(ent, ent:GetClass())
         local r,g,b = ent:GetColor4Part()
         render.SetColorModulation(r / 255, g / 255, b / 255)
         ent:DrawModel()
     end
-    InfMap2.RenderingEntitiesOOC = false
+    render.SetColorModulation(mr, mg, mb)
+    --InfMap2.RenderingEntitiesOOC = false
+    -- TODO: figure out why lighting breaks??
 end)
