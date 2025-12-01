@@ -67,7 +67,7 @@ local function update_entity(ent, pos, megapos)
     if ent:IsPlayer() and InfMap2.Cache.carries[ent:SteamID()] and IsValid(InfMap2.Cache.carries[ent:SteamID()][1]) then
         local carrydata = InfMap2.Cache.carries[ent:SteamID()]
         local carry, carrymeth = carrydata[1], carrydata[2]
-        local entities = InfMap2.FindAllConnected(carry)
+        local entities = InfMap2.Constraints.ExpandContraption(InfMap2.Constraints.FindContraptionOfEntity(carry) or {carry})
         if carry:IsPlayer() then entities[#entities+1] = carry:GetHands() end
         local ent_pos = ent:INF_GetPos()
         for _,cent in pairs(entities) do
@@ -105,10 +105,11 @@ timer.Create("InfMap2WorldWrapping", 0.1, 0, function()
     for _, ent in ents.Iterator() do
         if InfMap2.UselessEntitiesFilter(ent) then continue end -- useless entity
         -- if not ent:GetMegaPos() then continue end -- no megapos, something is wrong
-        if ent:GetVelocity() == vector_origin then continue end -- no velocity, no possible reason to teleport
+        if ent:GetVelocity():LengthSqr() == 0 then continue end -- no velocity, dont care
         if IsValid(ent:GetParent()) then continue end -- parent is valid, teleport is handled by it
-        if ent:IsPlayer() and not ent:Alive() then continue end -- player is dead, don't teleport
-        if not InfMap2.IsMainContraptionEntity(ent) then continue end -- not main contraption entity, teleporting *will* break stuff
+        if ent:IsPlayer() and not ent:Alive() then continue end -- player is dead, don't bother
+        --if not InfMap2.IsMainContraptionEntity(ent) then continue end -- not main contraption entity, teleporting *will* break stuff
+        if not InfMap2.Constraints.IsMainContraptionEntity(ent) then continue end
         ents_to_wrap[#ents_to_wrap+1] = ent
     end
 end)
@@ -116,7 +117,7 @@ end)
 function InfMap2.Teleport(ent, newpos)
     -- we need to do three passes over entities to teleport them properly
     local pos, megapos = InfMap2.LocalizePosition(newpos)
-    local entities = InfMap2.FindAllConnected(ent)
+    local entities = InfMap2.Constraints.ExpandContraption(InfMap2.Constraints.FindContraptionOfEntity(ent) or {ent})
     -- first: collect entities velocities and angles
     local mainvel, mainang = ent:GetVelocity(), ent:GetAngles()
     local velocities, angles = {}, {}
@@ -144,32 +145,32 @@ function InfMap2.Teleport(ent, newpos)
 
     -- additionally create chunks around current one
     if InfMap2.World.HasTerrain then
-        InfMap2.CreateChunksAround(megapos)
+        InfMap2.CreateWorldChunkAt(megapos)
     end
 end
 
 hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_to_wrap) do
     if not IsValid(ent) then continue end -- ent died
-    if ent:GetPos().z < InfMap2.RemoveHeight then
+    --print("checking entity: ", ent)
+    if InfMap2.RemoveHeight and ent:GetPos().z < InfMap2.RemoveHeight then
         if ent:IsPlayer() then return ent:Kill() end
         if ent:IsNPC() then return ent:Kill() end
         if ent:IsNextBot() then return ent:Kill() end
-        ent:Remove()
-        return
+        return ent:Remove()
     end
     if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize - 1) then
-        ent.INF_ConstraintMain = nil
+    --    ent.INF_ConstraintMain = nil
         continue
     end -- still in chunk, just clear constraint main
-    if IsValid(ent.INF_ConstraintMain) and ent.INF_ConstraintMain ~= ent then continue end -- has a "master" constraint entity
-    if ent:IsPlayerHolding() then continue end -- being held by player
+    --if IsValid(ent.INF_ConstraintMain) and ent.INF_ConstraintMain ~= ent then continue end -- has a "master" constraint entity
+    if not InfMap2.Constraints.IsMainContraptionEntity(ent) then continue end
+    if InfMap2.Constraints.ContraptionHeldByPlayer(ent) then continue end -- being held by player
 
     if ent:GetClass() == "inf_crosschunkclone" then continue end -- crosschunk clone, we dont touch those
 
-    local pos, megapos_offset = InfMap2.LocalizePosition(ent:INF_GetPos())
-    local megapos = ent:GetMegaPos() + megapos_offset
-
     if InfMap2.Debug then print("[INFMAP] Updating entity "..tostring(ent)) end
-
+    local start = SysTime()
     InfMap2.Teleport(ent, ent:GetPos())
+    local endd = SysTime()
+    print("teleporting entity "..tostring(ent).." took "..((endd-start)*1000).."ms")
 end end)

@@ -52,7 +52,7 @@ return {
             height_function = function(x, y)
                 return -15
             end,
-            samples = {3},
+            samples = {2},
         }
     },
     visual = {

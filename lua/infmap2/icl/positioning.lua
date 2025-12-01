@@ -44,6 +44,7 @@ end
 local mtrx = Matrix()
 
 local function renderoverride_nest(self, flags, a, b, c, d, e)
+    if not InfMap2.RenderingEntitiesOOC then return end
     if not self.INF_InFrustrum then return end
     mtrx:SetTranslation(self.INF_VisualOffset)
     cam.INF_PushModelMatrix(mtrx)
@@ -55,6 +56,7 @@ local function renderoverride_nest(self, flags, a, b, c, d, e)
     cam.INF_PopModelMatrix()
 end
 local function renderoverride_raw(self, flags)
+    if not InfMap2.RenderingEntitiesOOC then return end
     if not self.INF_InFrustrum then return end
     mtrx:SetTranslation(self.INF_VisualOffset)
     cam.INF_PushModelMatrix(mtrx)
@@ -72,6 +74,7 @@ end
 ---@param attempts number?
 function InfMap2.EntityUpdateMegapos(ent, megapos, attempts, reason, critical)
     if InfMap2.UselessEntitiesFilter(ent) then return end
+    -- TODO: clean this shit up!!!
     
     local mins, maxs = ent:INF_GetRenderBounds()
     local lp = LocalPlayer()
@@ -115,18 +118,20 @@ function InfMap2.EntityUpdateMegapos(ent, megapos, attempts, reason, critical)
 		InfMap2.EntityUpdateMegapos(child, megapos)
 	end
 
+    --do return end
+
     local megaoffset = megapos - lp:GetMegaPos()
 
     if megaoffset == vector_origin then -- ent:GetClass() == "gmod_hands" or ent:GetClass() == "viewmodel" or 
         ent.RenderOverride = ent.INF_RenderOverride
-        if not ent.INF_InSkyboxFlag then ent:RemoveEFlags(EFL_IN_SKYBOX) end
-        if ent:GetClass() ~= "inf_chunk" and ent.INF_OriginalRenderBounds then
-            ent:INF_SetRenderBounds(ent:GetRenderBounds())
-            ent.INF_OriginalRenderBounds = nil
-        end
         ent.INF_VisualOffset = nil
         ent.INF_ValidRenderOverride = nil
-        if ent:INF_IsEngineEntity() then
+        --if not ent.INF_InSkyboxFlag then ent:RemoveEFlags(EFL_IN_SKYBOX) end
+        if ent:GetClass() ~= "inf_chunk" then
+            ent:INF_SetRenderBounds(ent:GetRenderBounds())
+        end
+        ent.INF_RenderBounds = nil
+        if false and ent:INF_IsEngineEntity() then
             if ent.INF_CurrentMatrixMultiply then ent:EnableMatrix("RenderMultiply", ent.INF_CurrentMatrixMultiply)
             else ent:DisableMatrix("RenderMultiply")
             end
@@ -134,20 +139,18 @@ function InfMap2.EntityUpdateMegapos(ent, megapos, attempts, reason, critical)
         return
     end
 
-    if ent:GetClass() ~= "inf_chunk" and not ent.INF_OriginalRenderBounds then
-        ent.INF_RenderBounds = ent.INF_RenderBounds
-        ent:INF_SetRenderBoundsWS(-InfMap2.SourceBounds * 2, InfMap2.SourceBounds * 2) -- fucking source
+    if ent:GetClass() ~= "inf_chunk" then
+        --ent.INF_RenderBounds = ent.INF_RenderBounds
+        --ent:INF_SetRenderBoundsWS(-InfMap2.SourceBounds, InfMap2.SourceBounds) -- fucking source
     end
     local visual_offset = Vector(1, 1, 1) * (megaoffset * InfMap2.ChunkSize)
     ent.INF_VisualOffset = visual_offset
-    ent.INF_InSkyboxFlag = ent:IsEFlagSet(EFL_IN_SKYBOX)
-    ent:AddEFlags(EFL_IN_SKYBOX)
+    --ent.INF_InSkyboxFlag = ent:IsEFlagSet(EFL_IN_SKYBOX)
+    --ent:AddEFlags(EFL_IN_SKYBOX)
 
-    if ent:INF_IsEngineEntity() then
-        if ent:INF_IsEngineEntity() then
-            if ent.INF_CurrentMatrixMultiply then ent:EnableMatrix("RenderMultiply", ent.INF_CurrentMatrixMultiply)
-            else ent:DisableMatrix("RenderMultiply")
-            end
+    if false and ent:INF_IsEngineEntity() then
+        if ent.INF_CurrentMatrixMultiply then ent:EnableMatrix("RenderMultiply", ent.INF_CurrentMatrixMultiply)
+        else ent:DisableMatrix("RenderMultiply")
         end
         return
     end
@@ -173,4 +176,16 @@ hook.Add("PreDrawTranslucentRenderables", "InfMap2FrustrumCalc", function()
         if ent:GetClass() == "inf_chunk" then continue end
         ent.INF_InFrustrum = frustrum(ent)
     end
+end)
+
+hook.Add("PostDrawTranslucentRenderables", "InfMap2RenderOOCEntities", function()
+    InfMap2.RenderingEntitiesOOC = true
+    for _, ent in ents.Iterator() do
+        if ent:GetNoDraw() then continue end
+        if not ent.INF_VisualOffset then continue end
+        local r,g,b = ent:GetColor4Part()
+        render.SetColorModulation(r / 255, g / 255, b / 255)
+        ent:DrawModel()
+    end
+    InfMap2.RenderingEntitiesOOC = false
 end)
