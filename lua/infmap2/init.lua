@@ -5,7 +5,7 @@ InfMap2.EnableDevBanner = true
 --if InfMap2.Debug == nil then InfMap2.Debug = true end
 if InfMap2.Debug == nil then InfMap2.Debug = false end
 
-InfMap2.Version = "0.32b"
+InfMap2.Version = "0.4b"
 print("[INFMAP2] Running InfMap2 version "..InfMap2.Version)
 
 InfMap2.MaxVelocity = 13503.95 * 20 -- mach 20 in hammer units
