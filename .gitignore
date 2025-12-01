@@ -1,1 +1,5 @@
 .vscode/
+materials/infmap/
+materials/infmap_planets/
+maps/gm_infmap.bsp
+lua/infmap/

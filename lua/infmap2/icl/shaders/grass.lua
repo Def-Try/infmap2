@@ -2,7 +2,7 @@ local shader = InfMap2.Shaders.Grass or {}
 InfMap2.Shaders.Grass = shader
 InfMap2.Shaders.Grass.Scale = 5
 
-local simplex = include("infmap2/simplex.lua")
+local simplex = include("simplex.lua")
 
 local blades = 3600
 

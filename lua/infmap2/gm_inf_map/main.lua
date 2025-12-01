@@ -1,7 +1,7 @@
 -- direct port of gm_infmap from infmap1
 -- do NOT touch except for fixing
 
-local simplex = include("infmap2/simplex.lua")
+local simplex = include("simplex.lua")
 
 if SERVER then
     local function create_origin_plat()

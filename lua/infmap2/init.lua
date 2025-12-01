@@ -49,6 +49,8 @@ function InfMap2.Gilb()
     InfMap2.World.HasTerrain = main.world.terrain.has_terrain or false
     InfMap2.Visual.HasTerrain = InfMap2.World.HasTerrain -- alias
     InfMap2.RemoveHeight = main.removeheight or -100000
+    InfMap2.Visual.RenderDistance = main.visual.renderdistance or 20
+    InfMap2.Visual.RealRenderDistance = InfMap2.Visual.RenderDistance
     if InfMap2.World.HasTerrain then
         if not main.world.terrain.height_function then
             ErrorNoHalt("InfMap doesn't have height function!")
@@ -60,9 +62,6 @@ function InfMap2.Gilb()
         end
         InfMap2.World.Terrain.HeightFunction = main.world.terrain.height_function
         InfMap2.World.Terrain.Samples = main.world.terrain.samples or {3}
-
-        InfMap2.Visual.RenderDistance = main.visual.renderdistance or 20
-        InfMap2.Visual.RealRenderDistance = InfMap2.Visual.RenderDistance
 
         InfMap2.Visual.Terrain.Material = main.visual.terrain.material
         InfMap2.Visual.Terrain.UVScale = main.visual.terrain.uvscale or 100
