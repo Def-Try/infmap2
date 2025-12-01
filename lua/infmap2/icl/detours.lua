@@ -52,17 +52,24 @@ end
 ---@class Entity
 local ENTITY = FindMetaTable("Entity")
 if ENTITY == nil then return end
+
 ENTITY.INF_SetRenderBoundsWS = ENTITY.INF_SetRenderBoundsWS or ENTITY.SetRenderBoundsWS
-function ENTITY:SetRenderBoundsWS(mins, maxs)
-	if self:GetMegaPos() == vector_origin then -- LocalPlayer():GetMegaPos() then
-		self:INF_SetRenderBoundsWS(mins, maxs)
+function ENTITY:SetRenderBoundsWS(mins, maxs, add)
+	if not self.INF_VisualOffset then -- LocalPlayer():GetMegaPos() then
+		self:INF_SetRenderBoundsWS(mins, maxs, add)
 	end
-	self.INF_RenderBounds = {self:WorldToLocal(mins), self:WorldToLocal(maxs)}
+	add = add or vector_origin
+	if isnumber(add) then
+		---@type number
+		add = add
+		add = Vector(add, add, add)
+	end
+	self.INF_RenderBounds = {self:WorldToLocal(mins - add), self:WorldToLocal(maxs + add)}
 end
 
 ENTITY.INF_SetRenderBounds = ENTITY.INF_SetRenderBounds or ENTITY.SetRenderBounds
 function ENTITY:SetRenderBounds(mins, maxs, add)
-	if self:GetMegaPos() == vector_origin then -- LocalPlayer():GetMegaPos() then
+	if not self.INF_VisualOffset then -- LocalPlayer():GetMegaPos() then
 		self:INF_SetRenderBounds(mins, maxs, add)
 	end
 	add = add or vector_origin
@@ -77,7 +84,7 @@ end
 ENTITY.INF_GetRenderBounds = ENTITY.INF_GetRenderBounds or ENTITY.GetRenderBounds
 function ENTITY:GetRenderBounds()
 	if self.INF_RenderBounds then
-		return unpack(self.INF_RenderBounds)
+		return Vector(self.INF_RenderBounds[1]), Vector(self.INF_RenderBounds[2])
 	end
 	return self:INF_GetRenderBounds()
 end

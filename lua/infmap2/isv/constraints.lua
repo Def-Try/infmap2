@@ -153,6 +153,16 @@ function InfMap2.Constraints.ContraptionHeldByPlayer(ent)
     end
     return false
 end
+function InfMap2.Constraints.ExpandContraption(contraption)
+    local expanded = {}
+    for _, ent in ipairs(contraption) do
+        expanded[#expanded+1] = ent
+        if ent:IsVehicle() and IsValid(ent:GetDriver()) then
+            expanded[#expanded+1] = ent:GetDriver()
+        end
+    end
+    return expanded
+end
 
 timer.Create("InfMap2ClearNULLContraptions", 5, 0, function()
     for e, _ in pairs(InfMap2.Constraints.Contraptions) do

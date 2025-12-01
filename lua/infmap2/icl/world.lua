@@ -222,6 +222,7 @@ hook.Add("PostRender", "InfMap2RenderWorld", function()
 end)
 
 hook.Add("PreDrawOpaqueRenderables", "InfMap2RenderWorld", function()
+    --do return end
     if not InfMap2.World.HasTerrain then return end
     if not InfMap2.Cache.material then
         InfMap2.Cache.material = Material(InfMap2.Visual.Terrain.Material)
@@ -365,7 +366,7 @@ local function generate_chunk(chunk, lodlvl, megapos)
 end
 local function process_chunk(chunk, plypos, megapos)
     local diff = plypos - megapos
-    local lodlvl = math.max(math.abs(diff.x), math.abs(diff.y), math.abs(plypos.z))
+    local lodlvl = math.min(#InfMap2.World.Terrain.LODLevels - 1, math.max(math.abs(diff.x), math.abs(diff.y), math.abs(plypos.z)))
     local chunk_megapos = chunk.megapos
     local rebuild = false
     if not rebuild and chunk_megapos == nil then rebuild = true end
