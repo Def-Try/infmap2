@@ -320,9 +320,11 @@ function ENTITY:SetParent(parent, attachmentOrBoneId)
     self:INF_SetPos(localpos)
     self:SetMegaPos(parent:GetMegaPos())
     if SERVER then
-        InfMap2.Constraints.FindContraptionOfEntity(parent, true)
         if IsValid(self:GetParent()) then InfMap2.Constraints.RemoveEntityFromContraptionForEntity(self:GetParent(), self) end
-        InfMap2.Constraints.AddEntityToContraptionForEntity(parent, self)
+        timer.Simple(0, function()
+            InfMap2.Constraints.FindContraptionOfEntity(parent, true)
+            InfMap2.Constraints.AddEntityToContraptionForEntity(parent, self)
+        end)
     end
     return self:INF_SetParent(parent, attachmentOrBoneId)
 end
