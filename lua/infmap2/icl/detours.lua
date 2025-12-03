@@ -60,8 +60,7 @@ function ENTITY:SetRenderBoundsWS(mins, maxs, add)
 	end
 	add = add or vector_origin
 	if isnumber(add) then
-		---@type number
-		add = add
+		---@diagnostic disable-next-line: param-type-mismatch
 		add = Vector(add, add, add)
 	end
 	self.INF_RenderBounds = {self:WorldToLocal(mins - add), self:WorldToLocal(maxs + add)}
@@ -74,8 +73,7 @@ function ENTITY:SetRenderBounds(mins, maxs, add)
 	end
 	add = add or vector_origin
 	if isnumber(add) then
-		---@type number
-		add = add
+		---@diagnostic disable-next-line: param-type-mismatch
 		add = Vector(add, add, add)
 	end
 	self.INF_RenderBounds = {mins - add, maxs + add}

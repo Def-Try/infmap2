@@ -61,7 +61,7 @@ return {
                 x = x - 3
                 local final = simplex.Noise2D(x / 25, y / 25 + 100000) * 75000
                 final = final / math.max((simplex.Noise2D(x / 100, y / 100) * 15) ^ 3, 1)
-                final = final / 2
+                -- final = final / 2
                 return final
             end,
             samples = {3},
