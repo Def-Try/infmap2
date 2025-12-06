@@ -280,7 +280,7 @@ ENTITY.INF_WorldToLocal = ENTITY.INF_WorldToLocal or ENTITY.WorldToLocal
 function ENTITY:WorldToLocal(position)
     local main = self:GetPos()
     local offset = position - main
-    local pos, _ = InfMap2.LocalizePosition(main)
+    local pos = main - self:GetMegaPos() * InfMap2.ChunkSize
     return self:INF_WorldToLocal(pos + offset)
 end
 
@@ -308,9 +308,6 @@ end
 ENTITY.INF_SetParent = ENTITY.INF_SetParent or ENTITY.SetParent
 function ENTITY:SetParent(parent, attachmentOrBoneId)
     if not IsValid(parent) then
-        if SERVER then
-            InfMap2.Constraints.RemoveEntityFromContraptionForEntity(self:GetParent(), self)
-        end
         return self:INF_SetParent(parent, attachmentOrBoneId)
     end
     if InfMap2.UselessEntitiesFilter(self) then
@@ -319,13 +316,6 @@ function ENTITY:SetParent(parent, attachmentOrBoneId)
     local localpos = InfMap2.UnlocalizePosition(self:INF_GetPos(), self:GetMegaPos() - parent:GetMegaPos())
     self:INF_SetPos(localpos)
     self:SetMegaPos(parent:GetMegaPos())
-    if SERVER then
-        if IsValid(self:GetParent()) then InfMap2.Constraints.RemoveEntityFromContraptionForEntity(self:GetParent(), self) end
-        timer.Simple(0, function()
-            InfMap2.Constraints.FindContraptionOfEntity(parent, true)
-            InfMap2.Constraints.AddEntityToContraptionForEntity(parent, self)
-        end)
-    end
     return self:INF_SetParent(parent, attachmentOrBoneId)
 end
 
@@ -356,6 +346,11 @@ function ENTITY:GetAttachment(num)
     end
     return attach
 end
+
+-- ENTITY.INF_GetLocalPos = ENTITY.INF_GetLocalPos or ENTITY.GetLocalPos
+-- function ENTITY:GetLocalPos()
+-- 	return InfMap2.UnlocalizePosition(self:INF_GetLocalPos(), self:GetMegaPos() or Vector())
+-- end
 
 ----- Vehicle detours -----
 
@@ -389,7 +384,7 @@ PHYSOBJ.INF_ApplyForceOffset = PHYSOBJ.INF_ApplyForceOffset or PHYSOBJ.ApplyForc
 function PHYSOBJ:ApplyForceOffset(impulse, position)
     local main = self:GetEntity():GetPos()
     local offset = position - main
-    local pos, _ = InfMap2.LocalizePosition(main)
+    local pos = main - self:GetEntity():GetMegaPos() * InfMap2.ChunkSize
     return self:INF_ApplyForceOffset(impulse, pos + offset)
 end
 
@@ -402,7 +397,7 @@ PHYSOBJ.INF_CalculateVelocityOffset = PHYSOBJ.INF_CalculateVelocityOffset or PHY
 function PHYSOBJ:CalculateVelocityOffset(impulse, position)
     local main = self:GetEntity():GetPos()
     local offset = position - main
-    local pos, _ = InfMap2.LocalizePosition(main)
+    local pos = main - self:GetEntity():GetMegaPos() * InfMap2.ChunkSize
     return self:INF_CalculateVelocityOffset(impulse, pos + offset)
 end
 
@@ -410,7 +405,7 @@ PHYSOBJ.INF_WorldToLocal = PHYSOBJ.INF_WorldToLocal or PHYSOBJ.WorldToLocal
 function PHYSOBJ:WorldToLocal(position)
     local main = self:GetEntity():GetPos()
     local offset = position - main
-    local pos, _ = InfMap2.LocalizePosition(main)
+    local pos = main - self:GetEntity():GetMegaPos() * InfMap2.ChunkSize
     return self:INF_WorldToLocal(pos + offset)
 end
 
@@ -418,7 +413,7 @@ PHYSOBJ.INF_GetVelocityAtPoint = PHYSOBJ.INF_GetVelocityAtPoint or PHYSOBJ.GetVe
 function PHYSOBJ:GetVelocityAtPoint(position)
     local main = self:GetEntity():GetPos()
     local offset = position - main
-    local pos, _ = InfMap2.LocalizePosition(main)
+    local pos = main - self:GetEntity():GetMegaPos() * InfMap2.ChunkSize
 
     return self:INF_GetVelocityAtPoint(pos + offset)
 end
@@ -427,7 +422,7 @@ PHYSOBJ.INF_CalculateForceOffset = PHYSOBJ.INF_CalculateForceOffset or PHYSOBJ.C
 function PHYSOBJ:CalculateForceOffset(impulse, position)
     local main = self:GetEntity():GetPos()
     local offset = position - main
-    local pos, _ = InfMap2.LocalizePosition(main)
+    local pos = main - self:GetEntity():GetMegaPos() * InfMap2.ChunkSize
     return self:INF_CalculateForceOffset(impulse, pos + offset)
 end
 

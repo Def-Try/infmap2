@@ -70,13 +70,16 @@ InfMap.megachunk_size = 10
 InfMap.chunk_size = 10000
 InfMap.source_bounds = Vector(1, 1, 1) * math.pow(2, 14)
 
----@diagnostic disable: undefined-field, need-check-nil, inject-field
 local ENTITY = FindMetaTable("Entity")
+if not ENTITY then return end
+---@diagnostic disable: undefined-field, need-check-nil, inject-field
 function ENTITY:SetMegaPos(vec)
     self.CHUNK_OFFSET = Vector(vec)
     if self.INF_MegaPos == vec then return end
     self.INF_MegaPos = Vector(vec)
+    InfMap2.EntityUpdateMegapos(self, vec)
     self:SetNW2Vector("INF_MegaPos", vec)
+    for _,child in ipairs(self:GetChildren()) do child:SetMegaPos(vec) end
 end
 hook.Add("OnEntityCreated", "InfMap2IM1Compat__SETCHUNKOFFSET", function(ent)
 	timer.Simple(0, function()

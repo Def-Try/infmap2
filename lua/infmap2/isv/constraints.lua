@@ -1,171 +1,119 @@
-InfMap2.Constraints = InfMap2.Constraints or {}
-InfMap2.Constraints.Contraptions = InfMap2.Constraints.Contraptions or {}
-InfMap2.Constraints.PrimaryEntities = InfMap2.Constraints.PrimaryEntities or {}
-InfMap2.Constraints.PhysConstraintObjects = InfMap2.Constraints.PhysConstraintObjects or {}
-function InfMap2.Constraints.SetPhysConstraintObjects(ent, pc1, pc2)
-    InfMap2.Constraints.PhysConstraintObjects[ent] = {pc1, pc2}
+InfMap2.ContraptionSystem = InfMap2.ContraptionSystem or {}
+InfMap2.ContraptionSystem.Contraptions = InfMap2.ContraptionSystem.Contraptions or {}
+InfMap2.ContraptionSystem.Primaries = InfMap2.ContraptionSystem.Primaries or {}
+
+InfMap2.ContraptionSystem.PhysConstrainedObjects = {}
+function InfMap2.ContraptionSystem.Constraint_SetPhysConstrainedObjects(constraint, ent1, ent2)
+    InfMap2.ContraptionSystem.PhysConstrainedObjects[constraint] = {ent1, ent2}
 end
-function InfMap2.Constraints.GetPhysConstraintObjects(ent, pop)
-    local objs = InfMap2.Constraints.PhysConstraintObjects[ent]
-    if pop then
-        InfMap2.Constraints.PhysConstraintObjects[ent] = nil
+function InfMap2.ContraptionSystem.Constraint_GetPhysConstrainedObjects(constraint)
+    local pair = InfMap2.ContraptionSystem.PhysConstrainedObjects[constraint]
+    if not pair then return nil, nil end
+    return pair[1], pair[2]
+end
+function InfMap2.ContraptionSystem.Constraint_Spawn(constraint)
+    local ent1, ent2 = InfMap2.ContraptionSystem.Constraint_GetPhysConstrainedObjects(constraint)
+    if not ent1 or not ent2 then return end
+    local contraption_1 = InfMap2.ContraptionSystem.FindContraption(ent1)
+    local contraption_2 = InfMap2.ContraptionSystem.FindContraption(ent2)
+    if not contraption_1 and not contraption_2 then
+        contraption_1 = InfMap2.ContraptionSystem.MakeContraption(ent1)
     end
-    if objs then return objs[1], objs[2] end
-    return nil, nil
+    if contraption_2 and not contraption_1 then
+        ent1, ent2 = ent2, ent1
+        contraption_1, contraption_2 = contraption_2, contraption_1
+    end
+
+    if contraption_2 then
+        table.insert(contraption_1.constraints, constraint)
+        InfMap2.ContraptionSystem.MergeContraptions(contraption_1, contraption_2)
+        return
+    end
+    table.insert(contraption_1.constraints, constraint)
+    InfMap2.ContraptionSystem.AddEntity(contraption_1, ent2)
 end
-function InfMap2.Constraints.IsConstraint(ent)
+function InfMap2.ContraptionSystem.Constraint_Remove(constraint)
+    error('not implemented!')
+end
+
+function InfMap2.ContraptionSystem.IsConstraint(ent)
     return (ent:IsConstraint() or ent:GetClass() == "phys_spring" or ent:GetClass() == "keyframe_rope")
 end
 
----should be called when a constraint entity is about to be spawned
----@param ent Entity
-function InfMap2.Constraints.SpawnCallback(ent)
-    local ent1, ent2 = InfMap2.Constraints.GetPhysConstraintObjects(ent, false)
-    local contraption_1 = InfMap2.Constraints.FindContraptionOfEntity(ent1, false)
-    local contraption_2 = InfMap2.Constraints.FindContraptionOfEntity(ent2, false)
-    if not contraption_1 and not contraption_2 then
-        contraption_1 = InfMap2.Constraints.CreateContraptionForEntity(ent1)
-    end
-    if contraption_1 and not contraption_2 then
-        return InfMap2.Constraints.AddEntityToContraptionForEntity(ent1, ent2)
-    end
-    if contraption_2 and not contraption_1 then
-        return InfMap2.Constraints.AddEntityToContraptionForEntity(ent2, ent1)
-    end
-    return InfMap2.Constraints.MergeContraptionsOfEntities(ent1, ent2)
+function InfMap2.ContraptionSystem.AddEntity(contraption, ent)
+    if InfMap2.Debug then print("[INFMAP2] Adding entity "..tostring(ent).." to contraption of master "..tostring(contraption.master)) end
+    table.insert(contraption.entities, ent)
+    InfMap2.ContraptionSystem.Primaries[ent] = contraption.master
+    InfMap2.ContraptionSystem.InvalidateContraption(contraption)
 end
----should be called when a constraint entity is about to be removed
----should return a function that will be called after calling Remove
----@param ent Entity
-function InfMap2.Constraints.RemoveCallback(ent)
-    local ent1, ent2 = InfMap2.Constraints.GetPhysConstraintObjects(ent, false)
-    -- TODO: make it more efficientt!!!
-    InfMap2.Constraints.DestroyContraptionForEntity(ent1)
-    return function()
-        hook.GetTable()["EntityRemoved"]["Constraint Library - ConstraintRemoved"](ent) -- update constraint lib stuff (used by InfMap2.GetAllConnected in InfMap2.Constraints.TryCreateContraptionFromEntities)
-        InfMap2.Constraints.TryCreateContraptionFromEntities(ent1)
-        InfMap2.Constraints.TryCreateContraptionFromEntities(ent2)
+function InfMap2.ContraptionSystem.RemoveEntity(contraption, ent)
+    if InfMap2.Debug then print("[INFMAP2] Removing entity "..tostring(ent).." from contraption of master "..tostring(contraption.master)) end
+    table.RemoveByValue(contraption.entities, ent)
+    InfMap2.ContraptionSystem.Primaries[ent] = nil
+    InfMap2.ContraptionSystem.InvalidateContraption(contraption)
+end
+function InfMap2.ContraptionSystem.ForgetContraption(contraption)
+    if InfMap2.Debug then print("[INFMAP2] Forgetting contraption of master "..tostring(contraption.master)) end
+    InfMap2.ContraptionSystem.Contraptions[contraption.master] = nil
+end
+function InfMap2.ContraptionSystem.MergeContraptions(contraption_1, contraption_2)
+    if InfMap2.Debug then print("[INFMAP2] Merging contraptions of masters "..tostring(contraption_1.master).." and "..tostring(contraption_2.master)) end
+    InfMap2.ContraptionSystem.ForgetContraption(contraption_2)
+    for _, ent in ipairs(contraption_2.entities) do
+        table.insert(contraption_1.entities, ent)
+        InfMap2.ContraptionSystem.Primaries[ent] = contraption_1.master
+    end
+    for _, ent in ipairs(contraption_2.constraints) do
+        table.insert(contraption_1.constraints, ent)
+    end
+    InfMap2.ContraptionSystem.InvalidateContraption(contraption_1)
+    --InfMap2.ContraptionSystem.ValidateContraption(contraption_1)
+end
+function InfMap2.ContraptionSystem.ValidateContraption(contraption)
+    if not contraption.dirty then return end
+    for _, ent in ipairs(contraption.entities) do
+
     end
 end
----should be called when a normal entity is about to be removed (to "unconstraint" it)
----@param ent Entity
-function InfMap2.Constraints.RemoveCallbackNonconstraint(ent)
-    InfMap2.Constraints.RemoveEntityFromContraptionForEntity(ent)
-end
-function InfMap2.Constraints.TryCreateContraptionFromEntities(ent_primary)
-    local connected = InfMap2.FindAllConnected(ent_primary)
-    if #connected <= 1 then return false end
-    for _, ent in ipairs(connected) do 
-        if InfMap2.Constraints.IsConstraint(ent) then continue end
-        InfMap2.Constraints.AddEntityToContraptionForEntity(ent_primary, ent)
+function InfMap2.ContraptionSystem.InvalidateContraption(contraption)
+    if contraption.dirty then return end
+    contraption.dirty = true
+    local offset = 0
+    for n, ent in ipairs(contraption.entities) do
+        if not IsValid(ent:GetParent()) then continue end
+        table.remove(contraption.entities, n - offset)
+        offset = offset + 1
     end
 end
 
-function InfMap2.Constraints.FindContraptionOfConstraint(ent, do_create)
-    if do_create == nil then do_create = true end
-    local ent1, ent2 = InfMap2.Constraints.GetPhysConstraintObjects(ent, false)
-    local contraption = InfMap2.Constraints.FindContraptionOfEntity(ent1, do_create) or InfMap2.Constraints.FindContraptionOfEntity(ent2, do_create)
+function InfMap2.ContraptionSystem.GetContraption(master)
+    return InfMap2.ContraptionSystem.Contraptions[master]
+end
+function InfMap2.ContraptionSystem.FindContraption(ent)
+    if ent:GetParent():IsValid() then return InfMap2.ContraptionSystem.FindContraption(ent:GetParent()) end
+    return InfMap2.ContraptionSystem.Contraptions[ent] or InfMap2.ContraptionSystem.Contraptions[InfMap2.ContraptionSystem.Primaries[ent]]
+end
+function InfMap2.ContraptionSystem.MakeContraption(master)
+    if InfMap2.Debug then print("[INFMAP2] Making contraption for master "..tostring(master)) end
+    local contraption = {master=master, entities={master}, constraints={}, dirty=true}
+    InfMap2.ContraptionSystem.Contraptions[master] = contraption
+    InfMap2.ContraptionSystem.Primaries[master] = master
     return contraption
 end
-function InfMap2.Constraints.FindContraptionOfEntity(ent, do_create)
-    local primary_entity = InfMap2.Constraints.PrimaryEntities[ent]
-    if primary_entity then
-        return InfMap2.Constraints.Contraptions[primary_entity]
-    end
-    if not do_create then return nil end
-    return InfMap2.Constraints.CreateContraptionForEntity(ent)
-end
 
-function InfMap2.Constraints.CreateContraptionForEntity(ent) 
-    local contraption = {ent}
-    InfMap2.Constraints.Contraptions[ent] = contraption
-    InfMap2.Constraints.PrimaryEntities[ent] = ent
-    return ent
-end
-function InfMap2.Constraints.DestroyContraptionForEntity(ent)
-    local pent = InfMap2.Constraints.PrimaryEntities[ent]
-    if not InfMap2.Constraints.Contraptions[pent] then return end
-    for _, cent in ipairs(InfMap2.Constraints.Contraptions[pent]) do
-        InfMap2.Constraints.PrimaryEntities[cent] = nil
-    end
-    InfMap2.Constraints.Contraptions[pent] = nil
-end
-function InfMap2.Constraints.AddEntityToContraptionForEntity(ent_contraption, ent_add)
-    local contraption = InfMap2.Constraints.FindContraptionOfEntity(ent_contraption, false)
-    if not contraption then return false end
-    if table.HasValue(contraption, ent_add) then return true end
-    if InfMap2.Constraints.PrimaryEntities[ent_add] then -- and InfMap2.Constraints.PrimaryEntities[ent_add] ~= ent_contraption then
-        -- InfMap2.Constraints.RemoveEntityFromContraptionForEntity(InfMap2.Constraints.PrimaryEntities[ent_add], ent_add)
-        return false
-    end
-    InfMap2.Constraints.PrimaryEntities[ent_add] = contraption[1]
-    table.insert(contraption, ent_add)
-    return true
-end
-function InfMap2.Constraints.RemoveEntityFromContraptionForEntity(ent_contraption, ent_remove)
-    local contraption = InfMap2.Constraints.FindContraptionOfEntity(ent_contraption, false)
-    if not contraption then return false end
-    if InfMap2.Constraints.PrimaryEntities[ent_remove] ~= ent_contraption then return false end
-    if InfMap2.Constraints.PrimaryEntities[ent_remove] == ent_remove then
-        InfMap2.Constraints.PickNewContraptionPrimaryEntityForEntity(ent_contraption)
-    end
-    table.RemoveByValue(contraption, ent_remove)
-    InfMap2.Constraints.PrimaryEntities[ent_remove] = nil
-    return true
-end
-function InfMap2.Constraints.PickNewContraptionPrimaryEntityForEntity(ent)
-    local contraption = InfMap2.Constraints.FindContraptionOfEntity(ent, false)
-    if not contraption then return false end
-    local new_primary = contraption[2]
-    if not new_primary then
-        InfMap2.Constraints.DestroyContraptionForEntity(ent)
-        return false
-    end
-    for _, ent in ipairs(contraption) do
-        InfMap2.Constraints.PrimaryEntities[ent] = new_primary
-    end
-end
-function InfMap2.Constraints.MergeContraptionsOfEntities(ent_primary, ent_merge)
-    local contraption_primary = InfMap2.Constraints.FindContraptionOfEntity(ent_primary, false)
-    if not contraption_primary then return false end
-    local contraption_merge = InfMap2.Constraints.FindContraptionOfEntity(ent_merge, false)
-    if not contraption_merge then return false end
-    if contraption_primary == contraption_merge then return true end
-    InfMap2.Constraints.Contraptions[contraption_merge[1]] = nil
-    for _, ent in ipairs(contraption_merge) do
-        InfMap2.Constraints.PrimaryEntities[ent] = contraption_primary[1]
-        table.insert(contraption_primary, ent)
-        contraption_merge[_] = nil
-    end
-    return true
-end
-function InfMap2.Constraints.IsMainContraptionEntity(ent)
-    local contraption = InfMap2.Constraints.FindContraptionOfEntity(ent)
+function InfMap2.ContraptionSystem.IsMainContraptionEntity(ent)
+    if ent:GetParent():IsValid() then return false end
+    local contraption = InfMap2.ContraptionSystem.FindContraption(ent)
     if not contraption then return true end
-    if contraption[1] == ent then return true end
+    if contraption.master == ent then return true end
     return false
-end
-function InfMap2.Constraints.ContraptionHeldByPlayer(ent)
-    local contraption = InfMap2.Constraints.FindContraptionOfEntity(ent)
-    if not contraption then return ent:IsPlayerHolding() end
-    for _,e in pairs(contraption) do
-        if e:IsPlayerHolding() then return true end
-    end
-    return false
-end
-function InfMap2.Constraints.ExpandContraption(contraption)
-    local expanded = {}
-    for _, ent in ipairs(contraption) do
-        expanded[#expanded+1] = ent
-        if ent:IsVehicle() and IsValid(ent:GetDriver()) then
-            expanded[#expanded+1] = ent:GetDriver()
-        end
-    end
-    return expanded
 end
 
-timer.Create("InfMap2ClearNULLContraptions", 5, 0, function()
-    for e, _ in pairs(InfMap2.Constraints.Contraptions) do
-        if not IsValid(e) then InfMap2.Constraints.Contraptions[e] = nil end
+function InfMap2.ContraptionSystem.ContraptionHeldByPlayer(master)
+    local contraption = InfMap2.ContraptionSystem.GetContraption(master)
+    if not contraption then return master:IsPlayerHolding() end
+    for _, ent in ipairs(contraption.entities) do
+        if ent:IsPlayerHolding() then return true end
     end
-end)
+    return false
+end

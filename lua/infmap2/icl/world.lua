@@ -2,17 +2,6 @@ InfMap2.ChunkMeshes = InfMap2.ChunkMeshes or {Index = {}, Draw = {}}
 InfMap2.ViewMatrix = InfMap2.ViewMatrix or Matrix()
 InfMap2.GeneratedChunks = InfMap2.GeneratedChunks or {}
 
----Asynchronously generates visual mesh of a single megachunk of certain size at megapos.
----Requires UsesGenerator, HeightFunction, ChunkSize and SampleSize to be set up.
----@param megapos Vector Megachunk origin chunk megapos
----@param megasize Vector Megachunk size
----@param callback function Callback when mesh has been generated. The argument is megachunk mesh data (table<pos, u, v, norm>).
----@param docontinue? function Function to check if mesh should continue generating
-function InfMap2.GenerateChunkVisualMesh(megapos, megasize, callback, docontinue)
-    print("[INFMAP] InfMap2.GenerateChunkVisualMesh stub called")
-    debug.Trace()
-end
-
 
 ---Build table of IMesh objects out of mesh table.
 ---@param mesh_ table
@@ -41,20 +30,6 @@ function InfMap2.BuildMeshObjects(mesh_)
     mesh.End()
 
     return meshes
-end
-
----Generates a megachunk.
----@param megapos Vector megachunk megapos (megamegapos)
-function InfMap2.CreateWorldMegaChunk(megapos)
-    print("[INFMAP] InfMap2.CreateWorldMegaChunk stub called")
-    debug.Trace()
-end
-
----Removes megachunk
----@param megapos Vector megachunk megapos (megamegapos)
-function InfMap2.RemoveWorldMegaChunk(megapos)
-    print("[INFMAP] InfMap2.RemoveWorldMegaChunk stub called")
-    debug.Trace()
 end
 
 local predicted_teleport = false

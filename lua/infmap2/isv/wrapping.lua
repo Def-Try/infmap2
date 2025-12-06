@@ -67,28 +67,29 @@ local function update_entity(ent, pos, megapos)
     if ent:IsPlayer() and InfMap2.Cache.carries[ent:SteamID()] and IsValid(InfMap2.Cache.carries[ent:SteamID()][1]) then
         local carrydata = InfMap2.Cache.carries[ent:SteamID()]
         local carry, carrymeth = carrydata[1], carrydata[2]
-        local entities = InfMap2.Constraints.ExpandContraption(InfMap2.Constraints.FindContraptionOfEntity(carry) or {carry})
+        local entities = (InfMap2.ContraptionSystem.GetContraption(carry) or {entities={carry}}).entities
         if carry:IsPlayer() then entities[#entities+1] = carry:GetHands() end
         local ent_pos = ent:INF_GetPos()
         for _,cent in pairs(entities) do
             --if InfMap2.UselessEntitiesFilter(cent) then continue end
             cent:ForcePlayerDrop()
             local vel, ang = cent:GetVelocity(), cent:GetAngles()
-            InfMap2.EntityUpdateMegapos(cent, megapos)
+            cent:SetMegaPos(megapos)
+            --InfMap2.EntityUpdateMegapos(cent, megapos)
             ent_SetPos_proper(cent, pos + (cent:INF_GetPos() - ent_pos))
             ent_SetVelAng_proper(cent, vel, ang)
-            cent.INF_ConstraintMain = ent
             if carrymeth == "physics" then
                 ent:PickupObject(cent)
             end
-            if carrymeth == "physgun" then end -- no action needed :)
+            if carrymeth == "physgun" then end -- no action needed (almost, TODO: restore grabbing immediately)
             if carrymeth == "gravgun" then
                 -- TODO: simulate +attack2
             end
         end
     end
 
-    InfMap2.EntityUpdateMegapos(ent, megapos)
+    ent:SetMegaPos(megapos)
+    -- InfMap2.EntityUpdateMegapos(ent, megapos)
     ent_SetPos_proper(ent, pos)
     ent.INF_ConstraintMain = ent
 end
@@ -101,53 +102,72 @@ end end end
 local ents_to_wrap = {}
 
 timer.Create("InfMap2WorldWrapping", 0.1, 0, function()
-    table.Empty(ents_to_wrap)
+    ents_to_wrap = {}
     for _, ent in ents.Iterator() do
         if InfMap2.UselessEntitiesFilter(ent) then continue end -- useless entity
         -- if not ent:GetMegaPos() then continue end -- no megapos, something is wrong
         if ent:GetVelocity():LengthSqr() == 0 then continue end -- no velocity, dont care
         if IsValid(ent:GetParent()) then continue end -- parent is valid, teleport is handled by it
         if ent:IsPlayer() and not ent:Alive() then continue end -- player is dead, don't bother
+        if ent:IsPlayer() and ent:InVehicle() then continue end -- player in vehicle, wrapping handled by it
         --if not InfMap2.IsMainContraptionEntity(ent) then continue end -- not main contraption entity, teleporting *will* break stuff
-        if not InfMap2.Constraints.IsMainContraptionEntity(ent) then continue end
+        if not InfMap2.ContraptionSystem.IsMainContraptionEntity(ent) then continue end
         ents_to_wrap[#ents_to_wrap+1] = ent
     end
 end)
 
-function InfMap2.Teleport(ent, newpos)
+function InfMap2.Teleport(ent, realpos, megapos)
     -- we need to do three passes over entities to teleport them properly
-    local pos, megapos = InfMap2.LocalizePosition(newpos)
-    local entities = InfMap2.Constraints.ExpandContraption(InfMap2.Constraints.FindContraptionOfEntity(ent) or {ent})
+    local entities = (InfMap2.ContraptionSystem.GetContraption(ent) or {entities={ent}}).entities
+    local mainent = entities[1]
+
+    local mainpos, mainvel, mainang = mainent:INF_GetPos(), mainent:GetVelocity(), mainent:GetAngles()
+
     -- first: collect entities velocities and angles
-    local mainvel, mainang = ent:GetVelocity(), ent:GetAngles()
     local velocities, angles = {}, {}
-    for _, cent in pairs(entities) do
-        if ent == cent then continue end
-        velocities[cent] = cent:GetVelocity()
-        angles[cent] = cent:GetAngles()
+    for _, cent in ipairs(entities) do
+        if _ == 1 then continue end
+        velocities[_] = cent:GetVelocity()
+        angles[_] = cent:GetAngles()
     end
 
-    -- second: update entities positions
-    local mainpos = ent:INF_GetPos()
-    for _, cent in pairs(entities) do
-        if ent == cent then continue end
-        --cent:ForcePlayerDrop()
-        update_entity(cent, pos + (cent:INF_GetPos() - mainpos), megapos)
+    for _, cent in ipairs(entities) do
+        if _ == 1 then continue end
+        update_entity(cent, realpos + (cent:INF_GetPos() - mainpos), megapos)
     end
-    update_entity(ent, pos, megapos)
+    update_entity(mainent, realpos, megapos)
 
     -- third: restore velocities and angles
-    for _, cent in pairs(entities) do
-        if ent == cent then continue end
-        ent_SetVelAng_proper(cent, velocities[cent], angles[cent])
+    for _, cent in ipairs(entities) do
+        if _ == 1 then continue end
+        ent_SetVelAng_proper(cent, velocities[_], angles[_])
     end
-    ent_SetVelAng_proper(ent, mainvel, mainang)
+    ent_SetVelAng_proper(mainent, mainvel, mainang)
 
     -- additionally create chunks around current one
     if InfMap2.World.HasTerrain then
         InfMap2.CreateWorldChunkAt(megapos)
     end
 end
+
+-- -- TODO: fix new teleport
+-- function InfMap2.Teleport(mainent, oldrealpos, newrealpos, megapos)
+--     local entities = (InfMap2.ContraptionSystem.GetContraption(mainent) or {entities={mainent}}).entities
+--     for _, ent in ipairs(entities) do
+--         if not IsValid(ent) then continue end
+--         ent:SetMegaPos(megapos)
+--         if ent:GetParent():IsValid() then continue end
+--         local phys = ent:GetPhysicsObject()
+--         local vel
+--         if IsValid(phys) then vel = phys:GetVelocity() end
+--         ent:INF_SetPos(newrealpos + (ent:INF_GetPos() - oldrealpos))
+--         if vel then phys:SetVelocity(vel) end
+--     end
+
+--     if InfMap2.World.HasTerrain then
+--         InfMap2.CreateWorldChunkAt(megapos)
+--     end
+-- end
 
 hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_to_wrap) do
     if not IsValid(ent) then continue end -- ent died
@@ -158,19 +178,17 @@ hook.Add("Think", "InfMap2WorldWrapping", function() for _, ent in ipairs(ents_t
         if ent:IsNextBot() then return ent:Kill() end
         return ent:Remove()
     end
-    if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize - 1) then
-    --    ent.INF_ConstraintMain = nil
-        continue
-    end -- still in chunk, just clear constraint main
-    --if IsValid(ent.INF_ConstraintMain) and ent.INF_ConstraintMain ~= ent then continue end -- has a "master" constraint entity
-    if not InfMap2.Constraints.IsMainContraptionEntity(ent) then continue end
-    if InfMap2.Constraints.ContraptionHeldByPlayer(ent) then continue end -- being held by player
-
+    if InfMap2.PositionInChunkSpace(ent:INF_GetPos(), InfMap2.ChunkSize) then continue end
+    if not InfMap2.ContraptionSystem.IsMainContraptionEntity(ent) then continue end
+    if InfMap2.ContraptionSystem.ContraptionHeldByPlayer(ent) then continue end -- being held by player
     if ent:GetClass() == "inf_crosschunkclone" then continue end -- crosschunk clone, we dont touch those
+    
+    local realpos, megaposoff = InfMap2.LocalizePosition(ent:INF_GetPos())
 
     if InfMap2.Debug then print("[INFMAP] Updating entity "..tostring(ent)) end
     local start = SysTime()
-    InfMap2.Teleport(ent, ent:GetPos())
+    -- InfMap2.Teleport(ent, ent:INF_GetPos(), realpos, ent:GetMegaPos() + megapos) -- TODO: fix new teleport
+    InfMap2.Teleport(ent, realpos, ent:GetMegaPos() + megaposoff)
     local endd = SysTime()
     if InfMap2.Debug then print("[INFMAP] Teleporting entity "..tostring(ent).." took "..((endd-start)*1000).."ms") end
 end end)

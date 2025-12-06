@@ -132,6 +132,7 @@ InfMap2.UselessEntities = InfMap2.UselessEntities or {
 	env_fog_controller = true,
 	sizehandler = true,
 	crossbow_bolt = true,
+    manipulate_bone = true,
 
     inf_chunk = true,
     inf_crosschunkclone = true
@@ -279,26 +280,21 @@ end
 function ENTITY:SetMegaPos(vec)
     if self.INF_MegaPos == vec then return end
     self.INF_MegaPos = Vector(vec)
+    InfMap2.EntityUpdateMegapos(self, vec)
     self:SetNW2Vector("INF_MegaPos", vec)
-    --if not IsValid(self) then return end
-    --if not SERVER then return end
-    --net.Start("InfMap2_ChangeMegaPos")
-    --    net.WriteEntity(self)
-    --    net.WriteVector(vec)
-    --net.Broadcast()
+    for _,child in ipairs(self:GetChildren()) do child:SetMegaPos(vec) end
 end
 
 function ENTITY:GetMegaPos()
-    --if not IsValid(self) then return Vector(self.INF_MegaPos) end
     return self:GetNW2Vector("INF_MegaPos", nil)
-    --return self:GetNW2Vector("INF_MegaPos", Vector())
 end
 
 if CLIENT then
     local queue = {}
     hook.Add("EntityNetworkedVarChanged", "InfMap2EntityMegaposUpdate", function(ent, name, prev, val)
         if name ~= "INF_MegaPos" then return end
-        if prev == val then return end
+        ---@diagnostic disable-next-line: undefined-field
+        if prev == val or ent.INF_MegaPos == val then return end
         if InfMap2.Debug and ent:GetClass() ~= "inf_chunk" then print("[INFMAP] "..tostring(ent).." -> "..tostring(val)) end
         ent:SetMegaPos(val)
         InfMap2.EntityUpdateMegapos(ent, val)
