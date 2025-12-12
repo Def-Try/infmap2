@@ -79,10 +79,11 @@ function shader.Think()
     shader.TransformMatrix:SetTranslation(pos)
 end
 function shader.RenderMesh(vert, posv, localposv, half_sample_size)
-    local v00 = InfMap2.GetTerrainHeightAt(vert[1], vert[2])
-    local v01 = InfMap2.GetTerrainHeightAt(vert[1], vert[2]+half_sample_size)
-    local v10 = InfMap2.GetTerrainHeightAt(vert[1]+half_sample_size, vert[2])
-    local v11 = InfMap2.GetTerrainHeightAt(vert[1]+half_sample_size, vert[2]+half_sample_size)
+    local plyhoff = ({InfMap2.LocalizePosition(Vector(0, 0, posv[3]))})[2][3] * InfMap2.ChunkSize
+    local v00 = InfMap2.GetTerrainHeightAt(vert[1], vert[2]) - plyhoff
+    local v01 = InfMap2.GetTerrainHeightAt(vert[1], vert[2]+half_sample_size) - plyhoff
+    local v10 = InfMap2.GetTerrainHeightAt(vert[1]+half_sample_size, vert[2]) - plyhoff
+    local v11 = InfMap2.GetTerrainHeightAt(vert[1]+half_sample_size, vert[2]+half_sample_size) - plyhoff
     --render.DrawWireframeSphere(Vector(vert[1], vert[2], v00), 10, 8, 8, Color(0, 0, 0), false)
     --render.DrawWireframeSphere(Vector(vert[1], vert[2]+half_sample_size, v01), 10, 8, 8, Color(0, 255, 0), false)
     --render.DrawWireframeSphere(Vector(vert[1]+half_sample_size, vert[2], v10), 10, 8, 8, Color(255, 0, 0), false)
@@ -91,7 +92,7 @@ function shader.RenderMesh(vert, posv, localposv, half_sample_size)
     --do return end
 
     -- pass data into shader
-    shader.TransformMatrix:SetTranslation(Vector(vert[1], vert[2], -(posv[3] - localposv[3])))
+    shader.TransformMatrix:SetTranslation(Vector(vert[1], vert[2], plyhoff))
     render.SuppressEngineLighting(true)
     render.SetModelLighting(0, vert[1] / (half_sample_size) * blades_sqrt, vert[2] / (half_sample_size) * blades_sqrt, CurTime() * 0.3)
     render.SetModelLighting(1, localposv[1], localposv[2], v00)
