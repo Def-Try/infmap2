@@ -4,6 +4,7 @@ InfMap2.ContraptionSystem.Primaries = InfMap2.ContraptionSystem.Primaries or {}
 
 InfMap2.ContraptionSystem.PhysConstrainedObjects = {}
 function InfMap2.ContraptionSystem.Constraint_SetPhysConstrainedObjects(constraint, ent1, ent2)
+    print("set for ", constraint)
     InfMap2.ContraptionSystem.PhysConstrainedObjects[constraint] = {ent1, ent2}
 end
 function InfMap2.ContraptionSystem.Constraint_GetPhysConstrainedObjects(constraint)
@@ -23,17 +24,97 @@ function InfMap2.ContraptionSystem.Constraint_Spawn(constraint)
         ent1, ent2 = ent2, ent1
         contraption_1, contraption_2 = contraption_2, contraption_1
     end
+    table.insert(contraption_1.constraints, constraint)
+    if contraption_2 and contraption_1.master == contraption_2.master then return end
 
     if contraption_2 then
-        table.insert(contraption_1.constraints, constraint)
         InfMap2.ContraptionSystem.MergeContraptions(contraption_1, contraption_2)
         return
     end
-    table.insert(contraption_1.constraints, constraint)
     InfMap2.ContraptionSystem.AddEntity(contraption_1, ent2)
 end
 function InfMap2.ContraptionSystem.Constraint_Remove(constraint)
-    error('not implemented!')
+    local ent1, ent2 = InfMap2.ContraptionSystem.Constraint_GetPhysConstrainedObjects(constraint)
+    if not ent1 or not ent2 then return end
+
+    local contraption = InfMap2.ContraptionSystem.FindContraption(ent1)
+    InfMap2.ContraptionSystem.InvalidateContraption(contraption)
+
+    local adjacency = InfMap2.ContraptionSystem.BuildAdjacencyMap(contraption)
+    local components = InfMap2.ContraptionSystem.TrySplitContraptionAt(adjacency, constraint)
+    table.RemoveByValue(contraption.constraints, constraint)
+    if #components == 1 then
+        return
+    end -- no splitting happened, dont care
+
+    InfMap2.ContraptionSystem.ForgetContraption(contraption)
+    local possible_constraints = contraption.constraints
+    for _, component in ipairs(components) do
+        if #component == 1 then continue end -- dont create "contraptions" with only 1 entity
+        local component_main = component[1]
+        local component_contraption = InfMap2.ContraptionSystem.MakeContraption(component_main)
+        
+        for _, component_ent in ipairs(component) do
+            if _ == 1 then continue end
+            local found_constraint = nil
+            for __, constraint in ipairs(possible_constraints) do
+                local cent1, cent2 = InfMap2.ContraptionSystem.Constraint_GetPhysConstrainedObjects(constraint)
+                if cent1 ~= component_main and cent1 ~= component_ent then continue end
+                if cent2 ~= component_main and cent2 ~= component_ent then continue end
+                found_constraint = constraint
+                break
+            end
+            if found_constraint == nil then continue end
+            table.RemoveByValue(possible_constraints, found_constraint)
+            table.insert(component_contraption.constraints, found_constraint)
+            InfMap2.ContraptionSystem.AddEntity(component_contraption, component_ent)
+        end
+    end
+end
+
+function InfMap2.ContraptionSystem.BuildAdjacencyMap(contraption)
+    InfMap2.ContraptionSystem.ValidateContraption(contraption)
+
+    local adjacency = {}
+    for _, constraint in ipairs(contraption.constraints) do
+        local ent1, ent2 = InfMap2.ContraptionSystem.Constraint_GetPhysConstrainedObjects(constraint)
+        if not ent1 or not ent2 then continue end
+        adjacency[ent1] = adjacency[ent1] or {}
+        adjacency[ent2] = adjacency[ent2] or {}
+
+        table.insert(adjacency[ent1], {ent = ent2, constraint = constraint})
+        table.insert(adjacency[ent2], {ent = ent1, constraint = constraint})
+    end
+
+    return adjacency
+end
+
+function InfMap2.ContraptionSystem.TrySplitContraptionAt(adjacency, constraint_split)
+    local visited = {}
+    local components = {}
+
+    for ent, _ in pairs(adjacency) do
+        if visited[ent] then continue end
+        local component = {}
+        local queue = {ent}
+        visited[ent] = true
+
+        while #queue > 0 do
+            local current = table.remove(queue, 1)
+            table.insert(component, current)
+            if not adjacency[current] then continue end
+            for _, neighbor in ipairs(adjacency[current]) do
+                -- Skip the excluded constraint
+                if neighbor.constraint ~= constraint_split and not visited[neighbor.ent] then
+                    visited[neighbor.ent] = true
+                    table.insert(queue, neighbor.ent)
+                end
+            end
+        end
+        table.insert(components, component)
+    end
+
+    return components
 end
 
 function InfMap2.ContraptionSystem.IsConstraint(ent)
@@ -54,6 +135,9 @@ function InfMap2.ContraptionSystem.RemoveEntity(contraption, ent)
 end
 function InfMap2.ContraptionSystem.ForgetContraption(contraption)
     if InfMap2.Debug then print("[INFMAP2] Forgetting contraption of master "..tostring(contraption.master)) end
+    for _, ent in ipairs(contraption.entities) do
+        InfMap2.ContraptionSystem.RemoveEntity(contraption, ent)
+    end
     InfMap2.ContraptionSystem.Contraptions[contraption.master] = nil
 end
 function InfMap2.ContraptionSystem.MergeContraptions(contraption_1, contraption_2)
@@ -71,6 +155,7 @@ function InfMap2.ContraptionSystem.MergeContraptions(contraption_1, contraption_
 end
 function InfMap2.ContraptionSystem.ValidateContraption(contraption)
     if not contraption.dirty then return end
+    contraption.dirty = false
     for _, ent in ipairs(contraption.entities) do
 
     end

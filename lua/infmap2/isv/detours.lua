@@ -46,7 +46,7 @@ ENTITY.INF_Remove = ENTITY.INF_Remove or ENTITY.Remove
 function ENTITY:Remove()
     local cback
     if IsValid(self) and InfMap2.ContraptionSystem.IsConstraint(self) then
-        InfMap2.ContraptionSystem.Constraint_Remove(constraint)
+        InfMap2.ContraptionSystem.Constraint_Remove(self)
     else
         --InfMap2.Constraints.RemoveCallbackNonconstraint(self)
     end
