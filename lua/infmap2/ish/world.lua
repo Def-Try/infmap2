@@ -48,7 +48,7 @@ function InfMap2.GetTerrainHeightAt(x, y)
         height = (1 - local_x - local_y) * v0[3] + local_x * v1[3] + local_y * v2[3]
     end
     
-    if InfMap2.Debug and CLIENT then
+    if InfMap2.Debug and CLIENT and false then
         local vv0, vv1, vv2, vv3 = Vector(unpack(v0)), Vector(unpack(v1)), Vector(unpack(v2)), Vector(unpack(v3))
         render.SetMaterial(Material("models/wireframe"))
         render.DrawQuad(vv1, vv0, vv2, vv3)

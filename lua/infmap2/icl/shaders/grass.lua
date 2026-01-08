@@ -16,6 +16,7 @@ function shader.Init()
     shader.TransformMatrix = Matrix()
     shader.DummyModel = ClientsideModel("models/shadertest/vertexlit.mdl")
     shader.DummyModel:SetModelScale(0)
+    shader.DummyModel:SetNoDraw(true)
     assert(6+(blades*3) <= 32768, "Too many vertices ("..(6+(blades*3)).." > 32768), decrease blades count!")
 
     mesh.Begin(shader.Mesh, MATERIAL_TRIANGLES, 6+(blades*3))

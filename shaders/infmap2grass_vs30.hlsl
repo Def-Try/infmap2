@@ -81,7 +81,7 @@ VS_OUTPUT main(VS_INPUT vert) {
 	// shear 1: base move - minor winds
 	float base_move_y = snoise(float2(curtime + bladey * 0.02, 1000));
 	// shear 2: burst move - bursts of wind that are more noticable, faster, and affect more ground
-	float burst_move_y = max(0.0, snoise(float2((curtime * 10 + bladey * 0.1) * 0.1, 6000)) * 25 + 25 - 40) / 10;
+	float burst_move_y = max(0.0, snoise(float2((curtime * 10 + bladey * 0.1) * 0.1 - snoise(float2(bladex*0.1, 0))*0.1, 6000)) * 25 + 25 - 40) / 10;
 
 	// apply wind
 	// multiply by negative so it looks correct (otherwise blades bend in the direction that "wind" "comes from", instead of away)
